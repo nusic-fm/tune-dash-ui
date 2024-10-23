@@ -1,10 +1,18 @@
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { Stack } from "@mui/system";
 import { motion } from "framer-motion";
 
-type Props = { showBackButton?: boolean; onBackButtonClick?: () => void };
+type Props = {
+  showBackButton?: boolean;
+  onBackButtonClick?: () => void;
+  coverTitle: string;
+};
 
-const Header = ({ showBackButton = false, onBackButtonClick }: Props) => {
+const Header = ({
+  showBackButton = false,
+  onBackButtonClick,
+  coverTitle,
+}: Props) => {
   return (
     <Stack
       direction="row"
@@ -13,7 +21,7 @@ const Header = ({ showBackButton = false, onBackButtonClick }: Props) => {
       width={"100%"}
       py={2}
     >
-      <Box>
+      <Box width={60} height={60}>
         {showBackButton && (
           <motion.button
             whileHover={{ scale: 1.1 }}
@@ -29,6 +37,29 @@ const Header = ({ showBackButton = false, onBackButtonClick }: Props) => {
           />
         )}
       </Box>
+
+      <Box position={"relative"} width={229} height={32}>
+        <img src="/assets/tunedash/player-topbar.png" alt="logo" />
+        <Typography
+          position="absolute"
+          top={0}
+          left={8}
+          width={"calc(100% - 16px)"}
+          height={"100%"}
+          display={"flex"}
+          // justifyContent={"center"}
+          alignItems={"center"}
+          fontSize={"12px"}
+          sx={{
+            textOverflow: "ellipsis",
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {coverTitle}
+        </Typography>
+      </Box>
+
       <motion.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}

@@ -3,8 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import Header from "./components/Header";
 
 import { IRefPhaserGame, PhaserGame } from "./game/PhaserGame";
-import { GameVoiceInfo } from "./game/scenes/Preloader";
-import { downloadAudioFiles, prepareVocalPlayers } from "./hooks/useTonejs";
+import {
+  downloadAudioFiles,
+  getToneStatus,
+  prepareVocalPlayers,
+} from "./hooks/useTonejs";
 import { CoverV1, VoiceV1Cover } from "./services/db/coversV1.service";
 import {
   createRandomNumber,
@@ -266,6 +269,7 @@ function App() {
                     setScreenIdx(screenIdx - 1);
                     setSelectedBackground(gameBgPaths[screenIdx - 1]);
                   }}
+                  coverTitle={coverDoc?.title || ""}
                 />
               )}
               {screenIdx === 0 && (
@@ -273,7 +277,9 @@ function App() {
                   onStartClick={() => {
                     setScreenIdx(1);
                     setSelectedBackground(gameBgPaths[1]);
-                    marbleRaceOnlyInstrument(selectedCoverDocId, 120, 0);
+                    const toneStatus = getToneStatus();
+                    if (toneStatus.isTonePlaying === false)
+                      marbleRaceOnlyInstrument(selectedCoverDocId, 120, 0);
                   }}
                 />
               )}
