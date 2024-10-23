@@ -320,7 +320,7 @@ function App() {
               {screenIdx === 4 && primaryVoiceInfo && secondaryVoiceInfo && (
                 <PhaserGame
                   ref={phaserRef}
-                  voices={[secondaryVoiceInfo, primaryVoiceInfo].map((v) => ({
+                  voices={[primaryVoiceInfo, secondaryVoiceInfo].map((v) => ({
                     id: v.id,
                     name: v.name,
                     avatar: getVoiceAvatarPath(v.id),
