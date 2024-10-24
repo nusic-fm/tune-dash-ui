@@ -1650,11 +1650,11 @@ export default class Game extends Phaser.Scene {
       if (this.isBoosted && this.boostMultipler >= 20 && this.hasGroupPassed) {
         this.isBoosted = false;
         this.boostMultipler = 0;
-        this.marbleTrailParticles[1].destroy();
-        this.marbleTrailParticles[1] = this.add
+        this.marbleTrailParticles[this.userMarbleIdx].destroy();
+        this.marbleTrailParticles[this.userMarbleIdx] = this.add
           .particles(0, 0, "trail", {
             ...this.trailConfig,
-            follow: this.marbles[1].position,
+            follow: this.marbles[this.userMarbleIdx].position,
           })
           .setDepth(0);
       }
