@@ -229,7 +229,7 @@ const toggleMuteAudio = () => {
   isMuted = !isMuted;
   if (introPlayerRef) {
     if (!isTonePlaying) {
-      introPlayerRef.start(0, 2.44);
+      introPlayerRef.start(0, 164.3);
       isTonePlaying = true;
     }
     introPlayerRef.mute = isMuted;
