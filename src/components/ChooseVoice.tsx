@@ -70,8 +70,8 @@ const ChooseVoice = ({
                 <Box
                   sx={{
                     borderRadius: "50%",
-                    width: 25,
-                    height: 25,
+                    width: 30,
+                    height: 30,
                     backgroundColor: "#000",
                     // position: "absolute",
                     // top: 20,
@@ -81,13 +81,13 @@ const ChooseVoice = ({
                   alignItems={"center"}
                   justifyContent={"center"}
                 >
-                  <Typography variant="caption" color={"#fff"}>
+                  <Typography variant="caption" color={"#fff"} fontSize={8}>
                     $
                     {idx > voices.length / 2
-                      ? 15
+                      ? 5
                       : idx > voices.length / 3
-                      ? 10
-                      : 5}
+                      ? 2
+                      : 0.99}
                   </Typography>
                 </Box>
               }
