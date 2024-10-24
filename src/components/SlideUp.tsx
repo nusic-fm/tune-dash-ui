@@ -70,7 +70,6 @@ const SlideUp = ({
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          onClick={(e) => e.preventDefault()}
           style={{
             width: 250,
             height: 83,
@@ -82,6 +81,19 @@ const SlideUp = ({
             justifyContent: "center",
             alignItems: "center",
             gap: 4,
+          }}
+          onClick={() => {
+            // Instantly slide up and call onSlideUp
+            const duration = 250;
+            const step = 10;
+            let i = 0;
+            setInterval(() => {
+              setPosition(window.innerHeight - step * i);
+              i++;
+            }, step);
+            setTimeout(() => {
+              onSlideUp();
+            }, duration);
           }}
         >
           <KeyboardDoubleArrowUpRoundedIcon />
