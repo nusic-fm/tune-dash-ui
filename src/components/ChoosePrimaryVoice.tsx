@@ -1,4 +1,4 @@
-import { Stack, Box } from "@mui/material";
+import { Stack, Box, Typography } from "@mui/material";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
 import { getVoiceAvatarPath } from "../helpers";
 import { useState } from "react";
@@ -22,16 +22,56 @@ const ChoosePrimaryVoice = ({ onPrimaryVoiceSelected, voices }: Props) => {
       justifyContent={"start"}
       alignItems={"center"}
     >
-      <Box>
+      <Box
+        width={172}
+        height={230}
+        sx={{
+          background: `url(/assets/tunedash/voice-card.png)`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+        position={"relative"}
+        display={"flex"}
+        justifyContent={"center"}
+      >
         <img
           src={getVoiceAvatarPath(selectedVoiceInfo.id)}
-          width={120}
-          //   height={60}
+          width={"60%"}
           style={{
-            borderRadius: "6px",
+            borderRadius: "50%",
             cursor: "pointer",
+            top: "45%",
+            transform: "translateY(-50%)",
+            position: "absolute",
           }}
         />
+        <Box
+          position={"absolute"}
+          top="83%"
+          width={100}
+          height={20}
+          sx={{
+            background: `url(/assets/tunedash/track-rect.png)`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+          display={"flex"}
+          justifyContent={"center"}
+          alignItems={"center"}
+        >
+          <Typography
+            variant="caption"
+            color={"#000"}
+            fontWeight={600}
+            sx={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {selectedVoiceInfo.name}
+          </Typography>
+        </Box>
       </Box>
       <Box
         width={350}
@@ -44,16 +84,16 @@ const ChoosePrimaryVoice = ({ onPrimaryVoiceSelected, voices }: Props) => {
         }}
         display={"flex"}
         justifyContent={"center"}
+        p={2}
       >
         <Box
           display={"flex"}
           justifyContent={"center"}
           alignItems={"center"}
           flexWrap={"wrap"}
-          my={4}
-          mx={4}
-          height={"80%"}
-          width={"80%"}
+          height={"85%"}
+          width={"100%"}
+          py={2}
           sx={{
             overflowY: "auto",
           }}

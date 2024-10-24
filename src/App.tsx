@@ -4,17 +4,12 @@ import Header from "./components/Header";
 
 import { IRefPhaserGame, PhaserGame } from "./game/PhaserGame";
 import {
+  downloadAndPlayIntro,
   downloadAudioFiles,
-  getToneStatus,
   prepareVocalPlayers,
 } from "./hooks/useTonejs";
 import { CoverV1, VoiceV1Cover } from "./services/db/coversV1.service";
-import {
-  createRandomNumber,
-  getSkinPath,
-  getTrailPath,
-  getVoiceAvatarPath,
-} from "./helpers";
+import { getSkinPath, getTrailPath, getVoiceAvatarPath } from "./helpers";
 import ScreenOne from "./components/ScreenOne";
 import ScreenTwo from "./components/ScreenTwo";
 import ChoosePrimaryVoice from "./components/ChoosePrimaryVoice";
@@ -22,8 +17,8 @@ import { useCollection } from "react-firebase-hooks/firestore";
 import { query, collection, where, documentId } from "firebase/firestore";
 import { db } from "./services/firebase.service";
 import VoicesClash from "./components/VoicesClash";
-import { marbleRaceOnlyInstrument } from "./hooks/useTonejs";
 import SmallImageMotionButton from "./components/Buttons/SmallImageMotionButton";
+import SelectTrack from "./components/SelectTrack";
 
 export const tracks = [
   "01",
@@ -38,11 +33,32 @@ export const tracks = [
   // "22",
 ];
 
-const gameBgPaths = [
-  "/assets/tunedash/bgs/home.png",
-  "/assets/tunedash/bgs/home-menu.png",
-  "/assets/tunedash/bgs/home-voice.png",
-];
+// const gameBgPaths = [
+//   "/assets/tunedash/bgs/home.png",
+//   "/assets/tunedash/bgs/home-menu.png",
+//   "/assets/tunedash/bgs/home-menu.png",
+//   "/assets/tunedash/bgs/home-voice.png",
+// ];
+const getGameBgPath = (screenName: string) => {
+  switch (screenName) {
+    case "splash":
+      return "/assets/tunedash/bgs/splash.png";
+    case "start":
+      return "/assets/tunedash/bgs/start.png";
+    case "menu":
+      return "/assets/tunedash/bgs/menu.png";
+    case "select-track":
+      return "/assets/tunedash/bgs/menu.png";
+    case "choose-primary-voice":
+      return "/assets/tunedash/bgs/voice.png";
+    case "voices-clash":
+      return "/assets/tunedash/bgs/voice.png";
+    case "game-ready":
+      return "/assets/tunedash/bgs/voice.png"; //TODO
+  }
+};
+
+// const screenNames = ["splash", "start", "menu", "select-track", "choose-primary-voice", "voices-clash", "game"];
 
 function App() {
   //  References to the PhaserGame component (game and scene are exposed)
@@ -95,7 +111,7 @@ function App() {
     return parseFloat(savedRecordDuration || "60") || 60;
   });
   const [isRecord, setIsRecord] = useState(false);
-  const [screenIdx, setScreenIdx] = useState(-1);
+  const [screenName, setScreenName] = useState("splash");
   const [coversSnapshot, cssLoading, cssError] = useCollection(
     query(
       collection(db, "covers"),
@@ -106,40 +122,15 @@ function App() {
         //   "YE7LMzWbCKgkLgSKVX9Q",
         //   "bkvtnO1D4fOUYvzwn0NJ",
         //   // "abRoiarmwTRMqWTyqSGn",
-        //   "Sey1qVFqitYhnKkddMuQ",
-        //   "RL2bdU5NJOukDwQzzW1s",
-        //   "NAc4aENdcDHIh2k4K5oG",
-        //   "8FbtvPhkC13vo3HnAirx",
+        "Sey1qVFqitYhnKkddMuQ",
+        "RL2bdU5NJOukDwQzzW1s",
+        "NAc4aENdcDHIh2k4K5oG",
+        "8FbtvPhkC13vo3HnAirx",
         "lsUBEcaYfOidpvjUxpz1",
         //   "hoZTAYrVO5qYmHz9CZtV",
-      ])
+      ]) // random
     )
   );
-
-  const downloadInstrumental = async (_coverId: string, _coverDoc: CoverV1) => {
-    if (isDownloading) return;
-
-    await downloadAudioFiles(
-      [
-        `https://voxaudio.nusic.fm/covers/${
-          _coverId || selectedCoverDocId
-        }/instrumental.mp3`,
-        // ...(_coverDoc ? _coverDoc.voices.slice(0, 5) : selectedVoices)
-        //   .map((v) => v.id)
-        //   .map(
-        //     (v) =>
-        //       `https://voxaudio.nusic.fm/covers/${
-        //         _coverId || selectedCoverDocId
-        //       }/${v}.mp3`
-        //   ),
-        `https://voxaudio.nusic.fm/covers/${_coverId || selectedCoverDocId}/${
-          _coverDoc.voices[createRandomNumber(0, _coverDoc.voices.length - 1)]
-            .id
-        }.mp3`,
-      ],
-      (progress: number) => {}
-    );
-  };
   const downloadVocalsAndStartGame = async () => {
     if (primaryVoiceInfo && secondaryVoiceInfo) {
       const urls = [
@@ -155,19 +146,23 @@ function App() {
   };
 
   useEffect(() => {
-    if (coversSnapshot?.docs.length && !selectedCoverDocId) {
-      const _coverDoc = coversSnapshot?.docs[0].data() as CoverV1;
-      const _coverId = coversSnapshot?.docs[0].id;
-      setCoverDoc(_coverDoc);
-      setSelectedCoverDocId(_coverId);
+    if (coversSnapshot?.docs.length) {
       (async () => {
-        await downloadInstrumental(_coverId, _coverDoc);
-        setScreenIdx(0);
+        await downloadAndPlayIntro();
+        setScreenName("start");
       })();
+      // const _coverDoc = coversSnapshot?.docs[0].data() as CoverV1;
+      // const _coverId = coversSnapshot?.docs[0].id;
+      // setCoverDoc(_coverDoc);
+      // setSelectedCoverDocId(_coverId);
+      // (async () => {
+      //   // await downloadInstrumental(_coverId, _coverDoc);
+      //   setScreenIdx(0);
+      // })();
     }
-  }, [coversSnapshot, primaryVoiceInfo, selectedCoverDocId]);
+  }, [coversSnapshot]);
 
-  if (screenIdx === -1) {
+  if (screenName === "splash") {
     return (
       <Stack id="app" gap={2} sx={{ width: "100%", height: "100vh" }}>
         <Box width={"100%"} display="flex" justifyContent={"center"}>
@@ -211,14 +206,7 @@ function App() {
             width={canvasElemWidth}
             height={"100vh"}
             sx={{
-              background: `url(${selectedBackground})`,
-              // `url(/assets/tunedash/bgs/${
-              //   screenIdx === 0
-              //     ? "home"
-              //     : screenIdx === 1
-              //     ? "home-menu"
-              //     : "home-voice"
-              // }.png)`,
+              background: `url(${getGameBgPath(screenName)})`,
               backgroundPosition: "center",
               backgroundSize: "cover",
               // borderRadius: 8,
@@ -240,7 +228,7 @@ function App() {
               alignItems={"center"}
               position={"relative"}
             >
-              {screenIdx === 4 ? (
+              {screenName === "game" ? (
                 <Box
                   position={"absolute"}
                   top={0}
@@ -255,98 +243,119 @@ function App() {
                     name="Stop"
                     onClick={() => {
                       phaserRef.current?.game?.destroy(true);
-                      setScreenIdx(screenIdx - 1);
-                      setSelectedBackground(
-                        "/assets/tunedash/bgs/home-menu.png"
-                      );
+                      setSecondaryVoiceInfo(null);
+                      setScreenName("voices-clash");
                     }}
                   />
                 </Box>
               ) : (
                 <Header
-                  showBackButton={screenIdx !== 0}
+                  showBackButton={screenName !== "start"}
+                  showCoverTitle={!!selectedCoverDocId}
                   onBackButtonClick={() => {
-                    setScreenIdx(screenIdx - 1);
-                    setSelectedBackground(gameBgPaths[screenIdx - 1]);
+                    setScreenName(
+                      screenName === "menu"
+                        ? "start"
+                        : screenName === "select-track"
+                        ? "menu"
+                        : screenName === "choose-primary-voice"
+                        ? "select-track"
+                        : screenName === "voices-clash"
+                        ? "choose-primary-voice"
+                        : "start"
+                    );
                   }}
                   coverTitle={coverDoc?.title || ""}
                 />
               )}
-              {screenIdx === 0 && (
+              {screenName === "start" && (
                 <ScreenOne
                   onStartClick={() => {
-                    setScreenIdx(1);
-                    setSelectedBackground(gameBgPaths[1]);
-                    const toneStatus = getToneStatus();
-                    if (toneStatus.isTonePlaying === false)
-                      marbleRaceOnlyInstrument(selectedCoverDocId, 120, 0);
+                    setScreenName("menu");
+                    // const toneStatus = getToneStatus();
+                    // if (toneStatus.isTonePlaying === false)
+                    //   marbleRaceOnlyInstrument(selectedCoverDocId, 120, 0);
                   }}
                 />
               )}
-              {screenIdx === 1 && (
+              {screenName === "menu" && (
                 <ScreenTwo
                   onSingleRaceClick={() => {
-                    setScreenIdx(2);
-                    setSelectedBackground(gameBgPaths[2]);
+                    setScreenName("select-track");
                   }}
                 />
               )}
-              {coverDoc && screenIdx === 2 && (
+              {coversSnapshot && screenName === "select-track" && (
+                <SelectTrack
+                  coversSnapshot={coversSnapshot}
+                  selectedCoverDocId={selectedCoverDocId}
+                  onTrackSelected={(coverDoc: CoverV1, coverId: string) => {
+                    setCoverDoc(coverDoc);
+                    setSelectedCoverDocId(coverId);
+                    setScreenName("choose-primary-voice");
+                  }}
+                />
+              )}
+              {coverDoc && screenName === "choose-primary-voice" && (
                 <ChoosePrimaryVoice
                   voices={coverDoc.voices}
                   onPrimaryVoiceSelected={(voiceInfo) => {
                     setPrimaryVoiceInfo(voiceInfo);
-                    setScreenIdx(3);
+                    // setScreenName("voices-clash");
+                    setScreenName("game-ready");
                   }}
                 />
               )}
-              {primaryVoiceInfo && coverDoc && screenIdx === 3 && (
-                <VoicesClash
-                  voices={coverDoc.voices}
-                  primaryVoiceId={primaryVoiceInfo.id}
-                  secondaryVoiceId={secondaryVoiceInfo?.id || ""}
-                  onChooseOpponent={(voiceInfo) => {
-                    setSecondaryVoiceInfo(voiceInfo);
-                  }}
-                  onSetGameBg={() => {
-                    setSelectedBackground("/assets/tunedash/bgs/home-menu.png");
-                  }}
-                  onStartRaceClick={async () => {
-                    await downloadVocalsAndStartGame();
-                    setScreenIdx(4);
-                  }}
-                />
-              )}
-              {screenIdx === 4 && primaryVoiceInfo && secondaryVoiceInfo && (
-                <PhaserGame
-                  ref={phaserRef}
-                  voices={[primaryVoiceInfo, secondaryVoiceInfo].map((v) => ({
-                    id: v.id,
-                    name: v.name,
-                    avatar: getVoiceAvatarPath(v.id),
-                  }))}
-                  coverDocId={selectedCoverDocId}
-                  musicStartOffset={
-                    coverDoc?.sections?.at(startSectionIdx - 1)?.start || 0
-                  }
-                  skinPath={getSkinPath(selectedSkinPath)}
-                  backgroundPath={selectedBackground}
-                  selectedTracks={[...selectedTracksList].slice(
-                    0,
-                    noOfRaceTracks
-                  )}
-                  noOfRaceTracks={noOfRaceTracks}
-                  gravityY={9}
-                  width={canvasElemWidth}
-                  enableMotion={enableMotion}
-                  trailPath={getTrailPath(selectedTrailPath)}
-                  trailsLifeSpace={trailsLifeSpace}
-                  trailEndSize={trailEndSize}
-                  trailsOpacity={trailsOpacity}
-                  recordDuration={recordDuration}
-                  isRecord={isRecord}
-                />
-              )}
+              {primaryVoiceInfo &&
+                coverDoc &&
+                (screenName === "voices-clash" ||
+                  screenName === "game-ready") && (
+                  <VoicesClash
+                    voices={coverDoc.voices}
+                    primaryVoiceId={primaryVoiceInfo.id}
+                    secondaryVoiceId={secondaryVoiceInfo?.id || ""}
+                    onChooseOpponent={(voiceInfo) => {
+                      setSecondaryVoiceInfo(voiceInfo);
+                    }}
+                    onStartRaceClick={async () => {
+                      setSelectedBackground("/assets/tunedash/bgs/voice.png");
+                      await downloadVocalsAndStartGame();
+                      setScreenName("game");
+                    }}
+                  />
+                )}
+              {primaryVoiceInfo &&
+                secondaryVoiceInfo &&
+                screenName === "game" && (
+                  <PhaserGame
+                    ref={phaserRef}
+                    voices={[primaryVoiceInfo, secondaryVoiceInfo].map((v) => ({
+                      id: v.id,
+                      name: v.name,
+                      avatar: getVoiceAvatarPath(v.id),
+                    }))}
+                    coverDocId={selectedCoverDocId}
+                    musicStartOffset={
+                      coverDoc?.sections?.at(startSectionIdx - 1)?.start || 0
+                    }
+                    skinPath={getSkinPath(selectedSkinPath)}
+                    backgroundPath={selectedBackground}
+                    selectedTracks={[...selectedTracksList].slice(
+                      0,
+                      noOfRaceTracks
+                    )}
+                    noOfRaceTracks={noOfRaceTracks}
+                    gravityY={9}
+                    width={canvasElemWidth}
+                    enableMotion={enableMotion}
+                    trailPath={getTrailPath(selectedTrailPath)}
+                    trailsLifeSpace={trailsLifeSpace}
+                    trailEndSize={trailEndSize}
+                    trailsOpacity={trailsOpacity}
+                    recordDuration={recordDuration}
+                    isRecord={isRecord}
+                  />
+                )}
               {/* {coverDoc && isDownloading ? (
                   <LinearProgressWithLabel
                     value={downloadProgress}

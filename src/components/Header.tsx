@@ -3,13 +3,15 @@ import { Stack } from "@mui/system";
 import { motion } from "framer-motion";
 
 type Props = {
-  showBackButton?: boolean;
+  showBackButton: boolean;
+  showCoverTitle: boolean;
   onBackButtonClick?: () => void;
   coverTitle: string;
 };
 
 const Header = ({
-  showBackButton = false,
+  showBackButton,
+  showCoverTitle,
   onBackButtonClick,
   coverTitle,
 }: Props) => {
@@ -38,27 +40,34 @@ const Header = ({
         )}
       </Box>
 
-      <Box position={"relative"} width={229} height={32}>
-        <img src="/assets/tunedash/player-topbar.png" alt="logo" />
-        <Typography
-          position="absolute"
-          top={0}
-          left={8}
-          width={"calc(100% - 16px)"}
-          height={"100%"}
-          display={"flex"}
-          // justifyContent={"center"}
-          alignItems={"center"}
-          fontSize={"12px"}
-          sx={{
-            textOverflow: "ellipsis",
-            overflow: "hidden",
-            whiteSpace: "nowrap",
-          }}
+      {showCoverTitle && (
+        <Box
+          position={"relative"}
+          width={229}
+          height={32}
+          // sx={{ overflow: "hidden" }}
         >
-          {coverTitle}
-        </Typography>
-      </Box>
+          <img src="/assets/tunedash/player-topbar.png" alt="logo" />
+          <Typography
+            position="absolute"
+            top={0}
+            left={8}
+            width={"calc(100% - 16px)"}
+            height={"100%"}
+            display={"flex"}
+            // justifyContent={"center"}
+            alignItems={"center"}
+            fontSize={"12px"}
+            sx={{
+              textOverflow: "ellipsis",
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {coverTitle}
+          </Typography>
+        </Box>
+      )}
 
       <motion.button
         whileHover={{ scale: 1.1 }}

@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Badge, Box, Typography } from "@mui/material";
 import { getVoiceAvatarPath } from "../helpers";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
 
@@ -21,8 +21,7 @@ const ChooseVoice = ({
         background: "url(/assets/tunedash/menu-voice-rect.png)",
         backgroundSize: "cover",
       }}
-      py={4}
-      px={4}
+      p={4}
     >
       <Box
         display={"flex"}
@@ -30,7 +29,8 @@ const ChooseVoice = ({
         justifyContent={"center"}
         flexWrap={"wrap"}
         width={"100%"}
-        height={"100%"}
+        height={"85%"}
+        py={2}
         sx={{
           overflowX: "hidden",
           overflowY: "auto",
@@ -65,16 +65,44 @@ const ChooseVoice = ({
                 }}
               />
             )}
-            <img
-              src={getVoiceAvatarPath(voice.id)}
-              width={60}
-              height={60}
-              style={{
-                borderRadius: "50%",
-                cursor: "pointer",
-                zIndex: 1,
-              }}
-            />
+            <Badge
+              badgeContent={
+                <Box
+                  sx={{
+                    borderRadius: "50%",
+                    width: 25,
+                    height: 25,
+                    backgroundColor: "#000",
+                    // position: "absolute",
+                    // top: 20,
+                    // left: -20,
+                  }}
+                  display={"flex"}
+                  alignItems={"center"}
+                  justifyContent={"center"}
+                >
+                  <Typography variant="caption" color={"#fff"}>
+                    $
+                    {idx > voices.length / 2
+                      ? 15
+                      : idx > voices.length / 3
+                      ? 10
+                      : 5}
+                  </Typography>
+                </Box>
+              }
+            >
+              <img
+                src={getVoiceAvatarPath(voice.id)}
+                width={60}
+                height={60}
+                style={{
+                  borderRadius: "50%",
+                  cursor: "pointer",
+                  zIndex: 1,
+                }}
+              />
+            </Badge>
           </Box>
         ))}
       </Box>

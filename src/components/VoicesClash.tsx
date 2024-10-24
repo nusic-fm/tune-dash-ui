@@ -1,16 +1,16 @@
-import { Stack, Box } from "@mui/material";
-import { getVoiceAvatarPath } from "../helpers";
-import { useState } from "react";
+import { Stack, Box, Badge, Typography } from "@mui/material";
+import { createRandomNumber, getVoiceAvatarPath } from "../helpers";
+import { useEffect, useState } from "react";
 import ChooseVoice from "./ChooseVoice";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
+import BouncingBallsLoading from "./BouncingBallsLoading";
 
 type Props = {
   primaryVoiceId: string;
   secondaryVoiceId: string | null;
   onChooseOpponent: (voiceInfo: VoiceV1Cover) => void;
   onStartRaceClick: () => void;
-  onSetGameBg: () => void;
   voices: VoiceV1Cover[];
 };
 
@@ -21,10 +21,16 @@ const VoicesClash = ({
   secondaryVoiceId,
   onChooseOpponent,
   onStartRaceClick,
-  onSetGameBg,
 }: Props) => {
   const [showOpponentVoiceSelection, setShowOpponentVoiceSelection] =
     useState(false);
+  const [readyToStartRace, setReadyToStartRace] = useState(false);
+
+  useEffect(() => {
+    if (secondaryVoiceId && readyToStartRace) {
+      onStartRaceClick();
+    }
+  }, [secondaryVoiceId, readyToStartRace]);
 
   return (
     <Stack
@@ -104,29 +110,71 @@ const VoicesClash = ({
           setSelectedVoiceId={onChooseOpponent}
         />
       )}
-      {((!secondaryVoiceId && !showOpponentVoiceSelection) ||
-        secondaryVoiceId) && (
-        <LongImageMotionButton
-          onClick={() => {
-            if (secondaryVoiceId && !showOpponentVoiceSelection) {
-              onStartRaceClick();
-            } else if (secondaryVoiceId && showOpponentVoiceSelection) {
-              onSetGameBg();
-              setShowOpponentVoiceSelection(false);
-            } else {
-              setShowOpponentVoiceSelection(true);
-            }
-          }}
-          name={
-            secondaryVoiceId && !showOpponentVoiceSelection
-              ? "Start Race"
-              : secondaryVoiceId && showOpponentVoiceSelection
-              ? "Proceed"
-              : "Choose Opponent"
+      {!showOpponentVoiceSelection &&
+        (secondaryVoiceId && readyToStartRace ? (
+          <BouncingBallsLoading />
+        ) : (
+          <LongImageMotionButton
+            onClick={() => {
+              onChooseOpponent(
+                voices[
+                  createRandomNumber(
+                    0,
+                    voices.length - 1,
+                    voices.map((v) => v.id).indexOf(primaryVoiceId)
+                  )
+                ]
+              );
+              setReadyToStartRace(true);
+            }}
+            name={"Start Race"}
+            width={290}
+            height={93}
+          />
+        ))}
+      {!readyToStartRace && (
+        <Badge
+          badgeContent={
+            !showOpponentVoiceSelection ? (
+              <Box
+                sx={{
+                  borderRadius: "50%",
+                  width: 25,
+                  height: 25,
+                  backgroundColor: "#000",
+                  position: "absolute",
+                  top: 20,
+                  left: -20,
+                }}
+                display={"flex"}
+                alignItems={"center"}
+                justifyContent={"center"}
+              >
+                <Typography variant="h6" color={"#fff"}>
+                  $
+                </Typography>
+              </Box>
+            ) : null
           }
-          width={secondaryVoiceId ? 230 : 290}
-          height={secondaryVoiceId ? 75 : 93}
-        />
+        >
+          <LongImageMotionButton
+            onClick={() => {
+              if (secondaryVoiceId && showOpponentVoiceSelection) {
+                setShowOpponentVoiceSelection(false);
+                setReadyToStartRace(true);
+              } else {
+                setShowOpponentVoiceSelection(true);
+              }
+            }}
+            name={
+              secondaryVoiceId && showOpponentVoiceSelection
+                ? "Start Race"
+                : "Choose Opponent"
+            }
+            width={290}
+            height={93}
+          />
+        </Badge>
       )}
     </Stack>
   );

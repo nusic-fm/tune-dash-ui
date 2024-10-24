@@ -31,8 +31,8 @@ const ScreenTwo = ({ onSingleRaceClick }: Props) => {
         justifyContent={"center"}
       >
         <LongImageMotionButton onClick={onSingleRaceClick} name="Single Race" />
-        <LongImageMotionButton onClick={() => {}} name="Story Mode" />
-        <LongImageMotionButton onClick={() => {}} name="Multiplayer" />
+        <LongImageMotionButton onClick={() => {}} name="Story Mode" disabled />
+        <LongImageMotionButton onClick={() => {}} name="Multiplayer" disabled />
       </Stack>
     </Stack>
   );

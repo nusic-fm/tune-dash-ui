@@ -33,8 +33,9 @@ interface CoversDB extends DBSchema {
 
 // Global variables
 let instrPlayerRef: Tone.Player | null = null;
+let introPlayerRef: Tone.Player | null = null;
 let isToneInitialized: boolean = false;
-let isMuted: boolean = false;
+let isMuted: boolean = true;
 let isTonePlaying: boolean = false;
 let toneLoadingForSection: string | null = null;
 let isEnded: boolean = false;
@@ -146,6 +147,11 @@ const marbleRaceOnlyInstrument = async (
   bpm: number,
   startOffset: number
 ) => {
+  if (introPlayerRef) {
+    introPlayerRef?.stop();
+    introPlayerRef?.dispose();
+    introPlayerRef = null;
+  }
   if (bpm) Tone.Transport.bpm.value = bpm;
   else Tone.Transport.bpm.dispose();
   await initializeTone();
@@ -219,6 +225,44 @@ const getToneStatus = () => {
   };
 };
 
+const toggleMuteAudio = () => {
+  isMuted = !isMuted;
+  if (introPlayerRef) {
+    if (!isTonePlaying) {
+      introPlayerRef.start(0, 46.16);
+      isTonePlaying = true;
+    }
+    introPlayerRef.mute = isMuted;
+  }
+  if (!isTonePlaying) return;
+  playersRef[currentlyPlayingUrl] &&
+    (playersRef[currentlyPlayingUrl].mute = isMuted);
+  instrPlayerRef && (instrPlayerRef.mute = isMuted);
+};
+
+const downloadAndPlayIntro = async () => {
+  await initializeTone();
+  const url = "https://voxaudio.nusic.fm/intro.mp3?alt=media";
+  const dataArray = await getFromDB(url);
+  let bf: ToneAudioBuffer;
+  if (dataArray) {
+    console.log("From Indexed DB");
+    bf = Tone.Buffer.fromArray(dataArray);
+  } else {
+    console.log("Downloading", url);
+    const buffer = await new Promise<ToneAudioBuffer>((res) => {
+      const audioBuffer = new Tone.Buffer(url);
+      audioBuffer.onload = (bf) => {
+        addToDB(url, bf.toArray() as Float32Array);
+        res(bf);
+      };
+    });
+    bf = buffer;
+  }
+  const introPlayer = new Tone.Player(bf).toDestination();
+  introPlayerRef = introPlayer;
+};
+
 export {
   initializeTone,
   downloadAudioFiles,
@@ -231,4 +275,6 @@ export {
   stopAndDestroyPlayers,
   getToneCurrentTime,
   prepareVocalPlayers,
+  toggleMuteAudio,
+  downloadAndPlayIntro,
 };

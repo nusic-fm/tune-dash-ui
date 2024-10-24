@@ -28,6 +28,9 @@ const themeSettings = createTheme({
     info: {
       main: "#8973F8",
     },
+    warning: {
+      main: "#FFA500",
+    },
     customPaper: {
       main: "#141414",
       border: "#272727",
