@@ -45,7 +45,7 @@ let currentlyPlayingUrl: string = "";
 let db: Promise<IDBPDatabase<CoversDB>> | null = null;
 
 const initializeDB = async () => {
-  db = openDB<CoversDB>("tune-dash", 1, {
+  db = openDB<CoversDB>("nusic-covers", 1, {
     upgrade(db) {
       const store = db.createObjectStore("covers", {
         keyPath: "id",
@@ -108,7 +108,7 @@ const initializeTone = async () => {
     await Tone.start();
     console.log("context started");
     setEvents();
-    await initializeDB();
+    if (!db) await initializeDB();
   }
 };
 
@@ -225,10 +225,11 @@ const getToneStatus = () => {
   };
 };
 
-const toggleMuteAudio = () => {
+const toggleMuteAudio = async () => {
   isMuted = !isMuted;
   if (introPlayerRef) {
     if (!isTonePlaying) {
+      await initializeTone();
       introPlayerRef.start(0, 164.3);
       isTonePlaying = true;
     }
@@ -241,7 +242,7 @@ const toggleMuteAudio = () => {
 };
 
 const downloadAndPlayIntro = async () => {
-  await initializeTone();
+  await initializeDB();
   const url = "https://voxaudio.nusic.fm/intro.mp3?alt=media";
   const dataArray = await getFromDB(url);
   let bf: ToneAudioBuffer;
