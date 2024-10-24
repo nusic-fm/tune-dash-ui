@@ -45,7 +45,7 @@ let currentlyPlayingUrl: string = "";
 let db: Promise<IDBPDatabase<CoversDB>> | null = null;
 
 const initializeDB = async () => {
-  db = openDB<CoversDB>("nusic-covers", 1, {
+  db = openDB<CoversDB>("tune-dash", 1, {
     upgrade(db) {
       const store = db.createObjectStore("covers", {
         keyPath: "id",
