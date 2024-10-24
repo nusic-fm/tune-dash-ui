@@ -7,6 +7,7 @@ import {
   downloadAndPlayIntro,
   downloadAudioFiles,
   prepareVocalPlayers,
+  toggleMuteAudio,
 } from "./hooks/useTonejs";
 import { CoverV1, VoiceV1Cover } from "./services/db/coversV1.service";
 import { getSkinPath, getTrailPath, getVoiceAvatarPath } from "./helpers";
@@ -19,6 +20,7 @@ import { db } from "./services/firebase.service";
 import VoicesClash from "./components/VoicesClash";
 import SmallImageMotionButton from "./components/Buttons/SmallImageMotionButton";
 import SelectTrack from "./components/SelectTrack";
+import SlideUp from "./components/SlideUp";
 
 export const tracks = [
   "01",
@@ -42,7 +44,6 @@ export const tracks = [
 const getGameBgPath = (screenName: string) => {
   switch (screenName) {
     case "splash":
-      return "/assets/tunedash/bgs/splash.png";
     case "start":
       return "/assets/tunedash/bgs/start.png";
     case "menu":
@@ -112,6 +113,7 @@ function App() {
   });
   const [isRecord, setIsRecord] = useState(false);
   const [screenName, setScreenName] = useState("splash");
+  const [isDownloaded, setIsDownloaded] = useState(false);
   const [coversSnapshot, cssLoading, cssError] = useCollection(
     query(
       collection(db, "covers"),
@@ -149,7 +151,8 @@ function App() {
     if (coversSnapshot?.docs.length) {
       (async () => {
         await downloadAndPlayIntro();
-        setScreenName("start");
+        setIsDownloaded(true);
+        // setScreenName("start");
       })();
       // const _coverDoc = coversSnapshot?.docs[0].data() as CoverV1;
       // const _coverId = coversSnapshot?.docs[0].id;
@@ -162,39 +165,48 @@ function App() {
     }
   }, [coversSnapshot]);
 
-  if (screenName === "splash") {
-    return (
-      <Stack id="app" gap={2} sx={{ width: "100%", height: "100vh" }}>
-        <Box width={"100%"} display="flex" justifyContent={"center"}>
-          <Box
-            display={"flex"}
-            justifyContent="center"
-            alignItems={"center"}
-            width={canvasElemWidth}
-          >
-            <Box
-              width={canvasElemWidth}
-              height={"100vh"}
-              sx={{
-                background: `url(/assets/tunedash/bgs/splash.png)`,
-                backgroundPosition: "center",
-                backgroundSize: "cover",
-                // borderRadius: 8,
-              }}
-              display="flex"
-              alignItems={"start"}
-              justifyContent={"center"}
-            >
-              <Typography>Loading...</Typography>
-            </Box>
-          </Box>
-        </Box>
-      </Stack>
-    );
-  }
+  // if (screenName === "splash") {
+  //   return (
+  //     <Stack id="app" gap={2} sx={{ width: "100%", height: "100vh" }}>
+  //       <Box width={"100%"} display="flex" justifyContent={"center"}>
+  //         <Box
+  //           display={"flex"}
+  //           justifyContent="center"
+  //           alignItems={"center"}
+  //           width={canvasElemWidth}
+  //         >
+  //           <Box
+  //             width={canvasElemWidth}
+  //             height={"100vh"}
+  //             sx={{
+  //               background: `url(/assets/tunedash/bgs/splash.png)`,
+  //               backgroundPosition: "center",
+  //               backgroundSize: "cover",
+  //               // borderRadius: 8,
+  //             }}
+  //             display="flex"
+  //             alignItems={"start"}
+  //             justifyContent={"center"}
+  //           >
+  //             <Typography>Loading...</Typography>
+  //           </Box>
+  //         </Box>
+  //       </Box>
+  //     </Stack>
+  //   );
+  // }
 
   return (
     <Stack id="app" gap={2} sx={{ width: "100%", height: "100vh" }}>
+      {screenName === "splash" && (
+        <SlideUp
+          onSlideUp={() => {
+            toggleMuteAudio();
+            setScreenName("start");
+          }}
+          enableSlideUp={isDownloaded}
+        />
+      )}
       <Box width={"100%"} display="flex" justifyContent={"center"}>
         <Box
           display={"flex"}

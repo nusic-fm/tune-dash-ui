@@ -24,12 +24,12 @@ const ChoosePrimaryVoice = ({ onPrimaryVoiceSelected, voices }: Props) => {
     >
       <Box
         width={172}
-        height={230}
-        sx={{
-          background: `url(/assets/tunedash/voice-card.png)`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
+        height={180}
+        // sx={{
+        //   background: `url(/assets/tunedash/voice-card.png)`,
+        //   backgroundSize: "cover",
+        //   backgroundPosition: "center",
+        // }}
         position={"relative"}
         display={"flex"}
         justifyContent={"center"}
@@ -38,7 +38,7 @@ const ChoosePrimaryVoice = ({ onPrimaryVoiceSelected, voices }: Props) => {
           src={getVoiceAvatarPath(selectedVoiceInfo.id)}
           width={"60%"}
           style={{
-            borderRadius: "50%",
+            borderRadius: "12px",
             cursor: "pointer",
             top: "45%",
             transform: "translateY(-50%)",
