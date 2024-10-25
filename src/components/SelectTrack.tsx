@@ -13,7 +13,6 @@ import {
 } from "../hooks/useTonejs";
 import { createRandomNumber } from "../helpers";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
-import CampaignRoundedIcon from "@mui/icons-material/CampaignRounded";
 
 type Props = {
   coversSnapshot: QuerySnapshot<DocumentData>;
@@ -123,7 +122,16 @@ const SelectTrack = ({
                   {coverDoc.title}
                 </Typography>
                 {selectedSnapshot?.id === doc.id ? (
-                  !downloading && <CampaignRoundedIcon fontSize="large" />
+                  !downloading && (
+                    <video
+                      src="/assets/tunedash/playing.webm"
+                      autoPlay
+                      loop
+                      width={62}
+                      height={24}
+                      style={{ borderRadius: "16px", objectFit: "cover" }}
+                    />
+                  )
                 ) : (
                   <Chip
                     label="Select"
