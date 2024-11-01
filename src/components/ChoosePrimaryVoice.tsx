@@ -3,16 +3,25 @@ import { VoiceV1Cover } from "../services/db/coversV1.service";
 import { getVoiceAvatarPath } from "../helpers";
 import { useState } from "react";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
+import { switchVocals } from "../hooks/useTonejs";
 
 type Props = {
   onPrimaryVoiceSelected: (voiceInfo: VoiceV1Cover) => void;
   voices: VoiceV1Cover[];
+  primaryVoiceInfo: VoiceV1Cover | null;
+  selectedCoverId: string;
 };
 
-const ChoosePrimaryVoice = ({ onPrimaryVoiceSelected, voices }: Props) => {
+const ChoosePrimaryVoice = ({
+  onPrimaryVoiceSelected,
+  voices,
+  primaryVoiceInfo,
+  selectedCoverId,
+}: Props) => {
   const [selectedVoiceInfo, setSelectedVoiceInfo] = useState<VoiceV1Cover>(
-    voices[0]
+    primaryVoiceInfo || voices[0]
   );
+
   return (
     <Stack
       gap={4}
@@ -101,7 +110,10 @@ const ChoosePrimaryVoice = ({ onPrimaryVoiceSelected, voices }: Props) => {
           {voices.map((voice, idx) => (
             <Box
               key={idx}
-              onClick={() => setSelectedVoiceInfo(voice)}
+              onClick={() => {
+                setSelectedVoiceInfo(voice);
+                switchVocals(selectedCoverId, voice.id);
+              }}
               position={"relative"}
               width={65}
               height={65}

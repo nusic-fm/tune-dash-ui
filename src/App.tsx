@@ -272,7 +272,8 @@ function App() {
                         ? "menu"
                         : screenName === "choose-primary-voice"
                         ? "select-track"
-                        : screenName === "voices-clash"
+                        : screenName === "voices-clash" ||
+                          screenName === "game-ready"
                         ? "choose-primary-voice"
                         : "start"
                     );
@@ -301,16 +302,23 @@ function App() {
                 <SelectTrack
                   coversSnapshot={coversSnapshot}
                   selectedCoverDocId={selectedCoverDocId}
-                  onTrackSelected={(coverDoc: CoverV1, coverId: string) => {
+                  onTrackSelected={(
+                    coverDoc: CoverV1,
+                    coverId: string,
+                    voiceInfo: VoiceV1Cover | null
+                  ) => {
                     setCoverDoc(coverDoc);
                     setSelectedCoverDocId(coverId);
+                    setPrimaryVoiceInfo(voiceInfo);
                     setScreenName("choose-primary-voice");
                   }}
                 />
               )}
               {coverDoc && screenName === "choose-primary-voice" && (
                 <ChoosePrimaryVoice
+                  selectedCoverId={selectedCoverDocId}
                   voices={coverDoc.voices}
+                  primaryVoiceInfo={primaryVoiceInfo}
                   onPrimaryVoiceSelected={(voiceInfo) => {
                     setPrimaryVoiceInfo(voiceInfo);
                     // setScreenName("voices-clash");

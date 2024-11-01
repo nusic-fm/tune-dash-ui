@@ -161,6 +161,10 @@ const marbleRaceOnlyInstrument = async (
     instrPlayerRef.dispose();
     instrPlayerRef = null;
   }
+  if (currentlyPlayingUrl) {
+    playersRef[currentlyPlayingUrl].stop();
+    currentlyPlayingUrl = "";
+  }
   const instrDataArray: Tone.ToneAudioBuffer =
     downloadObj[`https://voxaudio.nusic.fm/covers/${id}/instrumental.mp3`];
   const instrPlayer = new Tone.Player(instrDataArray).sync().toDestination();
@@ -180,8 +184,38 @@ const marbleRaceOnlyInstrument = async (
 const prepareVocalPlayers = async (urls: string[]) => {
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
+    if (url in playersRef) continue;
     playersRef[url] = new Tone.Player(downloadObj[url]).toDestination();
   }
+};
+
+const switchVocals = async (id: string, vId: string) => {
+  const url = `https://voxaudio.nusic.fm/covers/${id}/${vId}.mp3`;
+  if (currentlyPlayingUrl === url) return;
+  const dataArray = await getFromDB(url);
+  let bf: ToneAudioBuffer;
+  if (dataArray) {
+    console.log("From Indexed DB");
+    bf = Tone.Buffer.fromArray(dataArray);
+  } else {
+    console.log("Downloading", url);
+    const buffer = await new Promise<ToneAudioBuffer>((res) => {
+      const audioBuffer = new Tone.Buffer(url);
+      audioBuffer.onload = (bf) => {
+        addToDB(url, bf.toArray() as Float32Array);
+        res(bf);
+      };
+    });
+    bf = buffer;
+  }
+  playersRef[url] = new Tone.Player(bf).toDestination();
+
+  if (currentlyPlayingUrl) {
+    playersRef[currentlyPlayingUrl].stop();
+    currentlyPlayingUrl = "";
+  }
+  playersRef[url].start(undefined, Tone.Transport.seconds);
+  currentlyPlayingUrl = url;
 };
 
 const marbleRacePlayVocals = async (id: string, vId: string) => {
@@ -278,4 +312,5 @@ export {
   prepareVocalPlayers,
   toggleMuteAudio,
   downloadAndPlayIntro,
+  switchVocals,
 };

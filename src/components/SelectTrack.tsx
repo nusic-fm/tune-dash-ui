@@ -4,7 +4,7 @@ import {
   DocumentData,
   QueryDocumentSnapshot,
 } from "firebase/firestore";
-import { CoverV1 } from "../services/db/coversV1.service";
+import { CoverV1, VoiceV1Cover } from "../services/db/coversV1.service";
 import { useEffect, useState } from "react";
 import {
   downloadAudioFiles,
@@ -16,7 +16,11 @@ import LongImageMotionButton from "./Buttons/LongImageMotionButton";
 
 type Props = {
   coversSnapshot: QuerySnapshot<DocumentData>;
-  onTrackSelected: (coverDoc: CoverV1, coverId: string) => void;
+  onTrackSelected: (
+    coverDoc: CoverV1,
+    coverId: string,
+    voiceId: VoiceV1Cover | null
+  ) => void;
   selectedCoverDocId: string;
 };
 
@@ -28,10 +32,15 @@ const SelectTrack = ({
   const [selectedSnapshot, setSelectedSnapshot] =
     useState<QueryDocumentSnapshot<DocumentData, DocumentData>>();
   const [downloading, setDownloading] = useState(false);
+  const [currentlyPlayingVoiceInfo, setCurrentlyPlayingVoiceInfo] =
+    useState<VoiceV1Cover>();
 
   const downloadInstrumental = async (_coverId: string, _coverDoc: CoverV1) => {
     setDownloading(true);
     stopAndDestroyPlayers();
+    const randomVoice =
+      _coverDoc.voices[createRandomNumber(0, _coverDoc.voices.length - 1)];
+    setCurrentlyPlayingVoiceInfo(randomVoice);
     await downloadAudioFiles(
       [
         `https://voxaudio.nusic.fm/covers/${_coverId}/instrumental.mp3`,
@@ -43,10 +52,7 @@ const SelectTrack = ({
         //         _coverId || selectedCoverDocId
         //       }/${v}.mp3`
         //   ),
-        `https://voxaudio.nusic.fm/covers/${_coverId}/${
-          _coverDoc.voices[createRandomNumber(0, _coverDoc.voices.length - 1)]
-            .id
-        }.mp3`,
+        `https://voxaudio.nusic.fm/covers/${_coverId}/${randomVoice.id}.mp3`,
       ],
       (progress: number) => {
         console.log(progress);
@@ -157,7 +163,8 @@ const SelectTrack = ({
           selectedSnapshot &&
           onTrackSelected(
             selectedSnapshot.data() as CoverV1,
-            selectedSnapshot.id
+            selectedSnapshot.id,
+            currentlyPlayingVoiceInfo || null
           )
         }
         name="Proceed"
