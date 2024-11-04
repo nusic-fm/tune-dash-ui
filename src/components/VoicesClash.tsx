@@ -1,10 +1,15 @@
 import { Stack, Box, Badge, Typography } from "@mui/material";
-import { createRandomNumber, getVoiceAvatarPath } from "../helpers";
+import {
+  createAeonSignature,
+  createRandomNumber,
+  getVoiceAvatarPath,
+} from "../helpers";
 import { useEffect, useState } from "react";
 import ChooseVoice from "./ChooseVoice";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
 import BouncingBallsLoading from "./BouncingBallsLoading";
+import axios from "axios";
 
 type Props = {
   primaryVoiceId: string;
@@ -158,8 +163,36 @@ const VoicesClash = ({
           }
         >
           <LongImageMotionButton
-            onClick={() => {
-              if (secondaryVoiceId && showOpponentVoiceSelection) {
+            onClick={async () => {
+              if (
+                secondaryVoiceId &&
+                showOpponentVoiceSelection &&
+                !readyToStartRace
+              ) {
+                const sign = createAeonSignature({
+                  merchantOrderNo: 1,
+                  userId: "123",
+                  orderAmount: 1,
+                  payCurrency: "USD",
+                });
+                try {
+                  const res = await axios.post(
+                    `https://sbx-crypto-payment-api.aeon.xyz/open/api/payment/V2`,
+                    {
+                      appId: import.meta.env.VITE_AEON_APP_ID,
+                      sign,
+                      merchantOrderNo: 1,
+                      userId: "123",
+                      orderAmount: 1,
+                      payCurrency: "USD",
+                    }
+                  );
+                  console.log(res);
+                } catch (e) {
+                } finally {
+                  setReadyToStartRace(true);
+                }
+              } else if (secondaryVoiceId && showOpponentVoiceSelection) {
                 setShowOpponentVoiceSelection(false);
                 setReadyToStartRace(true);
               } else {
@@ -168,7 +201,9 @@ const VoicesClash = ({
             }}
             name={
               secondaryVoiceId && showOpponentVoiceSelection
-                ? "Start Race"
+                ? readyToStartRace
+                  ? "Start Race"
+                  : "Purchase Voice"
                 : "Choose Opponent"
             }
             width={290}

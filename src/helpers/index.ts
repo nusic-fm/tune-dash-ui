@@ -1,5 +1,6 @@
 import { Timestamp } from "firebase/firestore";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
+import { sha256 } from "js-sha256";
 
 export const getClosesNoInArr = (arr: number[], goal: number) =>
   arr.reduce((prev, curr) =>
@@ -717,3 +718,35 @@ export const getVoiceAvatarPath = (voiceId: string) =>
   `https://voxaudio.nusic.fm/${encodeURIComponent(
     "voice_models/avatars/thumbs/"
   )}${voiceId}_200x200?alt=media`;
+
+export const createAeonSignature = (_params: {
+  merchantOrderNo: number;
+  userId: string;
+  orderAmount: number;
+  payCurrency: "USD" | "INR";
+}) => {
+  const params = {
+    ..._params,
+    paymentTokens: "USDT,ETH",
+    appId: import.meta.env.VITE_AEON_APP_ID,
+    paymentExchange:
+      "16f021b0-f220-4bbb-aa3b-82d423301957,9226e5c2-ebc3-4fdd-94f6-ed52cdce1420",
+  };
+  // Step 2: Sort the parameters by key in ASCII order
+  const sortedKeys = Object.keys(params).sort();
+
+  // Step 3: Create the concatenated string in the format "key=value" joined by '&'
+  const paramString = sortedKeys
+    .map((key) => `${key}=${params[key as keyof typeof params]}`)
+    .join("&");
+
+  // Step 4: Append the secret key to the end of the paramString
+  const stringToSign = `${paramString}&key=${
+    import.meta.env.VITE_AEON_CLIENT_SECRET
+  }`;
+
+  // Step 5: Create the SHA-512 hash and convert it to uppercase
+  const hash = sha256(stringToSign);
+  console.log({ hash });
+  return hash;
+};
