@@ -187,6 +187,7 @@ const prepareVocalPlayers = async (urls: string[]) => {
     if (url in playersRef) continue;
     playersRef[url] = new Tone.Player(downloadObj[url]).toDestination();
   }
+  await Tone.loaded();
 };
 
 const switchVocals = async (id: string, vId: string) => {

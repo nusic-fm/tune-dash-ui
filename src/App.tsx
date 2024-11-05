@@ -342,6 +342,7 @@ function App() {
                       await downloadVocalsAndStartGame();
                       setScreenName("game");
                     }}
+                    downloadProgress={downloadProgress}
                   />
                 )}
               {primaryVoiceInfo &&
