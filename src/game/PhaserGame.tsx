@@ -30,6 +30,7 @@ export interface IGameDataParams {
   dprAdjustedWidth?: number;
   dprAdjustedHeight?: number;
   showObstacles?: boolean;
+  dpr?: number;
 }
 
 interface IProps extends IGameDataParams {
@@ -71,7 +72,12 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
 
     const [, setMediaRecorder] = useState<null | MediaRecorder>(null);
     const [, setIsRecording] = useState(false);
-    const [dpr] = useState(window.devicePixelRatio);
+    const [dpr] = useState(
+      typeof window !== "undefined" &&
+        typeof window.devicePixelRatio !== "undefined"
+        ? window.devicePixelRatio
+        : 2
+    );
 
     const startRecording = (canvas: HTMLCanvasElement) => {
       // const canvas = canvasRef.current;
@@ -139,6 +145,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
         trailEndSize,
         recordDuration,
         isRecord,
+        dpr,
       });
 
       if (typeof ref === "function") {
