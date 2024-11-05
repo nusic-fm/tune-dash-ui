@@ -59,9 +59,9 @@ const SlideUp = ({
         backgroundPosition: "center",
         zIndex: 1000,
       }}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      //   onTouchStart={handleTouchStart}
+      //   onTouchMove={handleTouchMove}
+      //   onTouchEnd={handleTouchEnd}
       display={"flex"}
       justifyContent={"center"}
       alignItems={"flex-end"}
@@ -97,7 +97,7 @@ const SlideUp = ({
           }}
         >
           <KeyboardDoubleArrowUpRoundedIcon />
-          <Typography fontSize={20}>Slide Up</Typography>
+          <Typography fontSize={20}>Tap to Play</Typography>
           <KeyboardDoubleArrowUpRoundedIcon />
         </motion.button>
       ) : (
