@@ -78,16 +78,16 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
 
     const [, setMediaRecorder] = useState<null | MediaRecorder>(null);
     const [, setIsRecording] = useState(false);
-    const [dpr, setDpr] = useState(2);
+    const [dpr] = useState(2);
 
-    useEffect(() => {
-      if (
-        typeof window !== "undefined" &&
-        typeof window.devicePixelRatio !== "undefined"
-      ) {
-        setDpr(window.devicePixelRatio);
-      }
-    }, [dpr]);
+    // useEffect(() => {
+    //   if (
+    //     typeof window !== "undefined" &&
+    //     typeof window.devicePixelRatio !== "undefined"
+    //   ) {
+    //     setDpr(window.devicePixelRatio);
+    //   }
+    // }, [dpr]);
 
     const startRecording = (canvas: HTMLCanvasElement) => {
       // const canvas = canvasRef.current;
