@@ -1,4 +1,10 @@
-import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import StartGame from "./main";
 import { GameVoiceInfo } from "./scenes/Preloader";
 import * as Tone from "tone";
@@ -30,6 +36,7 @@ export interface IGameDataParams {
   dprAdjustedWidth?: number;
   dprAdjustedHeight?: number;
   showObstacles?: boolean;
+  dpr?: number;
 }
 
 interface IProps extends IGameDataParams {
@@ -71,7 +78,16 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
 
     const [, setMediaRecorder] = useState<null | MediaRecorder>(null);
     const [, setIsRecording] = useState(false);
-    const [dpr] = useState(window.devicePixelRatio);
+    const [dpr] = useState(2);
+
+    // useEffect(() => {
+    //   if (
+    //     typeof window !== "undefined" &&
+    //     typeof window.devicePixelRatio !== "undefined"
+    //   ) {
+    //     setDpr(window.devicePixelRatio);
+    //   }
+    // }, [dpr]);
 
     const startRecording = (canvas: HTMLCanvasElement) => {
       // const canvas = canvasRef.current;
@@ -139,6 +155,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
         trailEndSize,
         recordDuration,
         isRecord,
+        dpr,
       });
 
       if (typeof ref === "function") {

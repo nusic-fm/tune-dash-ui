@@ -85,7 +85,7 @@ export default class Game extends Phaser.Scene {
   level2Hammer: Phaser.GameObjects.Sprite | undefined;
   canvasWidth: number = 0;
   canvasHeight: number = 0;
-  dpr: number = window.devicePixelRatio || 2;
+  dpr: number = 2;
   trailConfig = {
     speed: { min: -50, max: 50 },
     scale: {
@@ -137,6 +137,17 @@ export default class Game extends Phaser.Scene {
     );
     this.enableMotion = data.enableMotion;
     this.canvasWidth = data.width;
+    this.dpr = data.dpr || 2;
+    this.trailConfig = {
+      speed: { min: -50, max: 50 },
+      scale: {
+        start: this.dpr,
+        end: this.dpr * 0.5,
+      },
+      blendMode: "ADD",
+      lifespan: 400,
+      alpha: 0.5,
+    };
     this.marbleRadius = (22 / 414) * this.canvasWidth * this.dpr;
     if (data.height) this.canvasHeight = data.height;
     this.centerX = this.cameras.main.width / 2;
@@ -144,7 +155,6 @@ export default class Game extends Phaser.Scene {
     this.trailConfig.scale.end = data.trailEndSize;
     this.trailConfig.lifespan = data.trailsLifeSpace;
     this.trailConfig.alpha = data.trailsOpacity;
-    this.dpr = window.devicePixelRatio || 2;
     this.showObstacles = data.showObstacles || false;
     this.initialGravity = data.gravityY || 0;
   }
