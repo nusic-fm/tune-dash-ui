@@ -17,6 +17,7 @@ type Props = {
   onChooseOpponent: (voiceInfo: VoiceV1Cover) => void;
   onStartRaceClick: () => void;
   voices: VoiceV1Cover[];
+  downloadProgress: number;
 };
 
 const voiceWidth = 140;
@@ -26,6 +27,7 @@ const VoicesClash = ({
   secondaryVoiceId,
   onChooseOpponent,
   onStartRaceClick,
+  downloadProgress,
 }: Props) => {
   const [showOpponentVoiceSelection, setShowOpponentVoiceSelection] =
     useState(false);
@@ -117,7 +119,12 @@ const VoicesClash = ({
       )}
       {!showOpponentVoiceSelection &&
         (secondaryVoiceId && readyToStartRace ? (
-          <BouncingBallsLoading />
+          <Stack>
+            <Typography variant="h6" color={"#fff"}>
+              {downloadProgress}%
+            </Typography>
+            <BouncingBallsLoading />
+          </Stack>
         ) : (
           <LongImageMotionButton
             onClick={() => {

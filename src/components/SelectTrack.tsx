@@ -13,6 +13,7 @@ import {
 } from "../hooks/useTonejs";
 import { createRandomNumber } from "../helpers";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
+import HeadsetRoundedIcon from "@mui/icons-material/HeadsetRounded";
 
 type Props = {
   coversSnapshot: QuerySnapshot<DocumentData>;
@@ -129,14 +130,15 @@ const SelectTrack = ({
                 </Typography>
                 {selectedSnapshot?.id === doc.id ? (
                   !downloading && (
-                    <video
-                      src="/assets/tunedash/playing.webm"
-                      autoPlay
-                      loop
-                      width={62}
-                      height={24}
-                      style={{ borderRadius: "16px", objectFit: "cover" }}
-                    />
+                    <HeadsetRoundedIcon />
+                    // <video
+                    //   src="/assets/tunedash/playing.webm"
+                    //   autoPlay
+                    //   loop
+                    //   width={62}
+                    //   height={24}
+                    //   style={{ borderRadius: "16px", objectFit: "cover" }}
+                    // />
                   )
                 ) : (
                   <Chip
