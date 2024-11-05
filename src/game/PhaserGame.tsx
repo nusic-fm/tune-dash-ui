@@ -1,4 +1,10 @@
-import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import StartGame from "./main";
 import { GameVoiceInfo } from "./scenes/Preloader";
 import * as Tone from "tone";
@@ -72,7 +78,16 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
 
     const [, setMediaRecorder] = useState<null | MediaRecorder>(null);
     const [, setIsRecording] = useState(false);
-    const [dpr] = useState(2);
+    const [dpr, setDpr] = useState(2);
+
+    useEffect(() => {
+      if (
+        typeof window !== "undefined" &&
+        typeof window.devicePixelRatio !== "undefined"
+      ) {
+        setDpr(window.devicePixelRatio);
+      }
+    }, [dpr]);
 
     const startRecording = (canvas: HTMLCanvasElement) => {
       // const canvas = canvasRef.current;
