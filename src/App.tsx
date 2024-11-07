@@ -6,6 +6,7 @@ import { IRefPhaserGame, PhaserGame } from "./game/PhaserGame";
 import {
   downloadAndPlayIntro,
   downloadAudioFiles,
+  marbleRacePlayVocals,
   prepareVocalPlayers,
   toggleMuteAudio,
 } from "./hooks/useTonejs";
@@ -136,6 +137,7 @@ function App() {
   const downloadVocalsAndStartGame = async () => {
     if (primaryVoiceInfo && secondaryVoiceInfo) {
       const urls = [
+        `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/instrumental.mp3`,
         `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/${primaryVoiceInfo.id}.mp3`,
         `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/${secondaryVoiceInfo?.id}.mp3`,
       ];
@@ -255,6 +257,11 @@ function App() {
                     name="Stop"
                     onClick={() => {
                       phaserRef.current?.game?.destroy(true);
+                      !!primaryVoiceInfo &&
+                        marbleRacePlayVocals(
+                          selectedCoverDocId,
+                          primaryVoiceInfo.id
+                        );
                       setSecondaryVoiceInfo(null);
                       setScreenName("voices-clash");
                     }}

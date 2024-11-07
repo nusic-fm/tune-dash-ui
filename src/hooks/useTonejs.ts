@@ -1,4 +1,4 @@
-import { openDB, DBSchema, IDBPDatabase } from "idb";
+// import { openDB, DBSchema, IDBPDatabase } from "idb";
 import * as Tone from "tone";
 import { ToneAudioBuffer } from "tone";
 
@@ -18,18 +18,18 @@ import { ToneAudioBuffer } from "tone";
 //     ],
 // };
 
-interface Cover {
-  id: string;
-  data: Float32Array;
-}
+// interface Cover {
+//   id: string;
+//   data: Float32Array;
+// }
 
-interface CoversDB extends DBSchema {
-  covers: {
-    key: string;
-    value: Cover;
-    indexes: { id: string };
-  };
-}
+// interface CoversDB extends DBSchema {
+//   covers: {
+//     key: string;
+//     value: Cover;
+//     indexes: { id: string };
+//   };
+// }
 
 // Global variables
 let instrPlayerRef: Tone.Player | null = null;
@@ -42,57 +42,67 @@ let isEnded: boolean = false;
 const downloadObj: { [key: string]: ToneAudioBuffer } = {};
 const playersRef: { [key: string]: Tone.Player } = {}; // For keeping track of players
 let currentlyPlayingUrl: string = "";
-let db: Promise<IDBPDatabase<CoversDB>> | null = null;
+// let db: Promise<IDBPDatabase<CoversDB>> | null = null;
 
-const initializeDB = async () => {
-  db = openDB<CoversDB>("nusic-covers", 1, {
-    upgrade(db) {
-      const store = db.createObjectStore("covers", {
-        keyPath: "id",
-      });
-      store.createIndex("id", "id", { unique: true });
-    },
-  });
-  return db;
-};
+// const initializeDB = async () => {
+//   db = openDB<CoversDB>("nusic-covers", 1, {
+//     upgrade(db) {
+//       const store = db.createObjectStore("covers", {
+//         keyPath: "id",
+//       });
+//       store.createIndex("id", "id", { unique: true });
+//     },
+//   });
+//   return db;
+// };
 
-const addToDB = async (id: string, data: Float32Array) => {
-  if (!db) await initializeDB();
-  const dbInstance = await db!;
-  await dbInstance.put("covers", { id, data });
-};
+// const addToDB = async (id: string, data: Float32Array) => {
+//   if (!db) await initializeDB();
+//   const dbInstance = await db!;
+//   await dbInstance.put("covers", { id, data });
+// };
 
-const getFromDB = async (id: string): Promise<Float32Array | undefined> => {
-  if (!db) await initializeDB();
-  const dbInstance = await db!;
-  const record = await dbInstance.get("covers", id);
-  return record?.data;
-};
+// const getFromDB = async (id: string): Promise<Float32Array | undefined> => {
+//   if (!db) await initializeDB();
+//   const dbInstance = await db!;
+//   const record = await dbInstance.get("covers", id);
+//   return record?.data;
+// };
 
 const downloadAudioFiles = async (
   urls: string[],
   onProgress: (progress: number) => void
 ) => {
+  // Delete all keys of downloadObj and free the memory
+  Object.keys(downloadObj).forEach((key) => {
+    if (urls.includes(key)) return;
+    downloadObj[key].dispose();
+    playersRef[key]?.dispose();
+    delete downloadObj[key];
+    delete playersRef[key];
+  });
+  console.log("playersObj", playersRef);
+  console.log("downloadObj", downloadObj);
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
     if (!downloadObj[url]) {
-      const dataArray = await getFromDB(url);
-      if (dataArray) {
-        console.log("From Indexed DB", url);
-        const bf = Tone.Buffer.fromArray(dataArray);
-        downloadObj[url] = bf;
-      } else {
-        console.log("Downloading", url);
-        const buffer = await new Promise<ToneAudioBuffer>((res) => {
-          const audioBuffer = new Tone.Buffer(url);
-          audioBuffer.onload = (bf) => {
-            addToDB(url, bf.toArray() as Float32Array);
-            res(bf);
-          };
-        });
-        downloadObj[url] = buffer;
-        addToDB(url, buffer.toArray() as Float32Array);
-      }
+      // const dataArray = await getFromDB(url);
+      // if (dataArray) {
+      //   console.log("From Indexed DB", url);
+      //   const bf = Tone.Buffer.fromArray(dataArray);
+      //   downloadObj[url] = bf;
+      // } else {
+      console.log("Downloading", url);
+      const buffer = await new Promise<ToneAudioBuffer>((res) => {
+        const audioBuffer = new Tone.Buffer(url);
+        audioBuffer.onload = (bf) => {
+          // addToDB(url, bf.toArray() as Float32Array);
+          res(bf);
+        };
+      });
+      downloadObj[url] = buffer;
+      // addToDB(url, buffer.toArray() as Float32Array);
+      // }
     }
     // Update progress
     const progress = ((i + 1) / urls.length) * 100;
@@ -108,7 +118,7 @@ const initializeTone = async () => {
     await Tone.start();
     console.log("context started");
     setEvents();
-    if (!db) await initializeDB();
+    // if (!db) await initializeDB();
   }
 };
 
@@ -161,8 +171,11 @@ const marbleRaceOnlyInstrument = async (
     instrPlayerRef.dispose();
     instrPlayerRef = null;
   }
-  if (currentlyPlayingUrl) {
+  if (currentlyPlayingUrl && playersRef[currentlyPlayingUrl]) {
     playersRef[currentlyPlayingUrl].stop();
+    playersRef[currentlyPlayingUrl].dispose();
+    delete playersRef[currentlyPlayingUrl];
+    delete downloadObj[currentlyPlayingUrl];
     currentlyPlayingUrl = "";
   }
   const instrDataArray: Tone.ToneAudioBuffer =
@@ -190,29 +203,37 @@ const prepareVocalPlayers = async (urls: string[]) => {
   await Tone.loaded();
 };
 
-const switchVocals = async (id: string, vId: string) => {
+const switchVocals = async (id: string, vId: string, oldVId: string) => {
+  if (oldVId === vId) return;
+  // // Delete and dispose the old downloadobj
+  // downloadObj[
+  //   `https://voxaudio.nusic.fm/covers/${id}/${oldVId}.mp3`
+  // ]?.dispose();
+  // delete downloadObj[`https://voxaudio.nusic.fm/covers/${id}/${oldVId}.mp3`];
   const url = `https://voxaudio.nusic.fm/covers/${id}/${vId}.mp3`;
   if (currentlyPlayingUrl === url) return;
-  const dataArray = await getFromDB(url);
+  // const dataArray = await getFromDB(url);
   let bf: ToneAudioBuffer;
-  if (dataArray) {
-    console.log("From Indexed DB");
-    bf = Tone.Buffer.fromArray(dataArray);
-  } else {
-    console.log("Downloading", url);
-    const buffer = await new Promise<ToneAudioBuffer>((res) => {
-      const audioBuffer = new Tone.Buffer(url);
-      audioBuffer.onload = (bf) => {
-        addToDB(url, bf.toArray() as Float32Array);
-        res(bf);
-      };
-    });
-    bf = buffer;
-  }
+  // if (dataArray) {
+  //   console.log("From Indexed DB");
+  //   bf = Tone.Buffer.fromArray(dataArray);
+  // } else {
+  console.log("Downloading", url);
+  const buffer = await new Promise<ToneAudioBuffer>((res) => {
+    const audioBuffer = new Tone.Buffer(url);
+    audioBuffer.onload = (bf) => {
+      // addToDB(url, bf.toArray() as Float32Array);
+      res(bf);
+    };
+  });
+  bf = buffer;
+  // }
   playersRef[url] = new Tone.Player(bf).toDestination();
 
   if (currentlyPlayingUrl) {
     playersRef[currentlyPlayingUrl].stop();
+    playersRef[currentlyPlayingUrl].dispose();
+    delete playersRef[currentlyPlayingUrl];
     currentlyPlayingUrl = "";
   }
   playersRef[url].start(undefined, Tone.Transport.seconds);
@@ -238,6 +259,7 @@ const stopAndDestroyPlayers = () => {
     instrPlayerRef = null;
   }
   const downloadObjKeys = Object.keys(downloadObj);
+  downloadObj[downloadObjKeys[0]]?.dispose();
   delete downloadObj[downloadObjKeys[0]];
   const voicesUrls = downloadObjKeys.slice(1);
   for (let i = 0; i < voicesUrls.length; i++) {
@@ -250,6 +272,7 @@ const stopAndDestroyPlayers = () => {
     }
   }
   Tone.Transport.stop();
+  console.log("downloadObj", downloadObj);
 };
 
 const getToneStatus = () => {
@@ -277,25 +300,25 @@ const toggleMuteAudio = async () => {
 };
 
 const downloadAndPlayIntro = async () => {
-  await initializeDB();
+  // await initializeDB();
   const url = "https://voxaudio.nusic.fm/intro.mp3?alt=media";
-  const dataArray = await getFromDB(url);
-  let bf: ToneAudioBuffer;
-  if (dataArray) {
-    console.log("From Indexed DB");
-    bf = Tone.Buffer.fromArray(dataArray);
-  } else {
-    console.log("Downloading", url);
-    const buffer = await new Promise<ToneAudioBuffer>((res) => {
-      const audioBuffer = new Tone.Buffer(url);
-      audioBuffer.onload = (bf) => {
-        addToDB(url, bf.toArray() as Float32Array);
-        res(bf);
-      };
-    });
-    bf = buffer;
-  }
-  const introPlayer = new Tone.Player(bf).toDestination();
+  // const dataArray = await getFromDB(url);
+  // let bf: ToneAudioBuffer;
+  // if (dataArray) {
+  //   console.log("From Indexed DB");
+  //   bf = Tone.Buffer.fromArray(dataArray);
+  // } else {
+  console.log("Downloading", url);
+  const buffer = await new Promise<ToneAudioBuffer>((res) => {
+    const audioBuffer = new Tone.Buffer(url);
+    audioBuffer.onload = (bf) => {
+      // addToDB(url, bf.toArray() as Float32Array);
+      res(bf);
+    };
+  });
+  // bf = buffer;
+  // }
+  const introPlayer = new Tone.Player(buffer).toDestination();
   introPlayerRef = introPlayer;
 };
 
