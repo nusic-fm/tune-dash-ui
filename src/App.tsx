@@ -347,34 +347,37 @@ function App() {
               {primaryVoiceInfo &&
                 secondaryVoiceInfo &&
                 screenName === "game" && (
-                  <PhaserGame
-                    ref={phaserRef}
-                    voices={[primaryVoiceInfo, secondaryVoiceInfo].map((v) => ({
-                      id: v.id,
-                      name: v.name,
-                      avatar: getVoiceAvatarPath(v.id),
-                    }))}
-                    coverDocId={selectedCoverDocId}
-                    musicStartOffset={
-                      coverDoc?.sections?.at(startSectionIdx - 1)?.start || 0
-                    }
-                    skinPath={getSkinPath(selectedSkinPath)}
-                    backgroundPath={`https://voxaudio.nusic.fm/marble_race%2Frace_bgs%2Fsunset.png?alt=media`}
-                    selectedTracks={[...selectedTracksList].slice(
-                      0,
-                      noOfRaceTracks
-                    )}
-                    noOfRaceTracks={noOfRaceTracks}
-                    gravityY={9}
-                    width={canvasElemWidth}
-                    enableMotion={enableMotion}
-                    trailPath={getTrailPath(selectedTrailPath)}
-                    trailsLifeSpace={trailsLifeSpace}
-                    trailEndSize={trailEndSize}
-                    trailsOpacity={trailsOpacity}
-                    recordDuration={recordDuration}
-                    isRecord={isRecord}
-                  />
+                  <Typography color={"#fff"}>
+                    Testing the crash without the canvas
+                  </Typography>
+                  //   <PhaserGame
+                  //     ref={phaserRef}
+                  //     voices={[primaryVoiceInfo, secondaryVoiceInfo].map((v) => ({
+                  //       id: v.id,
+                  //       name: v.name,
+                  //       avatar: getVoiceAvatarPath(v.id),
+                  //     }))}
+                  //     coverDocId={selectedCoverDocId}
+                  //     musicStartOffset={
+                  //       coverDoc?.sections?.at(startSectionIdx - 1)?.start || 0
+                  //     }
+                  //     skinPath={getSkinPath(selectedSkinPath)}
+                  //     backgroundPath={`https://voxaudio.nusic.fm/marble_race%2Frace_bgs%2Fsunset.png?alt=media`}
+                  //     selectedTracks={[...selectedTracksList].slice(
+                  //       0,
+                  //       noOfRaceTracks
+                  //     )}
+                  //     noOfRaceTracks={noOfRaceTracks}
+                  //     gravityY={9}
+                  //     width={canvasElemWidth}
+                  //     enableMotion={enableMotion}
+                  //     trailPath={getTrailPath(selectedTrailPath)}
+                  //     trailsLifeSpace={trailsLifeSpace}
+                  //     trailEndSize={trailEndSize}
+                  //     trailsOpacity={trailsOpacity}
+                  //     recordDuration={recordDuration}
+                  //     isRecord={isRecord}
+                  //   />
                 )}
               {/* {coverDoc && isDownloading ? (
                   <LinearProgressWithLabel

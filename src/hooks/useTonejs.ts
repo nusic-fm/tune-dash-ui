@@ -75,6 +75,11 @@ const downloadAudioFiles = async (
 ) => {
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
+    // // Delete all keys of downloadObj and free the memory
+    // Object.keys(downloadObj).forEach((key) => {
+    //   downloadObj[key].dispose();
+    //   delete downloadObj[key];
+    // });
     if (!downloadObj[url]) {
       // const dataArray = await getFromDB(url);
       // if (dataArray) {
@@ -190,7 +195,13 @@ const prepareVocalPlayers = async (urls: string[]) => {
   await Tone.loaded();
 };
 
-const switchVocals = async (id: string, vId: string) => {
+const switchVocals = async (id: string, vId: string, oldVId: string) => {
+  if (oldVId === vId) return;
+  // // Delete and dispose the old downloadobj
+  // downloadObj[
+  //   `https://voxaudio.nusic.fm/covers/${id}/${oldVId}.mp3`
+  // ]?.dispose();
+  // delete downloadObj[`https://voxaudio.nusic.fm/covers/${id}/${oldVId}.mp3`];
   const url = `https://voxaudio.nusic.fm/covers/${id}/${vId}.mp3`;
   if (currentlyPlayingUrl === url) return;
   // const dataArray = await getFromDB(url);
@@ -213,6 +224,8 @@ const switchVocals = async (id: string, vId: string) => {
 
   if (currentlyPlayingUrl) {
     playersRef[currentlyPlayingUrl].stop();
+    playersRef[currentlyPlayingUrl].dispose();
+    delete playersRef[currentlyPlayingUrl];
     currentlyPlayingUrl = "";
   }
   playersRef[url].start(undefined, Tone.Transport.seconds);

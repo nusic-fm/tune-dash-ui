@@ -112,7 +112,7 @@ const ChoosePrimaryVoice = ({
               key={idx}
               onClick={() => {
                 setSelectedVoiceInfo(voice);
-                switchVocals(selectedCoverId, voice.id);
+                switchVocals(selectedCoverId, voice.id, selectedVoiceInfo.id);
               }}
               position={"relative"}
               width={65}
