@@ -1,6 +1,6 @@
 import { Timestamp } from "firebase/firestore";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
-import { sha256 } from "js-sha256";
+import crypto from "crypto-js";
 
 export const getClosesNoInArr = (arr: number[], goal: number) =>
   arr.reduce((prev, curr) =>
@@ -720,33 +720,43 @@ export const getVoiceAvatarPath = (voiceId: string) =>
   )}${voiceId}_200x200?alt=media`;
 
 export const createAeonSignature = (_params: {
-  merchantOrderNo: number;
+  merchantOrderNo: string;
   userId: string;
   orderAmount: number;
   payCurrency: "USD" | "INR";
 }) => {
-  const params = {
+  let params: any = {
     ..._params,
     paymentTokens: "USDT,ETH",
     appId: import.meta.env.VITE_AEON_APP_ID,
-    paymentExchange:
-      "16f021b0-f220-4bbb-aa3b-82d423301957,9226e5c2-ebc3-4fdd-94f6-ed52cdce1420",
   };
-  // Step 2: Sort the parameters by key in ASCII order
-  const sortedKeys = Object.keys(params).sort();
+  const sortedData = Object.keys(params)
+    .sort()
+    .reduce((obj: any, key: string) => {
+      obj[key] = params[key];
+      return obj;
+    }, {});
 
-  // Step 3: Create the concatenated string in the format "key=value" joined by '&'
-  const paramString = sortedKeys
-    .map((key) => `${key}=${params[key as keyof typeof params]}`)
+  const dataString = Object.entries(sortedData)
+    .map(([key, value]) => `${key}=${value}`)
     .join("&");
 
-  // Step 4: Append the secret key to the end of the paramString
-  const stringToSign = `${paramString}&key=${
+  const hash = crypto.HmacSHA512(
+    dataString,
     import.meta.env.VITE_AEON_CLIENT_SECRET
-  }`;
-
-  // Step 5: Create the SHA-512 hash and convert it to uppercase
-  const hash = sha256(stringToSign);
-  console.log({ hash });
-  return hash;
+  );
+  return { ...sortedData, sign: hash.toString().toUpperCase() };
 };
+
+// const verifySignature = (data: any, key: string, expectedSignature: string) => {
+//   const dataWithoutSign = { ...data };
+//   delete dataWithoutSign.sign; // Remove existing signature for verification
+
+//   const dataString = Object.entries(dataWithoutSign)
+//     .sort()
+//     .map(([k, v]) => `${k}=${v}`)
+//     .join("&");
+//   const actualSignature = crypto.HmacSHA512(dataString, key);
+
+//   return actualSignature.toString() === expectedSignature;
+// };

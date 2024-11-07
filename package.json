@@ -30,10 +30,10 @@
         "@mui/lab": "^5.0.0-alpha.172",
         "@mui/material": "^5.16.4",
         "axios": "^1.7.3",
+        "crypto-js": "^4.2.0",
         "firebase": "^10.12.3",
         "framer-motion": "^11.11.9",
         "idb": "^8.0.0",
-        "js-sha256": "^0.11.0",
         "lodash": "^4.17.21",
         "phaser": "^3.80.1",
         "react": "^18.2.0",
@@ -45,6 +45,7 @@
         "webfontloader": "^1.6.28"
     },
     "devDependencies": {
+        "@types/crypto-js": "^4.2.2",
         "@types/lodash": "^4.17.6",
         "@types/node": "^22.8.6",
         "@types/react": "^18.3.3",

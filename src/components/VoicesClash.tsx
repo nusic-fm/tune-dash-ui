@@ -176,23 +176,16 @@ const VoicesClash = ({
                 showOpponentVoiceSelection &&
                 !readyToStartRace
               ) {
-                const sign = createAeonSignature({
-                  merchantOrderNo: 1,
-                  userId: "123",
+                const payload = createAeonSignature({
+                  merchantOrderNo: "12312432124",
+                  userId: "logesh.r24@gmail.com",
                   orderAmount: 1,
                   payCurrency: "USD",
                 });
                 try {
                   const res = await axios.post(
                     `https://sbx-crypto-payment-api.aeon.xyz/open/api/payment/V2`,
-                    {
-                      appId: import.meta.env.VITE_AEON_APP_ID,
-                      sign,
-                      merchantOrderNo: 1,
-                      userId: "123",
-                      orderAmount: 1,
-                      payCurrency: "USD",
-                    }
+                    payload
                   );
                   console.log(res);
                 } catch (e) {
