@@ -77,8 +77,11 @@ const downloadAudioFiles = async (
   Object.keys(downloadObj).forEach((key) => {
     if (urls.includes(key)) return;
     downloadObj[key].dispose();
+    playersRef[key]?.dispose();
     delete downloadObj[key];
+    delete playersRef[key];
   });
+  console.log("playersObj", playersRef);
   console.log("downloadObj", downloadObj);
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
