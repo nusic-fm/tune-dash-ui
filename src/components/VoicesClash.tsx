@@ -119,7 +119,7 @@ const VoicesClash = ({
       )}
       {!showOpponentVoiceSelection &&
         (secondaryVoiceId && readyToStartRace ? (
-          <Stack mt={2}>
+          <Stack mt={2} alignItems={"center"}>
             <Typography color={"#fff"} align="center">
               Downloading audio...
             </Typography>
