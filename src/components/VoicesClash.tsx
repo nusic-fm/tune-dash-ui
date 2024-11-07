@@ -124,7 +124,7 @@ const VoicesClash = ({
               Downloading audio...
             </Typography>
             <Typography variant="h6" color={"#fff"} align="center">
-              {downloadProgress}%
+              {downloadProgress.toFixed(0)}%
             </Typography>
             <BouncingBallsLoading />
           </Stack>

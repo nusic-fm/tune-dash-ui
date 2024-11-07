@@ -73,13 +73,15 @@ const downloadAudioFiles = async (
   urls: string[],
   onProgress: (progress: number) => void
 ) => {
+  // Delete all keys of downloadObj and free the memory
+  Object.keys(downloadObj).forEach((key) => {
+    if (urls.includes(key)) return;
+    downloadObj[key].dispose();
+    delete downloadObj[key];
+  });
+  console.log("downloadObj", downloadObj);
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
-    // // Delete all keys of downloadObj and free the memory
-    // Object.keys(downloadObj).forEach((key) => {
-    //   downloadObj[key].dispose();
-    //   delete downloadObj[key];
-    // });
     if (!downloadObj[url]) {
       // const dataArray = await getFromDB(url);
       // if (dataArray) {
@@ -166,8 +168,11 @@ const marbleRaceOnlyInstrument = async (
     instrPlayerRef.dispose();
     instrPlayerRef = null;
   }
-  if (currentlyPlayingUrl) {
+  if (currentlyPlayingUrl && playersRef[currentlyPlayingUrl]) {
     playersRef[currentlyPlayingUrl].stop();
+    playersRef[currentlyPlayingUrl].dispose();
+    delete playersRef[currentlyPlayingUrl];
+    delete downloadObj[currentlyPlayingUrl];
     currentlyPlayingUrl = "";
   }
   const instrDataArray: Tone.ToneAudioBuffer =
@@ -251,6 +256,7 @@ const stopAndDestroyPlayers = () => {
     instrPlayerRef = null;
   }
   const downloadObjKeys = Object.keys(downloadObj);
+  downloadObj[downloadObjKeys[0]]?.dispose();
   delete downloadObj[downloadObjKeys[0]];
   const voicesUrls = downloadObjKeys.slice(1);
   for (let i = 0; i < voicesUrls.length; i++) {
@@ -263,6 +269,7 @@ const stopAndDestroyPlayers = () => {
     }
   }
   Tone.Transport.stop();
+  console.log("downloadObj", downloadObj);
 };
 
 const getToneStatus = () => {
