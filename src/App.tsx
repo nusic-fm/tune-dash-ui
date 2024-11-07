@@ -77,15 +77,15 @@ function App() {
   );
   const [selectedTracksList, setSelectedTracksList] = useState<string[]>(() => {
     // Check in the localstorage if there are selected tracks
-    const localTracks = localStorage.getItem("selectedTracks");
-    if (localTracks) {
-      const arr = JSON.parse(localTracks);
-      // unique array
-      return [...new Set(arr)].filter((t) =>
-        tracks.includes(t as string)
-      ) as string[];
-    }
-    return tracks?.slice(0, 10);
+    // const localTracks = localStorage.getItem("selectedTracks");
+    // if (localTracks) {
+    //   const arr = JSON.parse(localTracks);
+    //   // unique array
+    //   return [...new Set(arr)].filter((t) =>
+    //     tracks.includes(t as string)
+    //   ) as string[];
+    // }
+    return tracks;
   });
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [startSectionIdx, setStartSectionIdx] = useState(1);
@@ -338,7 +338,6 @@ function App() {
                       setSecondaryVoiceInfo(voiceInfo);
                     }}
                     onStartRaceClick={async () => {
-                      setSelectedBackground("/assets/tunedash/bgs/voice.png");
                       await downloadVocalsAndStartGame();
                       setScreenName("game");
                     }}
@@ -360,7 +359,7 @@ function App() {
                       coverDoc?.sections?.at(startSectionIdx - 1)?.start || 0
                     }
                     skinPath={getSkinPath(selectedSkinPath)}
-                    backgroundPath={selectedBackground}
+                    backgroundPath={`https://voxaudio.nusic.fm/marble_race%2Frace_bgs%2Fsunset.png?alt=media`}
                     selectedTracks={[...selectedTracksList].slice(
                       0,
                       noOfRaceTracks

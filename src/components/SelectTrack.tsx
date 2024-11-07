@@ -162,6 +162,7 @@ const SelectTrack = ({
       </Stack>
       <LongImageMotionButton
         onClick={() =>
+          !downloading &&
           selectedSnapshot &&
           onTrackSelected(
             selectedSnapshot.data() as CoverV1,

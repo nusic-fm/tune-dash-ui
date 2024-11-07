@@ -6,16 +6,7 @@ export type GameVoiceInfo = {
   name: string;
   avatar: string;
 };
-export const ObstacleNames = [
-  "shiba",
-  "appalled_girlfriend",
-  "distracted_boyfriend",
-  "harold",
-  "meme_man",
-  "pedro",
-  "roll_safe",
-  "wojack",
-];
+
 export default class Preloader extends Phaser.Scene {
   public params: IGameDataParams;
   constructor() {
@@ -28,66 +19,50 @@ export default class Preloader extends Phaser.Scene {
 
   preload() {
     console.log("Preloader...");
-    this.load.image("green_dot", "assets/sprite/rhythmicpads/green_dot.png");
-    this.load.image(
-      "green_dot_outline",
-      "assets/sprite/rhythmicpads/green_dot_outline.png"
-    );
-    this.load.image(
-      "joystick_frame",
-      "assets/sprite/rhythmicpads/joystick_frame.jpg"
-    );
-    this.load.image("background", this.params.backgroundPath.slice(1));
-    ObstacleNames.map((name) => {
-      this.load.image(
-        `obstacle_${name}`,
-        `assets/sprite/obstacles/${name}.png`
-      );
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    const loadingText = this.make.text({
+      x: width / 2,
+      y: height / 2 - 50,
+      text: "Loading...",
+      style: {
+        font: "20px monospace",
+        color: "#ffffff",
+      },
     });
-    this.load.image("hammer_1", "assets/sprite/weapons/hammer_level_1.png");
-    this.load.image("hammer_2", "assets/sprite/weapons/hammer_level_2.png");
-    this.load.image("whack", "/assets/sprite/weapons/whack.png");
-    this.load.audio("low_whack", "/assets/sounds/low_whack.wav");
-    this.load.audio("high_whack", "/assets/sounds/high_whack.wav");
-    if (this.params.enableMotion)
-      this.load.image("center_logo", "assets/transparent_logo.png");
-    // TODO: Enable the below and comment out the rest of the images
-    if (this.params.voices.length) {
-      this.params.voices.map((voice) => {
-        // this.load.image(voice.id, voice.avatar);
-        // const image = new Image();
-        // image.src = voice.avatar;
-        // image.crossOrigin = "anonymous";
-        // new Promise((res) => {
-        //     image.onload = () => {
-        //         const dataUrl = this.resize(image);
-        //         res(dataUrl);
-        //     };
-        // }).then((dataurl) => {
-        //     // Add the newly created image as a texture
-        //     // this.textures.addBase64(`resized_${voice.id}`, dataurl);
-        //     this.load.image(`resized_${voice.id}`, dataurl as string);
-        // });
-        this.load.image(`resized_${voice.id}`, voice.avatar);
-        // this.load.image(
-        //     `resized_${voice.id}_mouth`,
-        //     `https://voxaudio.nusic.fm/voice_models%2Favatars%2Fthumbs%2Fgifs%2F${voice.id}_200x200.png?alt=media`
-        // );
-      });
-    }
-    // this.load.json(
-    //     "screen_sprite_data",
-    //     "assets/sprite/screen_sprite.json"
-    // );
-    // ["01", "16", "03", "07", "06"]
+    loadingText.setOrigin(0.5, 0.5);
+    const progressBar = this.add.graphics();
+    const progressBox = this.add.graphics();
+    progressBox.fillStyle(0x222222, 0.8);
+    progressBox.fillRect(width / 2 - 160, height / 2 - 25, 320, 50);
+    const percentText = this.make.text({
+      x: width / 2,
+      y: height / 2,
+      text: "0%",
+      style: {
+        font: "18px monospace",
+        color: "#ffffff",
+      },
+    });
+    percentText.setOrigin(0.5, 0.5);
+    const assetText = this.make.text({
+      x: width / 2,
+      y: height / 2 + 50,
+      text: "",
+      style: {
+        font: "18px monospace",
+        color: "#ffffff",
+      },
+    });
+    assetText.setOrigin(0.5, 0.5);
+    this.load.image("background", this.params.backgroundPath);
+    this.params.voices.map((voice) => {
+      this.load.image(voice.id, voice.avatar);
+    });
     this.params.selectedTracks.map((trackNo) => {
       switch (trackNo) {
         case "01":
           this.load.image("prod_texture_loaded_01", "assets/sprite/01.png");
-          break;
-        case "02":
-        case "22":
-          this.load.image("02_cross", "assets/sprite/02_cross.png");
           break;
         case "03":
           this.load.image("prod_texture_loaded_03", "assets/sprite/03.png");
@@ -99,15 +74,6 @@ export default class Preloader extends Phaser.Scene {
         case "07":
           this.load.image("prod_texture_loaded_07", "assets/sprite/07.png");
           break;
-        case "11":
-          this.load.image("left_block", "assets/sprite/left_block.png");
-          this.load.image("right_block", "assets/sprite/right_block.png");
-          this.load.image("prod_texture_loaded_11", "assets/sprite/11.png");
-          break;
-        case "14":
-          this.load.image("mini_star", "assets/sprite/14_mini.png");
-          this.load.image("14_mini", "assets/sprite/14_mini.png");
-          break;
         case "16":
           this.load.image("prod_texture_loaded_16", "assets/sprite/16.png");
           break;
@@ -118,102 +84,33 @@ export default class Preloader extends Phaser.Scene {
     });
 
     this.load.json("prod_shapes", "assets/physics/new_shapes.json");
-    this.load.json("obstacles_shapes", "assets/physics/obstacles_shapes.json");
     // Mini
-    this.load.image("bar", "assets/sprite/bar.png");
     this.load.json("mini_shapes", "assets/physics/mini_shapes.json");
     this.load.image("textureImage", this.params.skinPath);
     this.load.image("wheel", "assets/sprite/wheel.png");
-    this.load.image("finish_line", "assets/finish.png");
+    this.load.image("finish_line", "assets/finish_line.png");
     this.load.image("trail", this.params.trailPath);
 
-    // this.load.once("complete", () => {
-    //     const spriteData = this.cache.json.get("screen_sprite_data");
+    this.load.on("progress", function (value: number) {
+      console.log(value);
+      percentText.setText(parseInt(`${value * 100}`) + "%");
+      progressBar.clear();
+      progressBar.fillStyle(0xffffff, 1);
+      progressBar.fillRect(width / 2 - 150, height / 2 - 15, 300 * value, 30);
+    });
 
-    //     this.params.selectedTracks.map((trackNo) => {
-    //         switch (trackNo) {
-    //             case "01":
-    //                 const texture01 = this.textures
-    //                     .get("prod_texture_loaded_01")
-    //                     .getSourceImage();
-    //                 this.textures.addAtlas(
-    //                     "prod_texture_loaded_01",
-    //                     texture01 as HTMLImageElement,
-    //                     spriteData
-    //                 );
-    //                 break;
-    //             case "02":
-    //             case "22":
-    //                 this.load.image(
-    //                     "02_cross",
-    //                     "assets/sprite/02_cross.png"
-    //                 );
-    //                 break;
-    //             case "03":
-    //                 this.load.atlas(
-    //                     "prod_texture_loaded_03",
-    //                     "assets/sprite/03.png",
-    //                     "assets/sprite/screen_sprite.json"
-    //                 );
-    //                 break;
-    //             case "06":
-    //                 this.load.atlas(
-    //                     "prod_texture_loaded_06",
-    //                     "assets/sprite/06.png",
-    //                     "assets/sprite/screen_sprite.json"
-    //                 );
-    //                 this.load.image("06b", "assets/sprite/06b.png");
-    //                 break;
-    //             case "07":
-    //                 this.load.atlas(
-    //                     "prod_texture_loaded_07",
-    //                     "assets/sprite/07.png",
-    //                     "assets/sprite/screen_sprite.json"
-    //                 );
-    //                 break;
-    //             case "11":
-    //                 this.load.image(
-    //                     "left_block",
-    //                     "assets/sprite/left_block.png"
-    //                 );
-    //                 this.load.image(
-    //                     "right_block",
-    //                     "assets/sprite/right_block.png"
-    //                 );
-    //                 this.load.atlas(
-    //                     "prod_texture_loaded_11",
-    //                     "assets/sprite/11.png",
-    //                     "assets/sprite/screen_sprite.json"
-    //                 );
-    //                 break;
-    //             case "14":
-    //                 this.load.image(
-    //                     "mini_star",
-    //                     "assets/sprite/14_mini.png"
-    //                 );
-    //                 this.load.atlas(
-    //                     "14_mini",
-    //                     "assets/sprite/14_mini.png",
-    //                     "assets/sprite/screen_sprite.json"
-    //                 );
-    //                 break;
-    //             case "16":
-    //                 this.load.atlas(
-    //                     "prod_texture_loaded_16",
-    //                     "assets/sprite/16.png",
-    //                     "assets/sprite/screen_sprite.json"
-    //                 );
-    //                 break;
-    //             case "21":
-    //                 this.load.atlas(
-    //                     "prod_texture_loaded_21",
-    //                     "assets/sprite/21.png",
-    //                     "assets/sprite/screen_sprite.json"
-    //                 );
-    //                 break;
-    //         }
-    //     });
-    // });
+    this.load.on("fileprogress", function (file: any) {
+      console.log(file.src);
+      assetText.setText("Loading asset: " + file.key);
+    });
+    this.load.once("complete", () => {
+      console.log("Preloader complete");
+      progressBar.destroy();
+      progressBox.destroy();
+      loadingText.destroy();
+      percentText.destroy();
+      assetText.destroy();
+    });
   }
 
   create() {
@@ -229,23 +126,8 @@ export default class Preloader extends Phaser.Scene {
     //         this.cameras.main.scrollY += deltaY * 0.5; // Adjust the scroll speed
     //     }
     // );
-    // this.matter.add.image(400, 300, 'sky')
+
+    console.log("Starting game");
     this.scene.start("game", this.params);
-
-    // const particles = this.add.particles('red')
-
-    // const emitter = particles.createEmitter({
-    //     speed: 100,
-    //     scale: { start: 1, end: 0 },
-    //     blendMode: 'ADD'
-    // })
-
-    // const logo = this.physics.add.image(400, 100, 'logo')
-
-    // logo.setVelocity(100, 200)
-    // logo.setBounce(1, 1)
-    // logo.setCollideWorldBounds(true)
-
-    // emitter.startFollow(logo)
   }
 }
