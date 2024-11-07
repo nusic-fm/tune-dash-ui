@@ -6,6 +6,7 @@ import { IRefPhaserGame, PhaserGame } from "./game/PhaserGame";
 import {
   downloadAndPlayIntro,
   downloadAudioFiles,
+  marbleRacePlayVocals,
   prepareVocalPlayers,
   toggleMuteAudio,
 } from "./hooks/useTonejs";
@@ -256,6 +257,11 @@ function App() {
                     name="Stop"
                     onClick={() => {
                       phaserRef.current?.game?.destroy(true);
+                      !!primaryVoiceInfo &&
+                        marbleRacePlayVocals(
+                          selectedCoverDocId,
+                          primaryVoiceInfo.id
+                        );
                       setSecondaryVoiceInfo(null);
                       setScreenName("voices-clash");
                     }}
