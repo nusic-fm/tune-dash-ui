@@ -257,6 +257,7 @@ function App() {
                     name="Stop"
                     onClick={() => {
                       phaserRef.current?.game?.destroy(true);
+                      phaserRef.current = null;
                       !!primaryVoiceInfo &&
                         marbleRacePlayVocals(
                           selectedCoverDocId,
