@@ -471,7 +471,7 @@ export default class Game extends Phaser.Scene {
 
   startRhythmicGame() {
     const currentTime = getToneCurrentTime();
-    const targetY = this.cameras.main.height - (98 / 2) * this.dpr;
+    const targetY = this.centerY * 1.5;
     this.showRhythmPads = true;
     const travelBufferTime = this.circleShouldFillInMs / 1000;
     const availableBeats = this.allTapTimings.filter(
@@ -570,7 +570,7 @@ export default class Game extends Phaser.Scene {
       });
       const tween = this.tweens.add({
         targets: tile,
-        y: this.cameras.main.height + tile.height / 2,
+        y: targetY + tile.height / 2,
         duration: this.circleShouldFillInMs,
         delay: (startTime - currentTime) * 1000,
         ease: "Linear",
