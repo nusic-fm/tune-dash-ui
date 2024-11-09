@@ -1,13 +1,6 @@
-import {
-  forwardRef,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import StartGame from "./main";
 import { GameVoiceInfo } from "./scenes/Preloader";
-import * as Tone from "tone";
 import { Box } from "@mui/material";
 
 export interface IRefPhaserGame {
@@ -25,13 +18,7 @@ export interface IGameDataParams {
   noOfRaceTracks: number;
   gravityY: number;
   width: number;
-  enableMotion: boolean;
   trailPath: string;
-  trailsLifeSpace: number;
-  trailsOpacity: number;
-  trailEndSize: number;
-  recordDuration: number;
-  isRecord: boolean;
   height?: number;
   dprAdjustedWidth?: number;
   dprAdjustedHeight?: number;
@@ -42,14 +29,6 @@ export interface IGameDataParams {
 interface IProps extends IGameDataParams {
   currentActiveScene?: (scene_instance: Phaser.Scene) => void;
 }
-const downloadVideo = (videoUrl: string, name: string) => {
-  const link = document.createElement("a");
-  link.href = videoUrl;
-  link.download = `${name}.webm`; // Set the file name for download
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
 
 export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
   function PhaserGame(
@@ -63,21 +42,12 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
       noOfRaceTracks,
       gravityY,
       width,
-      enableMotion,
       trailPath,
-      trailsLifeSpace,
-      trailsOpacity,
-      trailEndSize,
-      recordDuration,
-      isRecord,
     },
     ref
   ) {
     const height = window.innerHeight;
     const game = useRef<Phaser.Game | null>(null!);
-
-    const [, setMediaRecorder] = useState<null | MediaRecorder>(null);
-    const [, setIsRecording] = useState(false);
     const [dpr] = useState(2);
 
     // useEffect(() => {
@@ -88,48 +58,6 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
     //     setDpr(window.devicePixelRatio);
     //   }
     // }, [dpr]);
-
-    const startRecording = (canvas: HTMLCanvasElement) => {
-      // const canvas = canvasRef.current;
-      const canvasStream = canvas.captureStream(120); // 30 FPS
-      const audioCtx = Tone.getContext().rawContext;
-      const dest = (audioCtx as any).createMediaStreamDestination();
-      Tone.getDestination().connect(dest);
-      const audioStream = dest.stream;
-
-      // navigator.mediaDevices
-      //     .getUserMedia({ audio: true })
-      //     .then((micStream) => {
-      // Combine the canvas video stream and the audio stream
-      const combinedStream = new MediaStream([
-        ...canvasStream.getTracks(),
-        ...audioStream.getTracks(),
-      ]);
-
-      const recorder = new MediaRecorder(combinedStream, {
-        mimeType: "video/webm; codecs=vp9,opus",
-      });
-
-      const chunks: Blob[] = [];
-      recorder.ondataavailable = (e) => chunks.push(e.data);
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: "video/webm" });
-        downloadVideo(URL.createObjectURL(blob), coverDocId);
-      };
-
-      recorder.start();
-      setMediaRecorder(recorder);
-      setIsRecording(true);
-
-      setTimeout(() => {
-        stopRecording(recorder);
-      }, recordDuration * 1000);
-    };
-
-    const stopRecording = (recorder: MediaRecorder) => {
-      recorder.stop();
-      setIsRecording(false);
-    };
 
     useLayoutEffect(() => {
       const dprAdjustedWidth = width * dpr;
@@ -148,13 +76,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
         dprAdjustedHeight,
         width,
         height,
-        enableMotion,
         trailPath,
-        trailsLifeSpace,
-        trailsOpacity,
-        trailEndSize,
-        recordDuration,
-        isRecord,
         dpr,
       });
 
@@ -162,9 +84,6 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
         ref({ game: game.current, scene: null });
       } else if (ref) {
         ref.current = { game: game.current, scene: null };
-      }
-      if (game.current && isRecord) {
-        startRecording(game.current.canvas);
       }
 
       return () => {

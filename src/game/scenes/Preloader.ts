@@ -90,7 +90,19 @@ export default class Preloader extends Phaser.Scene {
     this.load.image("wheel", "assets/sprite/wheel.png");
     this.load.image("finish_line", "assets/finish_line.png");
     this.load.image("trail", this.params.trailPath);
-
+    this.load.image(
+      "booster_powerup",
+      "assets/tunedash/rhythmicpads/booster_powerup.png"
+    );
+    // this.load.image(
+    //     "tile_track",
+    //     "assets/sprite/rhythmicpads/tile_track.png"
+    // );
+    this.load.image(
+      "tile_finish",
+      "assets/tunedash/rhythmicpads/tile_finish.png"
+    );
+    this.load.image("tile", "assets/tunedash/rhythmicpads/tile.png");
     this.load.on("progress", function (value: number) {
       console.log(value);
       percentText.setText(parseInt(`${value * 100}`) + "%");

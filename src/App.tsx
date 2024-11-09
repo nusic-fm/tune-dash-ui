@@ -65,7 +65,6 @@ const getGameBgPath = (screenName: string) => {
 function App() {
   //  References to the PhaserGame component (game and scene are exposed)
   const phaserRef = useRef<IRefPhaserGame | null>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
   const [coverDoc, setCoverDoc] = useState<CoverV1 | null>(null);
   const [selectedCoverDocId, setSelectedCoverDocId] = useState<string>("");
   const [selectedSkinPath, setSelectedSkinPath] = useState<string>(
@@ -73,9 +72,6 @@ function App() {
   );
   const [selectedTrailPath, setSelectedTrailPath] =
     useState<string>("chrome_ball.png");
-  const [selectedBackground, setSelectedBackground] = useState<string>(
-    "/assets/tunedash/bgs/home.png"
-  );
   const [selectedTracksList, setSelectedTracksList] = useState<string[]>(() => {
     // Check in the localstorage if there are selected tracks
     // const localTracks = localStorage.getItem("selectedTracks");
@@ -99,20 +95,11 @@ function App() {
   //         ? 414
   //         : window.innerWidth
   //     : 414;
-  const [enableMotion, setEnableMotion] = useState(false);
   const [primaryVoiceInfo, setPrimaryVoiceInfo] = useState<VoiceV1Cover | null>(
     null
   );
   const [secondaryVoiceInfo, setSecondaryVoiceInfo] =
     useState<VoiceV1Cover | null>(null);
-  const [trailsLifeSpace, setTrailsLifeSpan] = useState(400);
-  const [trailsOpacity, setTrailsOpacity] = useState(0.5);
-  const [trailEndSize, setTrailEndSize] = useState(0.5);
-  const [recordDuration, setRecordDuration] = useState(() => {
-    const savedRecordDuration = localStorage.getItem("recordDuration");
-    return parseFloat(savedRecordDuration || "60") || 60;
-  });
-  const [isRecord, setIsRecord] = useState(false);
   const [screenName, setScreenName] = useState("splash");
   const [isDownloaded, setIsDownloaded] = useState(false);
   const [coversSnapshot, cssLoading, cssError] = useCollection(
@@ -375,13 +362,7 @@ function App() {
                     noOfRaceTracks={noOfRaceTracks}
                     gravityY={9}
                     width={canvasElemWidth}
-                    enableMotion={enableMotion}
                     trailPath={getTrailPath(selectedTrailPath)}
-                    trailsLifeSpace={trailsLifeSpace}
-                    trailEndSize={trailEndSize}
-                    trailsOpacity={trailsOpacity}
-                    recordDuration={recordDuration}
-                    isRecord={isRecord}
                   />
                 )}
               {/* {coverDoc && isDownloading ? (

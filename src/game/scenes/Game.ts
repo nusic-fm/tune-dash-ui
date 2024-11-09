@@ -10,7 +10,7 @@ import { BodyType } from "matter";
 import {
   duplicateArrayElemToN,
   getBeatsArray,
-  createBeatsGroupWithInterval,
+  createRandomNumber,
 } from "../../helpers";
 import { EventBus } from "../EventBus";
 import { IGameDataParams } from "../PhaserGame";
@@ -80,9 +80,6 @@ export default class Game extends Phaser.Scene {
   isGameOver: boolean = false;
   winnerIdx: number = -1;
   isResultShown = false;
-  damageMultipliyer: number = 1;
-  level1Hammer: Phaser.GameObjects.Sprite | undefined;
-  level2Hammer: Phaser.GameObjects.Sprite | undefined;
   canvasWidth: number = 0;
   canvasHeight: number = 0;
   dpr: number = 2;
@@ -97,11 +94,21 @@ export default class Game extends Phaser.Scene {
     alpha: 0.5,
   };
   showObstacles: boolean = false;
-  showRythmicPads: boolean = true;
   initialGravity: number = 0;
-  perfectTapTime: number = 0;
-  goodTapTime: number = 0;
   userMarbleIdx: number = 0;
+  tapTimings: number[] = [];
+  allTapTimings: number[] = [];
+  circleShouldFillInMs = 1250;
+  beatsGroupLength = 8;
+  resultLabel: Phaser.GameObjects.Text | undefined;
+  tapScore: number = 0;
+  isBoosted = false;
+  finishTap: Phaser.GameObjects.Image | undefined;
+  boostMultipler: number = 0;
+  tapResultLabel: Phaser.GameObjects.Text | undefined;
+  tapResultLabelTimer: ReturnType<typeof setTimeout> | undefined;
+  showRhythmPads: boolean = false;
+  powerups: Phaser.Physics.Matter.Image[] = [];
 
   init(data: IGameDataParams) {
     // Sort the voices randomly
@@ -110,32 +117,12 @@ export default class Game extends Phaser.Scene {
     this.coverDocId = data.coverDocId;
     const musicOffset = getToneCurrentTime();
     this.musicStartOffset = musicOffset;
-    // this.showRythmicPads = data.showRythmicPads || false;
-    if (this.showRythmicPads) {
-      this.allTapTimings = getBeatsArray(
-        this.coverDocId,
-        this.musicStartOffset
-      );
-      if (this.allTapTimings.length === 0) this.showRythmicPads = false;
-      else {
-        this.circleShouldFillInMs =
-          (this.allTapTimings[1] - this.allTapTimings[0]) * 3 * 1000;
-        this.perfectTapTime = this.circleShouldFillInMs / 3 / 1000;
-        this.goodTapTime = this.circleShouldFillInMs / 2 / 1000;
-        this.showTapTimings = createBeatsGroupWithInterval(
-          this.allTapTimings,
-          this.beatsGroupLength,
-          4,
-          12
-        );
-      }
-    }
+    this.allTapTimings = getBeatsArray(this.coverDocId, this.musicStartOffset);
     this.noOfRaceTracks = data.noOfRaceTracks || 5;
     this.selectedTracks = duplicateArrayElemToN(
       data.selectedTracks,
       this.noOfRaceTracks
     );
-    this.enableMotion = data.enableMotion;
     this.canvasWidth = data.width;
     this.dpr = data.dpr || 2;
     this.trailConfig = {
@@ -152,9 +139,6 @@ export default class Game extends Phaser.Scene {
     if (data.height) this.canvasHeight = data.height;
     this.centerX = this.cameras.main.width / 2;
     this.centerY = this.cameras.main.height / 2;
-    this.trailConfig.scale.end = data.trailEndSize;
-    this.trailConfig.lifespan = data.trailsLifeSpace;
-    this.trailConfig.alpha = data.trailsOpacity;
     this.showObstacles = data.showObstacles || false;
     this.initialGravity = data.gravityY || 0;
   }
@@ -291,7 +275,20 @@ export default class Game extends Phaser.Scene {
     const yOffset = startOffset + baseSprite.height / 2;
     baseSprite.setPosition(baseSprite.x, yOffset);
     this.createTextureMask(xOffset, yOffset, baseSprite);
-
+    // Show Powerups
+    [
+      [100 * this.dpr, startOffset + 350 * this.dpr],
+      [(this.canvasWidth / 414) * 310 * this.dpr, startOffset + 260 * this.dpr],
+    ].map(([x, y]) => {
+      this.powerups.push(
+        this.matter.add
+          .image(x, y, "booster_powerup", undefined, {
+            isStatic: true,
+          })
+          .setScale(this.dpr)
+          .setSensor(true)
+      );
+    });
     return startOffset + baseSprite.height * this.dpr;
   };
   createZigzagSlider = (
@@ -412,6 +409,20 @@ export default class Game extends Phaser.Scene {
         color: "#ffffff",
       })
       .setOrigin(0.5);
+    if (this.powerups.length) {
+      this.powerups.map((powerup) => {
+        powerup.setOnCollideWith(this.marbles, (e: any) => {
+          if (this.showRhythmPads) return;
+          if (e.label === this.marbles[0].label) {
+            console.log("User Collided");
+            this.showRhythmPads = true;
+            this.powerups.map((p) => (p.visible = false));
+            this.startRhythmicGame();
+          }
+          powerup.destroy();
+        });
+      });
+    }
   };
   showResult() {
     const labelContent = this.winnerIdx === 0 ? "You Win!" : "You Lose";
@@ -445,6 +456,135 @@ export default class Game extends Phaser.Scene {
     this.isResultShown = true;
   }
 
+  startRhythmicGame() {
+    const currentTime = getToneCurrentTime();
+    const targetY = this.cameras.main.height - (98 / 2) * this.dpr;
+    this.showRhythmPads = true;
+    const travelBufferTime = this.circleShouldFillInMs / 1000;
+    const availableBeats = this.allTapTimings.filter(
+      (t) => t > currentTime + travelBufferTime
+    );
+    const nextSetOfBeats = [];
+    let beatIndex = 0;
+    for (let i = 0; i < this.beatsGroupLength; i++) {
+      nextSetOfBeats.push(availableBeats[beatIndex]);
+      beatIndex += createRandomNumber(1, 3);
+    }
+    const animationStartTimes = nextSetOfBeats.map(
+      (bt) => bt - travelBufferTime
+    );
+    this.finishTap = this.add
+      .sprite(this.centerX, targetY, "tile_finish")
+      .setScrollFactor(0)
+      .setDepth(99)
+      .setScale(this.dpr)
+      .setVisible(false);
+
+    this.time.addEvent({
+      delay: (animationStartTimes[0] - currentTime) * 1000,
+      callback: () => {
+        this.finishTap?.setVisible(true);
+      },
+    });
+    // const finishTapWidth = this.finishTap?.width ?? 403;
+    // if 125 is for 344
+    // then what is it for 344 * this.dpr?
+    // answer: 125 * this.dpr
+
+    const leftOffset = this.centerX - 125 * this.dpr;
+    const righOffset = this.centerX + 125 * this.dpr;
+    animationStartTimes.map((startTime) => {
+      const currentX = _.sample([leftOffset, righOffset]);
+      const tile = this.add
+        .image(currentX, 0, "tile")
+        .setDepth(101)
+        .setScrollFactor(0)
+        .setScale(this.dpr)
+        .setInteractive()
+        .setVisible(false);
+      tile.once("pointerdown", () => {
+        const tileY = tile.y;
+        const delta = targetY - tileY;
+        const resultText =
+          delta < 150 ? "Perfect" : delta < 500 ? "Great" : "Too Early";
+        this.tapScore +=
+          resultText === "Perfect" ? 10 : resultText === "Great" ? 5 : 0;
+        tile.destroy();
+        if (this.tapResultLabelTimer) {
+          clearTimeout(this.tapResultLabelTimer);
+        }
+        this.tapResultLabel?.destroy();
+        this.tapResultLabel = this.add
+          .text(
+            this.cameras.main.width / 2,
+            this.cameras.main.height / 2,
+            resultText,
+            {
+              fontSize: `${42 * this.dpr}px`,
+              color:
+                resultText === "Perfect"
+                  ? "green"
+                  : resultText === "Great"
+                  ? "yellow"
+                  : "red",
+              stroke: "rgba(0,0,0,1)",
+              strokeThickness: 6,
+            }
+          )
+          .setDepth(101)
+          .setScrollFactor(0);
+        this.tapResultLabel?.setPosition(
+          this.tapResultLabel.x - this.tapResultLabel.width / 2,
+          this.tapResultLabel.y - this.tapResultLabel.height / 2
+        );
+        // Add bounce using tween
+        this.tweens.add({
+          targets: this.tapResultLabel,
+          y: this.tapResultLabel.y - 100,
+          duration: 100,
+          ease: "bounce.out",
+          // Add glow effect
+          glow: {
+            color: 0xffffff,
+            intensity: 0.5,
+          },
+        });
+
+        // Destroy the label after 1 second
+        this.tapResultLabelTimer = setTimeout(() => {
+          this.tapResultLabel?.destroy();
+        }, 500);
+      });
+      const tween = this.tweens.add({
+        targets: tile,
+        y: this.cameras.main.height + tile.height / 2,
+        duration: this.circleShouldFillInMs,
+        delay: (startTime - currentTime) * 1000,
+        ease: "Linear",
+        onComplete: () => {
+          tile.destroy();
+          this.tweens.remove(tween);
+        },
+        onStart: () => {
+          tile.setVisible(true);
+        },
+      });
+    });
+    // Hide the game after the last tile has been tapped
+    this.time.addEvent({
+      delay:
+        (animationStartTimes[animationStartTimes.length - 1] +
+          this.circleShouldFillInMs / 1000 -
+          currentTime) *
+        1000,
+      callback: () => {
+        this.finishTap?.setVisible(false);
+        this.showRhythmPads = false;
+        this.powerups.map((p) => (p.visible = true));
+      },
+    });
+  }
+
   create() {
     console.log("Game Scene...");
     if (this.showObstacles) {
@@ -453,44 +593,14 @@ export default class Game extends Phaser.Scene {
     }
     // Center the background image
     const centerX = this.cameras.main.width / 2;
-    if (!this.enableMotion) {
-      const centerY = this.cameras.main.height / 2;
-      const bg = this.add
-        .image(centerX, centerY, "background")
-        .setScrollFactor(0);
-      bg.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
-    } else {
-      this.background = this.add
-        .tileSprite(0, 0, 0, 0, "background")
-        .setScrollFactor(0)
-        .setOrigin(0, 0);
-      this.background.setScale(
-        (414 / this.background.width) * this.dpr,
-        (736 / this.background.height) * this.dpr
-      );
-      this.add
-        .image(this.centerX, this.centerY, "center_logo")
-        .setDisplaySize(254, 84)
-        .setScrollFactor(0);
-    }
-
-    // const siteUrl = this.add
-    //   .text(this.centerX, this.centerY, "marblerace.ai", {
-    //     fontSize: `${24 * this.dpr}px`,
-    //     color: "#ffffff",
-    //     stroke: "rgba(0,0,0,0.5)",
-    //     strokeThickness: 2,
-    //   })
-    //   .setScrollFactor(0);
-    // siteUrl.setPosition(siteUrl.x - siteUrl.width / 2, siteUrl.y + 100);
-    // siteUrl.setScale(this.dpr);
-    // siteUrl.setPosition(siteUrl.x - siteUrl.width / 2, siteUrl.y);
-    // Enable camera scrolling
-    const canvasWidth = this.cameras.main.width;
+    const centerY = this.cameras.main.height / 2;
+    const bg = this.add
+      .image(centerX, centerY, "background")
+      .setScrollFactor(0);
+    bg.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
 
     var prodShapes = this.cache.json.get("prod_shapes");
     var miniShapes = this.cache.json.get("mini_shapes");
-    var obstaclesShapes = this.cache.json.get("obstacles_shapes");
 
     let startOffset = (this.cameras.main.height / 2) * this.dpr;
     const xOffset = this.centerX;
@@ -612,380 +722,56 @@ export default class Game extends Phaser.Scene {
     this.isInstrumentPlaying = true;
     // if (this.showRythmicPads) this.renderJoystickButtons();
   }
-
-  graphics: Phaser.GameObjects.Graphics | undefined;
-  circle1: Phaser.GameObjects.Sprite | undefined;
-  outlineCircle1: Phaser.GameObjects.Sprite | undefined;
-  circle2: Phaser.GameObjects.Sprite | undefined;
-  outlineCircle2: Phaser.GameObjects.Sprite | undefined;
-  circle3: Phaser.GameObjects.Sprite | undefined;
-  outlineCircle3: Phaser.GameObjects.Sprite | undefined;
-  circle4: Phaser.GameObjects.Sprite | undefined;
-  outlineCircle4: Phaser.GameObjects.Sprite | undefined;
-  setIntervals: ReturnType<typeof setInterval>[] = [];
-  setTimeouts: ReturnType<typeof setTimeout>[] = [];
-  tapTimings: number[] = [];
-  allTapTimings: number[] = [];
-  circleShouldFillInMs = 0;
-  showTapTimings: number[] = [];
-  currentTapIndex = 0;
-  beatsGroupLength = 8;
-
-  availableCircles: Phaser.GameObjects.Sprite[] = [];
-  innerCircles: Phaser.GameObjects.Sprite[] = [];
-  outlineCircles: Phaser.GameObjects.Sprite[] = [];
-
-  resultLabel: Phaser.GameObjects.Text | undefined;
-  tapScore: number = 0;
-  isBoosted = false;
-
-  buttonRadius = 40 * this.dpr;
-  joystickHolder: Phaser.GameObjects.Container | undefined;
-  joystickFrame: Phaser.GameObjects.Image | undefined;
-  hasGroupPassed = true;
-
-  renderJoystickButtons() {
-    const frameHeight = this.cameras.main.height / 3;
-    let circleYOffset =
-      this.cameras.main.height / 2 + frameHeight - this.buttonRadius;
-    // .image(0, 0, "joystick_frame")
-    // .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
-    this.circle1 = this.add
-      .sprite(this.cameras.main.width / 2 - 200, circleYOffset, "green_dot")
-      .setDisplaySize(0, 0)
-      .setScrollFactor(0);
-
-    this.outlineCircle1 = this.add
-      .sprite(
-        this.cameras.main.width / 2 - 200,
-        circleYOffset,
-        "green_dot_outline"
-      )
-      .setScrollFactor(0)
-      .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
-    this.circle2 = this.add
-      .sprite(this.cameras.main.width / 2 + 200, circleYOffset, "green_dot")
-      .setDisplaySize(0, 0)
-      .setScrollFactor(0);
-
-    this.outlineCircle2 = this.add
-      .sprite(
-        this.cameras.main.width / 2 + 200,
-        circleYOffset,
-        "green_dot_outline"
-      )
-      .setScrollFactor(0)
-      .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
-    circleYOffset += this.buttonRadius * 2;
-    this.circle3 = this.add
-      .sprite(
-        this.cameras.main.width / 2 - this.buttonRadius,
-        circleYOffset,
-        "green_dot"
-      )
-      .setDisplaySize(0, 0)
-      .setScrollFactor(0);
-
-    this.outlineCircle3 = this.add
-      .sprite(
-        this.cameras.main.width / 2 - this.buttonRadius,
-        circleYOffset,
-        "green_dot_outline"
-      )
-      .setScrollFactor(0)
-      .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
-    this.circle4 = this.add
-      .sprite(
-        this.cameras.main.width / 2 + this.buttonRadius,
-        circleYOffset,
-        "green_dot"
-      )
-      .setDisplaySize(0, 0)
-      .setScrollFactor(0);
-
-    this.outlineCircle4 = this.add
-      .sprite(
-        this.cameras.main.width / 2 + this.buttonRadius,
-        circleYOffset,
-        "green_dot_outline"
-      )
-      .setScrollFactor(0)
-      .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
-    this.availableCircles = [
-      this.circle1,
-      this.circle2,
-      this.circle3,
-      this.circle4,
-    ];
-    this.innerCircles = [
-      this.circle1,
-      this.circle2,
-      this.circle3,
-      this.circle4,
-    ];
-    this.outlineCircles = [
-      this.outlineCircle1,
-      this.outlineCircle2,
-      this.outlineCircle3,
-      this.outlineCircle4,
-    ];
-    const fxs = this.outlineCircles.map((c) => {
-      c.preFX?.setPadding(32);
-      return c.preFX?.addGlow(0xffffff, 0, 0, true, 0.1, 32);
-    });
-    this.tweens.add({
-      targets: fxs,
-      outerStrength: 10,
-    });
-    [...this.innerCircles, ...this.outlineCircles].map((c) => {
-      c.setDepth(10);
-      c.setAlpha(0);
-    });
-    this.events.on("destroy", () => {
-      this.setTimeouts.map((timeout) => clearTimeout(timeout));
-      this.setIntervals.map((interval) => clearInterval(interval));
-    });
-    this.joystickFrame = this.add
-      .image(
-        this.cameras.main.width / 2,
-        this.cameras.main.height / 2 + frameHeight,
-        "joystick_frame"
-      )
-      .setDepth(9)
-      .setScrollFactor(0)
-      .setDisplaySize(this.cameras.main.width, frameHeight)
-      .setAlpha(0);
-  }
-  isJoystickButtonsShown = false;
-
-  hideJoystickButtons() {
-    this.isJoystickButtonsShown = false;
-    this.innerCircles.map((c) => {
-      c.setAlpha(0);
-    });
-    this.outlineCircles.map((c) => {
-      c.setAlpha(0);
-    });
-    this.innerCircles.map((c) => {
-      c.removeListener("pointerdown");
-    });
-    this.joystickFrame?.setTint(undefined);
-    this.joystickFrame?.setAlpha(0);
-  }
-  showJoystickButtons() {
-    this.isJoystickButtonsShown = true;
-    this.hasGroupPassed = false;
-    this.innerCircles.map((c) => {
-      c.setAlpha(1);
-    });
-    this.outlineCircles.map((c) => {
-      c.setAlpha(1);
-    });
-    this.joystickFrame?.setAlpha(1);
-  }
-  boostMultipler: number = 0;
-  tapResultLabel: Phaser.GameObjects.Text | undefined;
-  tapResultLabelTimer: ReturnType<typeof setTimeout> | undefined;
   // update(time: number, delta: number): void {
   update(): void {
-    if (this.showRythmicPads && this.isResultShown === false) {
-      const currentTime = getToneCurrentTime();
-
-      if (this.tapScore >= 40) {
-        this.tapScore = 0;
-        this.isBoosted = true;
-        this.boostMultipler = this.marbles[this.userMarbleIdx].velocity.y;
-        this.marbleTrailParticles[this.userMarbleIdx].setConfig({
-          color: [0xfacc22, 0xf89800, 0xf83600, 0x9f0404],
-          colorEase: "quad.out",
-          lifespan: 2400,
-          angle: { min: -100, max: -80 },
-          scale: { start: 1, end: 0, ease: "sine.out" },
-          speed: { min: 250, max: 350 },
-          advance: 2000,
-          blendMode: "ADD",
-        });
-        this.hideJoystickButtons();
-        this.tapResultLabel?.destroy();
-        this.tapResultLabel = this.add
-          .text(
-            this.cameras.main.width / 2,
-            this.cameras.main.height / 2,
-            "Boosted",
-            {
-              fontSize: `${42 * this.dpr}px`,
-              color: "white",
-              stroke: "rgba(0,0,0,1)",
-              strokeThickness: 6,
-              // backgroundColor: "rgba(0,0,0,1)",
-            }
-          )
-          .setScrollFactor(0);
-        this.tapResultLabel?.setPosition(
-          this.tapResultLabel.x - this.tapResultLabel.width / 2,
-          this.tapResultLabel.y - this.tapResultLabel.height / 2
-        );
-        if (this.tapResultLabelTimer) {
-          clearTimeout(this.tapResultLabelTimer);
-        }
-        this.tapResultLabelTimer = setTimeout(() => {
-          // this.matter.world.setGravity(0, this.initialGravity);
-          this.tapResultLabel?.destroy();
-        }, 2000);
-      }
-      const _currentTapIndex = this.currentTapIndex;
-      const nextTapTiming =
-        this.showTapTimings[_currentTapIndex] -
-        this.circleShouldFillInMs / 1000;
-      if (currentTime >= nextTapTiming) {
-        // console.log("Current Tap Idx: ", _currentTapIndex);
-        this.currentTapIndex++;
-        if (!this.isBoosted) {
-          this.showJoystickButtons();
-          const circleToFill = _.sample(this.availableCircles);
-          if (circleToFill) {
-            this.availableCircles = this.availableCircles.filter(
-              (c) => c !== circleToFill
-            );
-            circleToFill.setInteractive();
-            circleToFill.once("pointerdown", () => {
-              // Hide the Circle
-              circleToFill.setDisplaySize(0, 0);
-              circleToFill.setAlpha(0);
-              // Add a Label at the center of the screen with scrollFactor 0
-              const newCurrentTime = getToneCurrentTime();
-              const expectedTapTime = this.showTapTimings[_currentTapIndex];
-              const difference = expectedTapTime - newCurrentTime;
-              const resultText =
-                difference < this.perfectTapTime
-                  ? "Perfect"
-                  : difference < this.goodTapTime
-                  ? "Good"
-                  : "Miss";
-              this.tapScore +=
-                resultText === "Perfect" ? 10 : resultText === "Good" ? 5 : 0;
-              // Set green/success tint to the joystick frame
-              // green: #00ff00
-              // red: #ff0000
-              // yellow: #ffff00
-              this.joystickFrame?.setTint(
-                resultText === "Perfect"
-                  ? 0xffff00
-                  : resultText === "Good"
-                  ? 0xffff00
-                  : 0xff0000
-              );
-              this.tapResultLabel?.destroy();
-              this.tapResultLabel = this.add
-                .text(
-                  this.cameras.main.width / 2,
-                  this.cameras.main.height / 2,
-                  resultText,
-                  {
-                    fontSize: `${42 * this.dpr}px`,
-                    color:
-                      resultText === "Perfect"
-                        ? "green"
-                        : resultText === "Good"
-                        ? "yellow"
-                        : "red",
-                    stroke: "rgba(0,0,0,1)",
-                    strokeThickness: 6,
-                    // backgroundColor: "rgba(0,0,0,1)",
-                  }
-                )
-                .setScrollFactor(0);
-              this.tapResultLabel.setPosition(
-                this.tapResultLabel.x - this.tapResultLabel.width / 2,
-                this.tapResultLabel.y - this.tapResultLabel.height / 2
-              );
-              if (this.tapResultLabelTimer) {
-                // this.joystickFrame?.setTint(undefined);
-                clearTimeout(this.tapResultLabelTimer);
-              }
-
-              // Destroy the label after 1 second
-              this.tapResultLabelTimer = setTimeout(() => {
-                this.joystickFrame?.setTint(undefined);
-                this.tapResultLabel?.destroy();
-              }, 500);
-              // circleToFill.removeInteractive();
-              this.availableCircles.push(circleToFill);
-            });
-            // Gradually Increase the radius of the circle to be 80
-            // Create a SetInterval
-            const interval = setInterval(() => {
-              if (circleToFill) {
-                const radiuToIncreasePerMs =
-                  this.buttonRadius / (this.circleShouldFillInMs / 10);
-
-                circleToFill.setDisplaySize(
-                  circleToFill.displayWidth + radiuToIncreasePerMs * 2,
-                  circleToFill.displayHeight + radiuToIncreasePerMs * 2
-                );
-              }
-            }, 10);
-            this.setIntervals.push(interval);
-            const timeout = setTimeout(() => {
-              circleToFill.setDisplaySize(0, 0);
-              this.availableCircles.push(circleToFill);
-              circleToFill.removeInteractive();
-              clearInterval(interval);
-            }, this.circleShouldFillInMs);
-            this.setTimeouts.push(timeout);
-            // }
+    if (this.tapScore >= 60) {
+      this.tapScore = 0;
+      this.isBoosted = true;
+      this.boostMultipler = this.marbles[this.userMarbleIdx].velocity.y;
+      this.marbleTrailParticles[this.userMarbleIdx].setConfig({
+        color: [0xfacc22, 0xf89800, 0xf83600, 0x9f0404],
+        colorEase: "quad.out",
+        lifespan: 2400,
+        angle: { min: -100, max: -80 },
+        scale: { start: 1, end: 0, ease: "sine.out" },
+        speed: { min: 250, max: 350 },
+        advance: 2000,
+        blendMode: "ADD",
+      });
+      this.tapResultLabel?.destroy();
+      this.tapResultLabel = this.add
+        .text(
+          this.cameras.main.width / 2,
+          this.cameras.main.height / 2,
+          "Boosted",
+          {
+            fontSize: `${42 * this.dpr}px`,
+            color: "white",
+            stroke: "rgba(0,0,0,1)",
+            strokeThickness: 6,
+            // backgroundColor: "rgba(0,0,0,1)",
           }
-        }
+        )
+        .setScrollFactor(0);
+      this.tapResultLabel?.setPosition(
+        this.tapResultLabel.x - this.tapResultLabel.width / 2,
+        this.tapResultLabel.y - this.tapResultLabel.height / 2
+      );
+      if (this.tapResultLabelTimer) {
+        clearTimeout(this.tapResultLabelTimer);
       }
-      if (
-        _currentTapIndex &&
-        _currentTapIndex % this.beatsGroupLength === 0 &&
-        this.hasGroupPassed === false
-      ) {
-        this.hasGroupPassed = true;
-        // console.log("Group Passed");
-        // this.marbleTrailParticles[0].setConfig({
-        //     ...this.trailConfig,
-        //     scale: this.marbleTrailParticles[0].scale,
-        //     follow: this.marbles[0].position,
-        // });
-        // this.marbleTrailParticles[0].destroy();
-        this.hideJoystickButtons();
-      }
-      if (
-        this.isBoosted &&
-        this.boostMultipler < 20 &&
-        this.boostMultipler > 0
-      ) {
-        const userMarble = this.marbles[this.userMarbleIdx]; // TODO: User chosen marble
-        this.matter.body.setVelocity(userMarble, {
-          x: userMarble.velocity.x,
-          y: this.boostMultipler,
-        });
-        this.boostMultipler += 0.1;
-      }
-      if (this.isBoosted && this.boostMultipler >= 20 && this.hasGroupPassed) {
-        this.isBoosted = false;
-        this.boostMultipler = 0;
-        this.marbleTrailParticles[this.userMarbleIdx].destroy();
-        this.marbleTrailParticles[this.userMarbleIdx] = this.add
-          .particles(0, 0, "trail", {
-            ...this.trailConfig,
-            follow: this.marbles[this.userMarbleIdx].position,
-          })
-          .setDepth(0);
-      }
+      this.tapResultLabelTimer = setTimeout(() => {
+        // this.matter.world.setGravity(0, this.initialGravity);
+        this.tapResultLabel?.destroy();
+      }, 2000);
     }
-    if (this.showObstacles) {
-      if (this.damageMultipliyer === 1) {
-        // Highlight level 1 hammer
-        this.level2Hammer?.setScale((0.1 / 414) * this.canvasWidth * this.dpr);
-        this.level1Hammer?.setScale((0.2 / 414) * this.canvasWidth * this.dpr);
-      } else if (this.damageMultipliyer === 1.5) {
-        // Highlight level 2 hammer
-        this.level1Hammer?.setScale((0.1 / 414) * this.canvasWidth * this.dpr);
-        this.level2Hammer?.setScale((0.2 / 414) * this.canvasWidth * this.dpr);
-      }
+    if (this.isBoosted && this.boostMultipler < 20 && this.boostMultipler > 0) {
+      const userMarble = this.marbles[this.userMarbleIdx]; // TODO: User chosen marble
+      this.matter.body.setVelocity(userMarble, {
+        x: userMarble.velocity.x,
+        y: this.boostMultipler,
+      });
+      this.boostMultipler += 0.1;
     }
     if (this.isGameOver && this.isResultShown === false) {
       // if (this.isResultShown) return;
