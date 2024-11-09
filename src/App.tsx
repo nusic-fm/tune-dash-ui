@@ -341,7 +341,8 @@ function App() {
                 )}
               {primaryVoiceInfo &&
                 secondaryVoiceInfo &&
-                screenName === "game" && (
+                screenName === "game" &&
+                coverDoc && (
                   <PhaserGame
                     ref={phaserRef}
                     voices={[primaryVoiceInfo, secondaryVoiceInfo].map((v) => ({

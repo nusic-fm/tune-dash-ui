@@ -59,7 +59,11 @@ const SelectTrack = ({
         console.log(progress);
       }
     );
-    marbleRaceOnlyInstrument(_coverId, 120, 0);
+    marbleRaceOnlyInstrument(
+      _coverId,
+      _coverDoc.bpm || 120,
+      _coverDoc.vocalsStartOffset || 0
+    );
     setDownloading(false);
   };
 

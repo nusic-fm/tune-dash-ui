@@ -237,6 +237,19 @@ export default class Game extends Phaser.Scene {
       })
       .setScale(this.dpr * (this.canvasWidth / (512 - 100)));
     this.createTextureMask(xOffset, yOffset, baseSprite);
+    [
+      [100 * this.dpr, startOffset + 350 * this.dpr],
+      [(this.canvasWidth / 414) * 310 * this.dpr, startOffset + 260 * this.dpr],
+    ].map(([x, y]) => {
+      this.powerups.push(
+        this.matter.add
+          .image(x, y, "booster_powerup", undefined, {
+            isStatic: true,
+          })
+          .setScale(this.dpr)
+          .setSensor(true)
+      );
+    });
     return startOffset + baseSprite.height * this.dpr;
   };
 
