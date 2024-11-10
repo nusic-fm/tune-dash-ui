@@ -22,6 +22,7 @@ import VoicesClash from "./components/VoicesClash";
 import SmallImageMotionButton from "./components/Buttons/SmallImageMotionButton";
 import SelectTrack from "./components/SelectTrack";
 import SlideUp from "./components/SlideUp";
+import WebApp from "@twa-dev/sdk";
 
 export const tracks = [
   "01",
@@ -279,6 +280,21 @@ function App() {
               {screenName === "start" && (
                 <ScreenOne
                   onStartClick={() => {
+                    if (WebApp.initDataUnsafe.user) {
+                      alert(
+                        JSON.stringify({
+                          fn: WebApp.initDataUnsafe.user.first_name,
+                          ln: WebApp.initDataUnsafe.user.last_name,
+                          id: WebApp.initDataUnsafe.user.id,
+                          photo_url: WebApp.initDataUnsafe.user.photo_url,
+                          username: WebApp.initDataUnsafe.user.username,
+                          auth_date: WebApp.initDataUnsafe.auth_date,
+                          lang: WebApp.initDataUnsafe.user.language_code,
+                        })
+                      );
+                      WebApp.showAlert("Hey there!");
+                    }
+
                     setScreenName("menu");
                     // const toneStatus = getToneStatus();
                     // if (toneStatus.isTonePlaying === false)
