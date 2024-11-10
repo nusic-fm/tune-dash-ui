@@ -11,6 +11,7 @@ import {
   toggleMuteAudio,
 } from "./hooks/useTonejs";
 import { CoverV1, VoiceV1Cover } from "./services/db/coversV1.service";
+import { createUserDoc } from "./services/db/user.service";
 import { getSkinPath, getTrailPath, getVoiceAvatarPath } from "./helpers";
 import ScreenOne from "./components/ScreenOne";
 import ScreenTwo from "./components/ScreenTwo";
@@ -279,20 +280,36 @@ function App() {
               )}
               {screenName === "start" && (
                 <ScreenOne
-                  onStartClick={() => {
+                  onStartClick={async () => {
                     if (WebApp.initDataUnsafe.user) {
-                      alert(
-                        JSON.stringify({
-                          fn: WebApp.initDataUnsafe.user.first_name,
-                          ln: WebApp.initDataUnsafe.user.last_name,
-                          id: WebApp.initDataUnsafe.user.id,
-                          photo_url: WebApp.initDataUnsafe.user.photo_url,
-                          username: WebApp.initDataUnsafe.user.username,
-                          auth_date: WebApp.initDataUnsafe.auth_date,
-                          lang: WebApp.initDataUnsafe.user.language_code,
-                        })
-                      );
-                      WebApp.showAlert("Hey there!");
+                      // alert(
+                      //   JSON.stringify({
+                      //     fn: WebApp.initDataUnsafe.user.first_name,
+                      //     ln: WebApp.initDataUnsafe.user.last_name,
+                      //     id: WebApp.initDataUnsafe.user.id,
+                      //     photo_url: WebApp.initDataUnsafe.user.photo_url,
+                      //     username: WebApp.initDataUnsafe.user.username,
+                      //     auth_date: WebApp.initDataUnsafe.auth_date,
+                      //     lang: WebApp.initDataUnsafe.user.language_code,
+                      //   })
+                      // );
+                      try {
+                        createUserDoc(
+                          {
+                            firstName: WebApp.initDataUnsafe.user.first_name,
+                            lastName: WebApp.initDataUnsafe.user.last_name,
+                            username: WebApp.initDataUnsafe.user.username,
+                            id: WebApp.initDataUnsafe.user.id.toString(),
+                            photoUrl: WebApp.initDataUnsafe.user.photo_url,
+                            languageCode:
+                              WebApp.initDataUnsafe.user.language_code,
+                            isBot: WebApp.initDataUnsafe.user.is_bot,
+                          },
+                          WebApp.initDataUnsafe.user.id.toString()
+                        );
+                      } catch (e) {
+                        // TODO: Handle error
+                      }
                     }
 
                     setScreenName("menu");
