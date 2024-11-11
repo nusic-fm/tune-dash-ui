@@ -6,6 +6,7 @@ import { VoiceV1Cover } from "../services/db/coversV1.service";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
 import BouncingBallsLoading from "./BouncingBallsLoading";
 import axios from "axios";
+import { createOrder } from "../services/db/order.service";
 
 type Props = {
   primaryVoiceId: string;
@@ -183,8 +184,13 @@ const VoicesClash = ({
                 userInfo
               ) {
                 try {
+                  const orderId = await createOrder(
+                    userInfo.id,
+                    voices[voices.map((v) => v.id).indexOf(secondaryVoiceId)],
+                    cost
+                  );
                   const paylod = {
-                    merchantOrderNo: "12312432124",
+                    merchantOrderNo: orderId,
                     userId: userInfo.id,
                     orderAmount: cost,
                   };

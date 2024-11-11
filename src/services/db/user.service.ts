@@ -12,7 +12,7 @@ import {
   increment,
 } from "firebase/firestore";
 
-const DB_NAME = "users";
+const DB_NAME = "tune_dash_users";
 
 export type User = {
   firstName: string;
