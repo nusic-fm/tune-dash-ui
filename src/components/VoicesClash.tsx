@@ -204,7 +204,7 @@ const VoicesClash = ({
                 } catch (e) {
                   alert("Error Occured, try again later");
                 } finally {
-                  // setReadyToStartRace(true);
+                  setReadyToStartRace(true);
                 }
               } else if (secondaryVoiceId && showOpponentVoiceSelection) {
                 setShowOpponentVoiceSelection(false);

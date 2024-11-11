@@ -304,13 +304,15 @@ function App() {
                         createUserDoc(
                           {
                             firstName: WebApp.initDataUnsafe.user.first_name,
-                            lastName: WebApp.initDataUnsafe.user.last_name,
-                            username: WebApp.initDataUnsafe.user.username,
+                            lastName:
+                              WebApp.initDataUnsafe.user.last_name || "",
+                            username: WebApp.initDataUnsafe.user.username || "",
                             id: WebApp.initDataUnsafe.user.id.toString(),
-                            photoUrl: WebApp.initDataUnsafe.user.photo_url,
+                            photoUrl:
+                              WebApp.initDataUnsafe.user.photo_url || "",
                             languageCode:
-                              WebApp.initDataUnsafe.user.language_code,
-                            isBot: WebApp.initDataUnsafe.user.is_bot,
+                              WebApp.initDataUnsafe.user.language_code || "",
+                            isBot: WebApp.initDataUnsafe.user.is_bot || false,
                           },
                           WebApp.initDataUnsafe.user.id.toString()
                         );

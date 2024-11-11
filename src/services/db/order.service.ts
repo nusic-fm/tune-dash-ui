@@ -1,4 +1,4 @@
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { VoiceV1Cover } from "./coversV1.service";
 import { db } from "../firebase.service";
 
@@ -14,6 +14,7 @@ const createOrder = async (
     userId,
     voiceInfo,
     cost,
+    createdAt: serverTimestamp(),
   });
   return docRef.id;
 };
