@@ -438,7 +438,26 @@ export default class Game extends Phaser.Scene {
     }
   };
   showResult() {
-    const labelContent = this.winnerIdx === 0 ? "You Win!" : "You Lose";
+    const isWin = this.winnerIdx === 0;
+    let resultImage;
+    if (isWin)
+      resultImage = this.add
+        .image(this.centerX, this.centerY, "win_result")
+        // .setScale(this.dpr)
+        .setScrollFactor(0);
+    else
+      resultImage = this.add
+        .image(this.centerX, this.centerY, "lose_result")
+        // .setScale(this.dpr)
+        .setScrollFactor(0);
+    // Add tween to scale the result image from 0 to 1
+    this.tweens.add({
+      targets: resultImage,
+      scale: this.dpr,
+      duration: 500,
+      ease: "Bounce.out",
+    });
+    const labelContent = isWin ? "You Win!" : "You Lose";
     // const xpContent = this.winnerIdx === 1 ? "+500 XP" : "+0 XP";
 
     const label = this.add
