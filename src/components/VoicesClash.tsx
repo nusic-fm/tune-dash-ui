@@ -1,9 +1,5 @@
 import { Stack, Box, Badge, Typography } from "@mui/material";
-import {
-  createAeonSignature,
-  createRandomNumber,
-  getVoiceAvatarPath,
-} from "../helpers";
+import { createRandomNumber, getVoiceAvatarPath } from "../helpers";
 import { useEffect, useState } from "react";
 import ChooseVoice from "./ChooseVoice";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
@@ -18,6 +14,7 @@ type Props = {
   onStartRaceClick: () => void;
   voices: VoiceV1Cover[];
   downloadProgress: number;
+  userInfo: { id: string; fn: string } | null;
 };
 
 const voiceWidth = 140;
@@ -28,10 +25,12 @@ const VoicesClash = ({
   onChooseOpponent,
   onStartRaceClick,
   downloadProgress,
+  userInfo,
 }: Props) => {
   const [showOpponentVoiceSelection, setShowOpponentVoiceSelection] =
     useState(false);
   const [readyToStartRace, setReadyToStartRace] = useState(false);
+  const [cost, setCost] = useState(0);
 
   useEffect(() => {
     if (secondaryVoiceId && readyToStartRace) {
@@ -114,7 +113,10 @@ const VoicesClash = ({
         <ChooseVoice
           voices={voices}
           selectedVoiceId={secondaryVoiceId || ""}
-          setSelectedVoiceId={onChooseOpponent}
+          onChooseOpponent={(voiceInfo, cost) => {
+            setCost(cost);
+            onChooseOpponent(voiceInfo);
+          }}
         />
       )}
       {!showOpponentVoiceSelection &&
@@ -177,23 +179,26 @@ const VoicesClash = ({
               if (
                 secondaryVoiceId &&
                 showOpponentVoiceSelection &&
-                !readyToStartRace
+                !readyToStartRace &&
+                userInfo
               ) {
-                const payload = createAeonSignature({
-                  merchantOrderNo: "12312432124",
-                  userId: "logesh.r24@gmail.com",
-                  orderAmount: 1,
-                  payCurrency: "USD",
-                });
                 try {
-                  const res = await axios.post(
-                    `https://sbx-crypto-payment-api.aeon.xyz/open/api/payment/V2`,
-                    payload
+                  const paylod = {
+                    merchantOrderNo: "12312432124",
+                    userId: userInfo.id,
+                    orderAmount: cost,
+                  };
+                  const webUrlRes = await axios.post(
+                    `${import.meta.env.VITE_VOX_COVER_SERVER}/aeon-signature`,
+                    paylod
                   );
-                  console.log(res);
+                  const webUrl = webUrlRes.data;
+                  window.open(webUrl, "_blank");
+                  // TODO: Show it in a popup without interuppting the music
                 } catch (e) {
+                  alert("Error Occured, try again later");
                 } finally {
-                  setReadyToStartRace(true);
+                  // setReadyToStartRace(true);
                 }
               } else if (secondaryVoiceId && showOpponentVoiceSelection) {
                 setShowOpponentVoiceSelection(false);

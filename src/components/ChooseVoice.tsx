@@ -5,14 +5,10 @@ import { VoiceV1Cover } from "../services/db/coversV1.service";
 type Props = {
   voices: VoiceV1Cover[];
   selectedVoiceId: string;
-  setSelectedVoiceId: (voiceInfo: VoiceV1Cover) => void;
+  onChooseOpponent: (voiceInfo: VoiceV1Cover, cost: number) => void;
 };
 
-const ChooseVoice = ({
-  voices,
-  selectedVoiceId,
-  setSelectedVoiceId,
-}: Props) => {
+const ChooseVoice = ({ voices, selectedVoiceId, onChooseOpponent }: Props) => {
   return (
     <Box
       width={320}
@@ -38,73 +34,72 @@ const ChooseVoice = ({
         }}
         gap={1}
       >
-        {voices.map((voice, idx) => (
-          <Box
-            key={idx}
-            onClick={() => setSelectedVoiceId(voice)}
-            position={"relative"}
-            width={65}
-            height={65}
-            display={"flex"}
-            alignItems={"center"}
-            justifyContent={"center"}
-          >
-            {voice.id === selectedVoiceId && (
-              <img
-                src={"/assets/tunedash/focus.png"}
-                width={"100%"}
-                height={"100%"}
-                style={{
-                  zIndex: 0,
-                  cursor: "pointer",
-                  // zoom: 1.1,
-                  transform: "scale(1.1)",
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                }}
-              />
-            )}
-            <Badge
-              badgeContent={
-                <Box
-                  sx={{
-                    borderRadius: "50%",
-                    width: 30,
-                    height: 30,
-                    backgroundColor: "#000",
-                    // position: "absolute",
-                    // top: 20,
-                    // left: -20,
-                  }}
-                  display={"flex"}
-                  alignItems={"center"}
-                  justifyContent={"center"}
-                >
-                  <Typography variant="caption" color={"#fff"} fontSize={8}>
-                    $
-                    {idx > voices.length / 2
-                      ? 5
-                      : idx > voices.length / 3
-                      ? 2
-                      : 0.99}
-                  </Typography>
-                </Box>
-              }
+        {voices.map((voice, idx) => {
+          const cost =
+            idx > voices.length / 2 ? 5 : idx > voices.length / 3 ? 2 : 0.99;
+          return (
+            <Box
+              key={idx}
+              onClick={() => onChooseOpponent(voice, cost)}
+              position={"relative"}
+              width={65}
+              height={65}
+              display={"flex"}
+              alignItems={"center"}
+              justifyContent={"center"}
             >
-              <img
-                src={getVoiceAvatarPath(voice.id)}
-                width={60}
-                height={60}
-                style={{
-                  borderRadius: "50%",
-                  cursor: "pointer",
-                  zIndex: 1,
-                }}
-              />
-            </Badge>
-          </Box>
-        ))}
+              {voice.id === selectedVoiceId && (
+                <img
+                  src={"/assets/tunedash/focus.png"}
+                  width={"100%"}
+                  height={"100%"}
+                  style={{
+                    zIndex: 0,
+                    cursor: "pointer",
+                    // zoom: 1.1,
+                    transform: "scale(1.1)",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                  }}
+                />
+              )}
+              <Badge
+                badgeContent={
+                  <Box
+                    sx={{
+                      borderRadius: "50%",
+                      width: 30,
+                      height: 30,
+                      backgroundColor: "#000",
+                      // position: "absolute",
+                      // top: 20,
+                      // left: -20,
+                    }}
+                    display={"flex"}
+                    alignItems={"center"}
+                    justifyContent={"center"}
+                  >
+                    <Typography variant="caption" color={"#fff"} fontSize={8}>
+                      ${cost}
+                    </Typography>
+                  </Box>
+                }
+              >
+                <img
+                  src={getVoiceAvatarPath(voice.id)}
+                  width={60}
+                  height={60}
+                  style={{
+                    borderRadius: "50%",
+                    cursor: "pointer",
+                    zIndex: 1,
+                  }}
+                />
+              </Badge>
+            </Box>
+          );
+        })}
       </Box>
     </Box>
   );

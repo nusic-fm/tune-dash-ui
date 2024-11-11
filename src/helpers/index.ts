@@ -719,35 +719,6 @@ export const getVoiceAvatarPath = (voiceId: string) =>
     "voice_models/avatars/thumbs/"
   )}${voiceId}_200x200?alt=media`;
 
-export const createAeonSignature = (_params: {
-  merchantOrderNo: string;
-  userId: string;
-  orderAmount: number;
-  payCurrency: "USD" | "INR";
-}) => {
-  let params: any = {
-    ..._params,
-    paymentTokens: "USDT,ETH",
-    appId: import.meta.env.VITE_AEON_APP_ID,
-  };
-  const sortedData = Object.keys(params)
-    .sort()
-    .reduce((obj: any, key: string) => {
-      obj[key] = params[key];
-      return obj;
-    }, {});
-
-  const dataString = Object.entries(sortedData)
-    .map(([key, value]) => `${key}=${value}`)
-    .join("&");
-
-  const hash = crypto.HmacSHA512(
-    dataString,
-    import.meta.env.VITE_AEON_CLIENT_SECRET
-  );
-  return { ...sortedData, sign: hash.toString().toUpperCase() };
-};
-
 // const verifySignature = (data: any, key: string, expectedSignature: string) => {
 //   const dataWithoutSign = { ...data };
 //   delete dataWithoutSign.sign; // Remove existing signature for verification

@@ -104,6 +104,9 @@ function App() {
     useState<VoiceV1Cover | null>(null);
   const [screenName, setScreenName] = useState("splash");
   const [isDownloaded, setIsDownloaded] = useState(false);
+  const [userInfo, setUserInfo] = useState<{ id: string; fn: string } | null>(
+    null
+  );
   const [coversSnapshot, cssLoading, cssError] = useCollection(
     query(
       collection(db, "covers"),
@@ -294,6 +297,10 @@ function App() {
                       //   })
                       // );
                       try {
+                        setUserInfo({
+                          id: WebApp.initDataUnsafe.user.id.toString(),
+                          fn: WebApp.initDataUnsafe.user.first_name,
+                        });
                         createUserDoc(
                           {
                             firstName: WebApp.initDataUnsafe.user.first_name,
@@ -370,6 +377,7 @@ function App() {
                       setScreenName("game");
                     }}
                     downloadProgress={downloadProgress}
+                    userInfo={userInfo}
                   />
                 )}
               {primaryVoiceInfo &&
