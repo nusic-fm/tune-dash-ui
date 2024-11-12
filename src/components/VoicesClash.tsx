@@ -199,7 +199,8 @@ const VoicesClash = ({
                     paylod
                   );
                   const webUrl = webUrlRes.data;
-                  window.location.href = webUrl;
+                  window.open(webUrl, "_blank");
+                  // window.location.href = webUrl;
                   // TODO: Show it in a popup without interuppting the music
                 } catch (e) {
                   alert("Error Occured, try again later");
