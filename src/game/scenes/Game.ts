@@ -103,12 +103,19 @@ export default class Game extends Phaser.Scene {
   resultLabel: Phaser.GameObjects.Text | undefined;
   tapScore: number = 0;
   isBoosted = false;
+  isOpponentBoosted = false;
+  opponentBoostMultipler = 0;
+  opponentMarbleIdx = 1;
   finishTap: Phaser.GameObjects.Image | undefined;
   boostMultipler: number = 0;
   tapResultLabel: Phaser.GameObjects.Text | undefined;
   tapResultLabelTimer: ReturnType<typeof setTimeout> | undefined;
   showRhythmPads: boolean = false;
   powerups: Phaser.Physics.Matter.Image[] = [];
+  particleIntialTint: number = 0xffffff;
+  userMarbleMaxSpeed = 0;
+  opponentMarbleMaxSpeed = 0;
+  tiles: Phaser.GameObjects.Image[] = [];
 
   init(data: IGameDataParams) {
     // Sort the voices randomly
@@ -416,6 +423,8 @@ export default class Game extends Phaser.Scene {
       label.setDepth(1);
       this.labels.push(label);
     });
+    this.particleIntialTint = this.marbleTrailParticles[this.userMarbleIdx]
+      .particleTint as number;
     this.countdownText = this.add
       .text(this.centerX, this.centerY - 100, "3", {
         fontSize: `${64 * this.dpr}px`,
@@ -426,9 +435,16 @@ export default class Game extends Phaser.Scene {
       this.powerups.map((powerup) => {
         powerup.setOnCollideWith(this.marbles, (e: any) => {
           if (this.showRhythmPads) return;
-          if (e.label === this.marbles[0].label) {
-            console.log("User Collided");
-            this.showRhythmPads = true;
+          if (e.label === this.marbles[this.opponentMarbleIdx].label) {
+            this.isOpponentBoosted = true;
+            this.opponentMarbleMaxSpeed =
+              this.marbles[this.opponentMarbleIdx].velocity.y + 10;
+            this.opponentBoostMultipler =
+              this.marbles[this.opponentMarbleIdx].velocity.y;
+            this.marbleTrailParticles[this.opponentMarbleIdx].setParticleTint(
+              0xf83600
+            );
+          } else if (e.label === this.marbles[this.userMarbleIdx].label) {
             this.powerups.map((p) => (p.visible = false));
             this.startRhythmicGame();
           }
@@ -438,6 +454,10 @@ export default class Game extends Phaser.Scene {
     }
   };
   showResult() {
+    this.finishTap?.destroy();
+    this.tapResultLabel?.destroy();
+    this.showRhythmPads = false;
+    this.tiles.map((t) => t.destroy());
     const isWin = this.winnerIdx === 0;
     let resultImage;
     if (isWin)
@@ -534,6 +554,7 @@ export default class Game extends Phaser.Scene {
         .setScale(this.dpr)
         .setInteractive()
         .setVisible(false);
+      this.tiles.push(tile);
       tile.once("pointerdown", () => {
         const tileY = tile.y;
         const delta = targetY - tileY;
@@ -759,17 +780,10 @@ export default class Game extends Phaser.Scene {
     if (this.tapScore >= 60) {
       this.tapScore = 0;
       this.isBoosted = true;
+      this.userMarbleMaxSpeed =
+        this.marbles[this.userMarbleIdx].velocity.y + 20;
       this.boostMultipler = this.marbles[this.userMarbleIdx].velocity.y;
-      this.marbleTrailParticles[this.userMarbleIdx].setConfig({
-        color: [0xfacc22, 0xf89800, 0xf83600, 0x9f0404],
-        colorEase: "quad.out",
-        lifespan: 2400,
-        angle: { min: -100, max: -80 },
-        scale: { start: 1, end: 0, ease: "sine.out" },
-        speed: { min: 250, max: 350 },
-        advance: 2000,
-        blendMode: "ADD",
-      });
+      this.marbleTrailParticles[this.userMarbleIdx].setParticleTint(0xf83600);
       this.tapResultLabel?.destroy();
       this.tapResultLabel = this.add
         .text(
@@ -797,14 +811,38 @@ export default class Game extends Phaser.Scene {
         this.tapResultLabel?.destroy();
       }, 2000);
     }
-    if (this.isBoosted && this.boostMultipler < 20 && this.boostMultipler > 0) {
+    if (this.isBoosted && this.boostMultipler < this.userMarbleMaxSpeed) {
       const userMarble = this.marbles[this.userMarbleIdx]; // TODO: User chosen marble
       this.matter.body.setVelocity(userMarble, {
         x: userMarble.velocity.x,
         y: this.boostMultipler,
       });
       this.boostMultipler += 0.1;
+      if (this.boostMultipler >= this.userMarbleMaxSpeed) {
+        this.marbleTrailParticles[this.userMarbleIdx].setParticleTint(
+          this.particleIntialTint
+        ); // white
+        this.isBoosted = false;
+      }
     }
+    if (
+      this.isOpponentBoosted &&
+      this.opponentBoostMultipler < this.opponentMarbleMaxSpeed
+    ) {
+      const opponentMarble = this.marbles[this.opponentMarbleIdx];
+      this.matter.body.setVelocity(opponentMarble, {
+        x: opponentMarble.velocity.x,
+        y: this.opponentBoostMultipler,
+      });
+      this.opponentBoostMultipler += 0.1;
+      if (this.opponentBoostMultipler >= this.opponentMarbleMaxSpeed) {
+        this.marbleTrailParticles[this.opponentMarbleIdx].setParticleTint(
+          this.particleIntialTint
+        ); // white
+        this.isOpponentBoosted = false;
+      }
+    }
+
     if (this.isGameOver && this.isResultShown === false) {
       // if (this.isResultShown) return;
       this.showResult();
@@ -871,7 +909,10 @@ export default class Game extends Phaser.Scene {
           this.heightReducedIndices = this.heightReducedIndices.filter(
             (idx) => idx !== i
           );
-          this.marbleTrailParticles[i].setConfig(this.trailConfig);
+          this.marbleTrailParticles[i].setConfig({
+            ...this.marbleTrailParticles[i].config,
+            scale: { start: this.dpr, end: this.dpr * 0.5 },
+          });
         } else if (
           !isHeightReduced &&
           y > this.reduceSizeScreenOffset[currentCrossIndex] &&
@@ -884,8 +925,8 @@ export default class Game extends Phaser.Scene {
             marbleImage.setDisplaySize(this.marbleRadius, this.marbleRadius);
           if (marbleMask) marbleMask.scale = 0.5;
           this.marbleTrailParticles[i].setConfig({
-            ...this.trailConfig,
-            scale: { start: 0.5, end: 0.01 },
+            ...this.marbleTrailParticles[i].config,
+            scale: { start: this.dpr * 0.5, end: this.dpr * 0.01 },
           });
         }
       }
