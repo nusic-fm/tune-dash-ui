@@ -16,6 +16,7 @@ import BouncingBallsLoading from "./BouncingBallsLoading";
 import axios from "axios";
 import { createOrder } from "../services/db/order.service";
 import { updatePurchasedVoice } from "../services/db/user.service";
+import WebApp from "@twa-dev/sdk";
 
 type Props = {
   primaryVoiceId: string;
@@ -209,25 +210,30 @@ const VoicesClash = ({
                     paylod
                   );
                   const webUrl = webUrlRes.data.webUrl;
-                  alert(webUrl);
-                  window.open(webUrl, "_blank");
-                  // setIsWaitingForPayment(true);
-                  // setInterval(async () => {
-                  //   const orderStatus = await axios.post(
-                  //     `https://sbx-crypto-payment-api.aeon.xyz/open/api/payment/query`,
-                  //     {
-                  //       merchantOrderNo: orderId,
-                  //       appId: import.meta.env.VITE_AEON_APP_ID,
-                  //       sign: webUrlRes.data.sign,
-                  //     }
-                  //   );
-                  //   if (orderStatus.data?.orderStatus === "COMPLETED") {
-                  //     await updatePurchasedVoice(userInfo.id, secondaryVoiceId);
-                  //     setIsWaitingForPayment(false);
-                  //     setReadyToStartRace(true);
-                  //   }
-                  // }, 3000);
-
+                  if (WebApp) {
+                    // WebApp.openTelegramLink(webUrl);
+                    WebApp.openLink(webUrl);
+                    setIsWaitingForPayment(true);
+                    setInterval(async () => {
+                      const orderStatus = await axios.post(
+                        `https://sbx-crypto-payment-api.aeon.xyz/open/api/payment/query`,
+                        {
+                          merchantOrderNo: orderId,
+                          appId: import.meta.env.VITE_AEON_APP_ID,
+                          sign: webUrlRes.data.sign,
+                        }
+                      );
+                      if (orderStatus.data?.orderStatus === "COMPLETED") {
+                        await updatePurchasedVoice(
+                          userInfo.id,
+                          secondaryVoiceId
+                        );
+                        setIsWaitingForPayment(false);
+                        setReadyToStartRace(true);
+                      }
+                    }, 3000);
+                  }
+                  // window.open(webUrl, "_blank");
                   // window.location.href = webUrl;
                   // TODO: Show it in a popup without interuppting the music
                 } catch (e) {
