@@ -463,33 +463,41 @@ export default class Game extends Phaser.Scene {
     if (isWin)
       resultImage = this.add
         .image(this.centerX, this.centerY, "win_result")
+        .setDisplaySize(
+          this.cameras.main.width / this.dpr,
+          this.cameras.main.height / this.dpr
+        )
         // .setScale(this.dpr)
         .setScrollFactor(0);
     else
       resultImage = this.add
         .image(this.centerX, this.centerY, "lose_result")
+        .setDisplaySize(
+          this.cameras.main.width / this.dpr,
+          this.cameras.main.height / this.dpr
+        )
         // .setScale(this.dpr)
         .setScrollFactor(0);
     // Add tween to scale the result image from 0 to 1
     this.tweens.add({
       targets: resultImage,
-      scale: this.dpr,
+      scale: this.dpr * 0.9,
       duration: 500,
       ease: "Bounce.out",
     });
-    const labelContent = isWin ? "You Win!" : "You Lose";
-    // const xpContent = this.winnerIdx === 1 ? "+500 XP" : "+0 XP";
+    // const labelContent = isWin ? "You Win!" : "You Lose";
+    // // const xpContent = this.winnerIdx === 1 ? "+500 XP" : "+0 XP";
 
-    const label = this.add
-      .text(this.centerX, this.centerY - 180, labelContent, {
-        fontSize: `${64 * this.dpr}px`,
-        color: "#ffffff",
-        stroke: "#000",
-        strokeThickness: 4,
-      })
-      .setScrollFactor(0);
-    label.setDepth(1);
-    label.setPosition(label.x - label.width / 2, label.y - label.height / 2);
+    // const label = this.add
+    //   .text(this.centerX, this.centerY - 180, labelContent, {
+    //     fontSize: `${64 * this.dpr}px`,
+    //     color: "#ffffff",
+    //     stroke: "#000",
+    //     strokeThickness: 4,
+    //   })
+    //   .setScrollFactor(0);
+    // label.setDepth(1);
+    // label.setPosition(label.x - label.width / 2, label.y - label.height / 2);
     // const labelXp = this.add
     //   .text(this.centerX, this.centerY + 250, xpContent, {
     //     fontSize: `${52 * this.dpr}px`,

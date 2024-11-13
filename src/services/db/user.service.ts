@@ -10,6 +10,7 @@ import {
   Timestamp,
   setDoc,
   increment,
+  arrayUnion,
 } from "firebase/firestore";
 
 const DB_NAME = "tune_dash_users";
@@ -48,4 +49,9 @@ const createUserDoc = async (userObj: User, docId: string): Promise<void> => {
     visits: 1,
   });
 };
-export { createUserDoc, getUserDocById };
+
+const updatePurchasedVoice = async (userId: string, voiceId: string) => {
+  const d = doc(db, DB_NAME, userId);
+  await updateDoc(d, { purchasedVoices: arrayUnion(voiceId) });
+};
+export { createUserDoc, getUserDocById, updatePurchasedVoice };

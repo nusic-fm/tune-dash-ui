@@ -1,4 +1,12 @@
-import { Stack, Box, Badge, Typography } from "@mui/material";
+import {
+  Stack,
+  Box,
+  Badge,
+  Typography,
+  Dialog,
+  DialogContent,
+  CircularProgress,
+} from "@mui/material";
 import { createRandomNumber, getVoiceAvatarPath } from "../helpers";
 import { useEffect, useState } from "react";
 import ChooseVoice from "./ChooseVoice";
@@ -7,6 +15,7 @@ import LongImageMotionButton from "./Buttons/LongImageMotionButton";
 import BouncingBallsLoading from "./BouncingBallsLoading";
 import axios from "axios";
 import { createOrder } from "../services/db/order.service";
+import { updatePurchasedVoice } from "../services/db/user.service";
 
 type Props = {
   primaryVoiceId: string;
@@ -32,6 +41,7 @@ const VoicesClash = ({
     useState(false);
   const [readyToStartRace, setReadyToStartRace] = useState(false);
   const [cost, setCost] = useState(0);
+  const [isWaitingForPayment, setIsWaitingForPayment] = useState(false);
 
   useEffect(() => {
     if (secondaryVoiceId && readyToStartRace) {
@@ -198,14 +208,31 @@ const VoicesClash = ({
                     `${import.meta.env.VITE_VOX_COVER_SERVER}/aeon-signature`,
                     paylod
                   );
-                  const webUrl = webUrlRes.data;
+                  const webUrl = webUrlRes.data.webUrl;
                   window.open(webUrl, "_blank");
+                  setIsWaitingForPayment(true);
+                  setInterval(async () => {
+                    const orderStatus = await axios.post(
+                      `https://sbx-crypto-payment-api.aeon.xyz/open/api/payment/query`,
+                      {
+                        merchantOrderNo: orderId,
+                        appId: import.meta.env.VITE_AEON_APP_ID,
+                        sign: webUrlRes.data.sign,
+                      }
+                    );
+                    if (orderStatus.data?.orderStatus === "COMPLETED") {
+                      await updatePurchasedVoice(userInfo.id, secondaryVoiceId);
+                      setIsWaitingForPayment(false);
+                      setReadyToStartRace(true);
+                    }
+                  }, 3000);
+
                   // window.location.href = webUrl;
                   // TODO: Show it in a popup without interuppting the music
                 } catch (e) {
                   alert("Error Occured, try again later");
                 } finally {
-                  setReadyToStartRace(true);
+                  // setReadyToStartRace(true);
                 }
               } else if (secondaryVoiceId && showOpponentVoiceSelection) {
                 setShowOpponentVoiceSelection(false);
@@ -226,6 +253,16 @@ const VoicesClash = ({
           />
         </Badge>
       )}
+      <Dialog open={isWaitingForPayment}>
+        <DialogContent>
+          <Stack alignItems={"center"} justifyContent={"center"} my={4}>
+            <CircularProgress />
+            <Typography color={"#fff"}>
+              Waiting for the payment status...
+            </Typography>
+          </Stack>
+        </DialogContent>
+      </Dialog>
     </Stack>
   );
 };
