@@ -209,6 +209,7 @@ const VoicesClash = ({
                     paylod
                   );
                   const webUrl = webUrlRes.data.webUrl;
+                  alert("webUrl: " + webUrl);
                   window.open(webUrl, "_blank");
                   setIsWaitingForPayment(true);
                   setInterval(async () => {

@@ -83,7 +83,7 @@ const ChoosePrimaryVoice = ({
         </Box>
       </Box>
       <Box
-        width={350}
+        width={window.innerWidth > 350 ? 350 : window.innerWidth}
         height={430}
         sx={{
           background: "url(/assets/tunedash/menu-voice-rect.png)",
@@ -92,8 +92,8 @@ const ChoosePrimaryVoice = ({
           backgroundPosition: "center",
         }}
         display={"flex"}
+        alignItems={"center"}
         justifyContent={"center"}
-        p={2}
       >
         <Box
           display={"flex"}
@@ -102,7 +102,8 @@ const ChoosePrimaryVoice = ({
           flexWrap={"wrap"}
           height={"85%"}
           width={"100%"}
-          py={2}
+          // my={2}
+          borderRadius={10}
           sx={{
             overflowY: "auto",
           }}

@@ -222,7 +222,7 @@ function App() {
             justifyContent={"center"}
           >
             <Stack
-              px={2}
+              // px={2}
               gap={4}
               // sx={{
               //     background: "rgba(0,0,0,0.6)",
