@@ -209,24 +209,24 @@ const VoicesClash = ({
                     paylod
                   );
                   const webUrl = webUrlRes.data.webUrl;
-                  alert("webUrl: " + webUrl);
+                  alert(webUrl);
                   window.open(webUrl, "_blank");
-                  setIsWaitingForPayment(true);
-                  setInterval(async () => {
-                    const orderStatus = await axios.post(
-                      `https://sbx-crypto-payment-api.aeon.xyz/open/api/payment/query`,
-                      {
-                        merchantOrderNo: orderId,
-                        appId: import.meta.env.VITE_AEON_APP_ID,
-                        sign: webUrlRes.data.sign,
-                      }
-                    );
-                    if (orderStatus.data?.orderStatus === "COMPLETED") {
-                      await updatePurchasedVoice(userInfo.id, secondaryVoiceId);
-                      setIsWaitingForPayment(false);
-                      setReadyToStartRace(true);
-                    }
-                  }, 3000);
+                  // setIsWaitingForPayment(true);
+                  // setInterval(async () => {
+                  //   const orderStatus = await axios.post(
+                  //     `https://sbx-crypto-payment-api.aeon.xyz/open/api/payment/query`,
+                  //     {
+                  //       merchantOrderNo: orderId,
+                  //       appId: import.meta.env.VITE_AEON_APP_ID,
+                  //       sign: webUrlRes.data.sign,
+                  //     }
+                  //   );
+                  //   if (orderStatus.data?.orderStatus === "COMPLETED") {
+                  //     await updatePurchasedVoice(userInfo.id, secondaryVoiceId);
+                  //     setIsWaitingForPayment(false);
+                  //     setReadyToStartRace(true);
+                  //   }
+                  // }, 3000);
 
                   // window.location.href = webUrl;
                   // TODO: Show it in a popup without interuppting the music
