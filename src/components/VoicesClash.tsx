@@ -214,7 +214,7 @@ const VoicesClash = ({
                     // WebApp.openTelegramLink(webUrl);
                     WebApp.openLink(webUrl);
                     setIsWaitingForPayment(true);
-                    setInterval(async () => {
+                    const interval = setInterval(async () => {
                       const orderStatus = await axios.post(
                         `https://sbx-crypto-payment-api.aeon.xyz/open/api/payment/query`,
                         {
@@ -230,6 +230,14 @@ const VoicesClash = ({
                         );
                         setIsWaitingForPayment(false);
                         setReadyToStartRace(true);
+                        clearInterval(interval);
+                      } else if (
+                        ["CLOSE", "TIMEOUT", "FAILED", "DELAY_FAILED"].includes(
+                          orderStatus.data?.orderStatus
+                        )
+                      ) {
+                        WebApp.showAlert("Payment Failed");
+                        clearInterval(interval);
                       }
                     }, 3000);
                   }

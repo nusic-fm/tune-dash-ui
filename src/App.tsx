@@ -285,6 +285,9 @@ function App() {
                 <ScreenOne
                   onStartClick={async () => {
                     if (WebApp.initDataUnsafe.user) {
+                      WebApp.openTelegramLink(
+                        "https://sbx-crypto-payment.alchemypay.org/?orderNum=300217314207413593603"
+                      );
                       // alert(
                       //   JSON.stringify({
                       //     fn: WebApp.initDataUnsafe.user.first_name,
