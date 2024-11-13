@@ -1,4 +1,4 @@
-import { Badge, Box, Typography } from "@mui/material";
+import { Badge, Box, Stack, Typography } from "@mui/material";
 import { getVoiceAvatarPath } from "../helpers";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
 
@@ -17,7 +17,7 @@ const ChooseVoice = ({ voices, selectedVoiceId, onChooseOpponent }: Props) => {
         background: "url(/assets/tunedash/menu-voice-rect.png)",
         backgroundSize: "cover",
       }}
-      p={4}
+      p={3}
     >
       <Box
         display={"flex"}
@@ -32,72 +32,91 @@ const ChooseVoice = ({ voices, selectedVoiceId, onChooseOpponent }: Props) => {
           overflowY: "auto",
           // background: "rgba(0,0,0,0.6)",
         }}
-        gap={1}
+        gap={4}
       >
         {voices.map((voice, idx) => {
           const cost =
             idx > voices.length / 2 ? 5 : idx > voices.length / 3 ? 2 : 0.99;
           return (
-            <Box
-              key={idx}
-              onClick={() => onChooseOpponent(voice, cost)}
-              position={"relative"}
-              width={65}
-              height={65}
-              display={"flex"}
-              alignItems={"center"}
-              justifyContent={"center"}
-            >
-              {voice.id === selectedVoiceId && (
-                <img
-                  src={"/assets/tunedash/focus.png"}
-                  width={"100%"}
-                  height={"100%"}
-                  style={{
-                    zIndex: 0,
-                    cursor: "pointer",
-                    // zoom: 1.1,
-                    transform: "scale(1.1)",
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                  }}
-                />
-              )}
-              <Badge
-                badgeContent={
-                  <Box
-                    sx={{
-                      borderRadius: "50%",
-                      width: 30,
-                      height: 30,
-                      backgroundColor: "#000",
-                      // position: "absolute",
-                      // top: 20,
-                      // left: -20,
-                    }}
-                    display={"flex"}
-                    alignItems={"center"}
-                    justifyContent={"center"}
-                  >
-                    <Typography variant="caption" color={"#fff"} fontSize={8}>
-                      ${cost}
-                    </Typography>
-                  </Box>
-                }
+            <Stack key={idx}>
+              <Box
+                onClick={() => onChooseOpponent(voice, cost)}
+                position={"relative"}
+                width={65}
+                height={65}
+                display={"flex"}
+                alignItems={"center"}
+                justifyContent={"center"}
+                borderRadius={"50%"}
+                border={"4px solid #AABBCC"}
               >
-                <img
-                  src={getVoiceAvatarPath(voice.id)}
-                  width={60}
-                  height={60}
-                  style={{
-                    borderRadius: "50%",
-                    cursor: "pointer",
-                    zIndex: 1,
-                  }}
-                />
-              </Badge>
-            </Box>
+                {voice.id === selectedVoiceId && (
+                  <img
+                    src={"/assets/tunedash/focus.png"}
+                    width={"100%"}
+                    height={"100%"}
+                    style={{
+                      zIndex: 0,
+                      cursor: "pointer",
+                      // zoom: 1.1,
+                      transform: "scale(1.3)",
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                    }}
+                  />
+                )}
+                <Badge
+                  badgeContent={
+                    <Box
+                      sx={{
+                        borderRadius: "50%",
+                        width: 30,
+                        height: 30,
+                        backgroundColor: "#000",
+                        backgroundImage: "url(/assets/tunedash/bubble.png)",
+                        backgroundSize: "contain",
+                        // position: "absolute",
+                        // top: 20,
+                        // left: -20,
+                      }}
+                      display={"flex"}
+                      alignItems={"center"}
+                      justifyContent={"center"}
+                    >
+                      <Typography
+                        variant="caption"
+                        color={"#000"}
+                        fontSize={8}
+                        fontWeight={900}
+                      >
+                        ${cost}
+                      </Typography>
+                    </Box>
+                  }
+                >
+                  <img
+                    src={getVoiceAvatarPath(voice.id)}
+                    width={60}
+                    height={60}
+                    style={{
+                      borderRadius: "50%",
+                      cursor: "pointer",
+                      zIndex: 1,
+                    }}
+                  />
+                </Badge>
+              </Box>
+              <Typography
+                color={"#f0f0f0"}
+                fontSize={12}
+                fontWeight={900}
+                textAlign={"center"}
+              >
+                {voice.name.slice(0, 10)}
+                {voice.name.length > 10 ? "..." : ""}
+              </Typography>
+            </Stack>
           );
         })}
       </Box>

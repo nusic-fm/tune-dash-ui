@@ -285,21 +285,6 @@ function App() {
                 <ScreenOne
                   onStartClick={async () => {
                     if (WebApp.initDataUnsafe.user) {
-                      window.open(
-                        "https://sbx-crypto-payment.alchemypay.org/?orderNum=300217314207413593603",
-                        "_blank"
-                      );
-                      // alert(
-                      //   JSON.stringify({
-                      //     fn: WebApp.initDataUnsafe.user.first_name,
-                      //     ln: WebApp.initDataUnsafe.user.last_name,
-                      //     id: WebApp.initDataUnsafe.user.id,
-                      //     photo_url: WebApp.initDataUnsafe.user.photo_url,
-                      //     username: WebApp.initDataUnsafe.user.username,
-                      //     auth_date: WebApp.initDataUnsafe.auth_date,
-                      //     lang: WebApp.initDataUnsafe.user.language_code,
-                      //   })
-                      // );
                       try {
                         setUserInfo({
                           id: WebApp.initDataUnsafe.user.id.toString(),

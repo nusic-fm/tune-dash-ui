@@ -107,48 +107,61 @@ const ChoosePrimaryVoice = ({
           sx={{
             overflowY: "auto",
           }}
+          gap={3}
         >
           {voices.map((voice, idx) => (
-            <Box
-              key={idx}
-              onClick={() => {
-                setSelectedVoiceInfo(voice);
-                switchVocals(selectedCoverId, voice.id, selectedVoiceInfo.id);
-              }}
-              position={"relative"}
-              width={65}
-              height={65}
-              display={"flex"}
-              alignItems={"center"}
-              justifyContent={"center"}
-            >
-              {voice.id === selectedVoiceInfo.id && (
+            <Stack key={idx}>
+              <Box
+                onClick={() => {
+                  setSelectedVoiceInfo(voice);
+                  switchVocals(selectedCoverId, voice.id, selectedVoiceInfo.id);
+                }}
+                position={"relative"}
+                width={65}
+                height={65}
+                display={"flex"}
+                alignItems={"center"}
+                justifyContent={"center"}
+                borderRadius={"50%"}
+                border={"4px solid #AABBCC"}
+              >
+                {voice.id === selectedVoiceInfo.id && (
+                  <img
+                    src={"/assets/tunedash/focus.png"}
+                    width={"100%"}
+                    height={"100%"}
+                    style={{
+                      zIndex: 0,
+                      cursor: "pointer",
+                      // zoom: 1.1,
+                      transform: "scale(1.2)",
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                    }}
+                  />
+                )}
                 <img
-                  src={"/assets/tunedash/focus.png"}
-                  width={"100%"}
-                  height={"100%"}
+                  src={getVoiceAvatarPath(voice.id)}
+                  width={60}
+                  height={60}
                   style={{
-                    zIndex: 0,
+                    borderRadius: "50%",
                     cursor: "pointer",
-                    // zoom: 1.1,
-                    transform: "scale(1.1)",
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
+                    zIndex: 1,
                   }}
                 />
-              )}
-              <img
-                src={getVoiceAvatarPath(voice.id)}
-                width={60}
-                height={60}
-                style={{
-                  borderRadius: "50%",
-                  cursor: "pointer",
-                  zIndex: 1,
-                }}
-              />
-            </Box>
+              </Box>
+              <Typography
+                color={"#f0f0f0"}
+                fontSize={12}
+                fontWeight={900}
+                textAlign={"center"}
+              >
+                {voice.name.slice(0, 10)}
+                {voice.name.length > 10 ? "..." : ""}
+              </Typography>
+            </Stack>
           ))}
         </Box>
       </Box>
