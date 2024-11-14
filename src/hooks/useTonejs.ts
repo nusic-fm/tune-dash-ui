@@ -302,7 +302,6 @@ const toggleMuteAudio = async () => {
 };
 
 const downloadAndPlayIntro = async () => {
-  await initializeTone();
   // await initializeDB();
   const url = "https://voxaudio.nusic.fm/intro.mp3?alt=media";
   // const dataArray = await getFromDB(url);
