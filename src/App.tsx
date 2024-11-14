@@ -109,20 +109,24 @@ function App() {
   );
   const [coversSnapshot, cssLoading, cssError] = useCollection(
     query(
-      collection(db, "covers"),
+      collection(db, "tunedash_covers"),
       where(documentId(), "in", [
-        // "PkOBGtGbdyMSEkG0BQ6O",
-        //   "f0pmE4twBXnJmVrJzh18",
-        //   // "ByE2N5MsLcSYpUR8s6a3",
-        //   "YE7LMzWbCKgkLgSKVX9Q",
-        //   "bkvtnO1D4fOUYvzwn0NJ",
-        //   // "abRoiarmwTRMqWTyqSGn",
-        "Sey1qVFqitYhnKkddMuQ",
-        "RL2bdU5NJOukDwQzzW1s",
-        "NAc4aENdcDHIh2k4K5oG",
-        "8FbtvPhkC13vo3HnAirx",
-        "lsUBEcaYfOidpvjUxpz1",
-        //   "hoZTAYrVO5qYmHz9CZtV",
+        "HPF5qmOAAdfU4O9uJM5T",
+        "7GskJxL0ldK9OGbl6e1Y",
+        "fEGU8n7EdEqhtMIfse09",
+        "i9aUmvBYqdlCjqtQLe8u",
+        //   // "PkOBGtGbdyMSEkG0BQ6O",
+        //   //   "f0pmE4twBXnJmVrJzh18",
+        //   //   // "ByE2N5MsLcSYpUR8s6a3",
+        //   //   "YE7LMzWbCKgkLgSKVX9Q",
+        //   //   "bkvtnO1D4fOUYvzwn0NJ",
+        //   //   // "abRoiarmwTRMqWTyqSGn",
+        //   "Sey1qVFqitYhnKkddMuQ",
+        //   "RL2bdU5NJOukDwQzzW1s",
+        //   "NAc4aENdcDHIh2k4K5oG",
+        //   "8FbtvPhkC13vo3HnAirx",
+        //   "lsUBEcaYfOidpvjUxpz1",
+        //   //   "hoZTAYrVO5qYmHz9CZtV",
       ]) // random
     )
   );
