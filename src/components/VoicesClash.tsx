@@ -26,6 +26,7 @@ type Props = {
   voices: VoiceV1Cover[];
   downloadProgress: number;
   userInfo: { id: string; fn: string } | null;
+  selectedCoverDocId: string;
 };
 
 const voiceWidth = 140;
@@ -37,6 +38,7 @@ const VoicesClash = ({
   onStartRaceClick,
   downloadProgress,
   userInfo,
+  selectedCoverDocId,
 }: Props) => {
   const [showOpponentVoiceSelection, setShowOpponentVoiceSelection] =
     useState(false);
@@ -170,7 +172,8 @@ const VoicesClash = ({
                   borderRadius: "50%",
                   width: 25,
                   height: 25,
-                  backgroundColor: "#000",
+                  backgroundImage: "url(/assets/tunedash/bubble.png)",
+                  backgroundSize: "contain",
                   position: "absolute",
                   top: 20,
                   left: -20,
@@ -179,7 +182,7 @@ const VoicesClash = ({
                 alignItems={"center"}
                 justifyContent={"center"}
               >
-                <Typography variant="h6" color={"#fff"}>
+                <Typography variant="h6" color={"#000"}>
                   $
                 </Typography>
               </Box>
@@ -228,7 +231,7 @@ const VoicesClash = ({
                       ) {
                         await updatePurchasedVoice(
                           userInfo.id,
-                          secondaryVoiceId
+                          `${selectedCoverDocId}_${secondaryVoiceId}`
                         );
                         setIsWaitingForPayment(false);
                         setReadyToStartRace(true);

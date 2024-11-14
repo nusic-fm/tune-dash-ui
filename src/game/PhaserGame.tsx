@@ -48,11 +48,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
   ) {
     const height = window.innerHeight;
     const game = useRef<Phaser.Game | null>(null!);
-    const [dpr] = useState(() =>
-      typeof window !== "undefined" && window.devicePixelRatio
-        ? window.devicePixelRatio
-        : 2
-    );
+    const [dpr] = useState(2);
 
     // useEffect(() => {
     //   if (

@@ -363,6 +363,7 @@ function App() {
                   screenName === "game-ready") && (
                   <VoicesClash
                     voices={coverDoc.voices}
+                    selectedCoverDocId={selectedCoverDocId}
                     primaryVoiceId={primaryVoiceInfo.id}
                     secondaryVoiceId={secondaryVoiceInfo?.id || ""}
                     onChooseOpponent={(voiceInfo) => {

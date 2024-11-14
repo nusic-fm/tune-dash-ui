@@ -113,7 +113,10 @@ const getToneCurrentTime = () => {
   return Tone.Transport.seconds;
 };
 const initializeTone = async () => {
-  if (!isToneInitialized) {
+  console.log("Tone.getContext().isOffline", Tone.getContext().isOffline);
+  console.log("isToneInitialized", isToneInitialized);
+  console.log("Tone.Transport.state", Tone.Transport.state);
+  if (Tone.getContext().isOffline || !isToneInitialized) {
     isToneInitialized = true;
     await Tone.start();
     console.log("context started");
