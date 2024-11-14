@@ -103,6 +103,8 @@ export default class Preloader extends Phaser.Scene {
       "assets/tunedash/rhythmicpads/tile_finish.png"
     );
     this.load.image("tile", "assets/tunedash/rhythmicpads/tile.png");
+    this.load.image("win_result", "assets/tunedash/bgs/win_result.jpg");
+    this.load.image("lose_result", "assets/tunedash/bgs/lose_result.jpg");
     this.load.on("progress", function (value: number) {
       console.log(value);
       percentText.setText(parseInt(`${value * 100}`) + "%");

@@ -1,4 +1,4 @@
-import { Box, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Stack, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import Header from "./components/Header";
 
@@ -11,6 +11,7 @@ import {
   toggleMuteAudio,
 } from "./hooks/useTonejs";
 import { CoverV1, VoiceV1Cover } from "./services/db/coversV1.service";
+import { createUserDoc } from "./services/db/user.service";
 import { getSkinPath, getTrailPath, getVoiceAvatarPath } from "./helpers";
 import ScreenOne from "./components/ScreenOne";
 import ScreenTwo from "./components/ScreenTwo";
@@ -22,6 +23,7 @@ import VoicesClash from "./components/VoicesClash";
 import SmallImageMotionButton from "./components/Buttons/SmallImageMotionButton";
 import SelectTrack from "./components/SelectTrack";
 import SlideUp from "./components/SlideUp";
+import WebApp from "@twa-dev/sdk";
 
 export const tracks = [
   "01",
@@ -86,7 +88,7 @@ function App() {
   });
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [startSectionIdx, setStartSectionIdx] = useState(1);
-  const [noOfRaceTracks, setNoOfRaceTracks] = useState(6);
+  const [noOfRaceTracks, setNoOfRaceTracks] = useState(10);
   const theme = useTheme();
   const isMobileView = useMediaQuery(theme.breakpoints.down("md"));
   const canvasElemWidth = isMobileView ? window.innerWidth : 414;
@@ -102,22 +104,30 @@ function App() {
     useState<VoiceV1Cover | null>(null);
   const [screenName, setScreenName] = useState("splash");
   const [isDownloaded, setIsDownloaded] = useState(false);
+  const [userInfo, setUserInfo] = useState<{ id: string; fn: string } | null>(
+    null
+  );
   const [coversSnapshot, cssLoading, cssError] = useCollection(
     query(
-      collection(db, "covers"),
+      collection(db, "tunedash_covers"),
       where(documentId(), "in", [
-        // "PkOBGtGbdyMSEkG0BQ6O",
-        //   "f0pmE4twBXnJmVrJzh18",
-        //   // "ByE2N5MsLcSYpUR8s6a3",
-        //   "YE7LMzWbCKgkLgSKVX9Q",
-        //   "bkvtnO1D4fOUYvzwn0NJ",
-        //   // "abRoiarmwTRMqWTyqSGn",
-        "Sey1qVFqitYhnKkddMuQ",
-        "RL2bdU5NJOukDwQzzW1s",
-        "NAc4aENdcDHIh2k4K5oG",
-        "8FbtvPhkC13vo3HnAirx",
+        "HPF5qmOAAdfU4O9uJM5T",
+        "7GskJxL0ldK9OGbl6e1Y",
+        "fEGU8n7EdEqhtMIfse09",
+        "i9aUmvBYqdlCjqtQLe8u",
         "lsUBEcaYfOidpvjUxpz1",
-        //   "hoZTAYrVO5qYmHz9CZtV",
+        //   // "PkOBGtGbdyMSEkG0BQ6O",
+        //   //   "f0pmE4twBXnJmVrJzh18",
+        //   //   // "ByE2N5MsLcSYpUR8s6a3",
+        //   //   "YE7LMzWbCKgkLgSKVX9Q",
+        //   //   "bkvtnO1D4fOUYvzwn0NJ",
+        //   //   // "abRoiarmwTRMqWTyqSGn",
+        //   "Sey1qVFqitYhnKkddMuQ",
+        //   "RL2bdU5NJOukDwQzzW1s",
+        //   "NAc4aENdcDHIh2k4K5oG",
+        //   "8FbtvPhkC13vo3HnAirx",
+        //   "lsUBEcaYfOidpvjUxpz1",
+        //   //   "hoZTAYrVO5qYmHz9CZtV",
       ]) // random
     )
   );
@@ -217,7 +227,7 @@ function App() {
             justifyContent={"center"}
           >
             <Stack
-              px={2}
+              // px={2}
               gap={4}
               // sx={{
               //     background: "rgba(0,0,0,0.6)",
@@ -278,7 +288,33 @@ function App() {
               )}
               {screenName === "start" && (
                 <ScreenOne
-                  onStartClick={() => {
+                  onStartClick={async () => {
+                    if (WebApp.initDataUnsafe.user) {
+                      try {
+                        setUserInfo({
+                          id: WebApp.initDataUnsafe.user.id.toString(),
+                          fn: WebApp.initDataUnsafe.user.first_name,
+                        });
+                        createUserDoc(
+                          {
+                            firstName: WebApp.initDataUnsafe.user.first_name,
+                            lastName:
+                              WebApp.initDataUnsafe.user.last_name || "",
+                            username: WebApp.initDataUnsafe.user.username || "",
+                            id: WebApp.initDataUnsafe.user.id.toString(),
+                            photoUrl:
+                              WebApp.initDataUnsafe.user.photo_url || "",
+                            languageCode:
+                              WebApp.initDataUnsafe.user.language_code || "",
+                            isBot: WebApp.initDataUnsafe.user.is_bot || false,
+                          },
+                          WebApp.initDataUnsafe.user.id.toString()
+                        );
+                      } catch (e) {
+                        // TODO: Handle error
+                      }
+                    }
+
                     setScreenName("menu");
                     // const toneStatus = getToneStatus();
                     // if (toneStatus.isTonePlaying === false)
@@ -327,6 +363,7 @@ function App() {
                   screenName === "game-ready") && (
                   <VoicesClash
                     voices={coverDoc.voices}
+                    selectedCoverDocId={selectedCoverDocId}
                     primaryVoiceId={primaryVoiceInfo.id}
                     secondaryVoiceId={secondaryVoiceInfo?.id || ""}
                     onChooseOpponent={(voiceInfo) => {
@@ -337,6 +374,7 @@ function App() {
                       setScreenName("game");
                     }}
                     downloadProgress={downloadProgress}
+                    userInfo={userInfo}
                   />
                 )}
               {primaryVoiceInfo &&

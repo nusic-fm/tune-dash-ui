@@ -1,15 +1,22 @@
-import { Stack, Box, Badge, Typography } from "@mui/material";
 import {
-  createAeonSignature,
-  createRandomNumber,
-  getVoiceAvatarPath,
-} from "../helpers";
+  Stack,
+  Box,
+  Badge,
+  Typography,
+  Dialog,
+  DialogContent,
+  CircularProgress,
+} from "@mui/material";
+import { createRandomNumber, getVoiceAvatarPath } from "../helpers";
 import { useEffect, useState } from "react";
 import ChooseVoice from "./ChooseVoice";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
 import BouncingBallsLoading from "./BouncingBallsLoading";
 import axios from "axios";
+import { createOrder } from "../services/db/order.service";
+import { updatePurchasedVoice } from "../services/db/user.service";
+import WebApp from "@twa-dev/sdk";
 
 type Props = {
   primaryVoiceId: string;
@@ -18,6 +25,8 @@ type Props = {
   onStartRaceClick: () => void;
   voices: VoiceV1Cover[];
   downloadProgress: number;
+  userInfo: { id: string; fn: string } | null;
+  selectedCoverDocId: string;
 };
 
 const voiceWidth = 140;
@@ -28,10 +37,14 @@ const VoicesClash = ({
   onChooseOpponent,
   onStartRaceClick,
   downloadProgress,
+  userInfo,
+  selectedCoverDocId,
 }: Props) => {
   const [showOpponentVoiceSelection, setShowOpponentVoiceSelection] =
     useState(false);
   const [readyToStartRace, setReadyToStartRace] = useState(false);
+  const [cost, setCost] = useState(0);
+  const [isWaitingForPayment, setIsWaitingForPayment] = useState(false);
 
   useEffect(() => {
     if (secondaryVoiceId && readyToStartRace) {
@@ -114,7 +127,10 @@ const VoicesClash = ({
         <ChooseVoice
           voices={voices}
           selectedVoiceId={secondaryVoiceId || ""}
-          setSelectedVoiceId={onChooseOpponent}
+          onChooseOpponent={(voiceInfo, cost) => {
+            setCost(cost);
+            onChooseOpponent(voiceInfo);
+          }}
         />
       )}
       {!showOpponentVoiceSelection &&
@@ -156,7 +172,8 @@ const VoicesClash = ({
                   borderRadius: "50%",
                   width: 25,
                   height: 25,
-                  backgroundColor: "#000",
+                  backgroundImage: "url(/assets/tunedash/bubble.png)",
+                  backgroundSize: "contain",
                   position: "absolute",
                   top: 20,
                   left: -20,
@@ -165,7 +182,7 @@ const VoicesClash = ({
                 alignItems={"center"}
                 justifyContent={"center"}
               >
-                <Typography variant="h6" color={"#fff"}>
+                <Typography variant="h6" color={"#000"}>
                   $
                 </Typography>
               </Box>
@@ -177,23 +194,65 @@ const VoicesClash = ({
               if (
                 secondaryVoiceId &&
                 showOpponentVoiceSelection &&
-                !readyToStartRace
+                !readyToStartRace &&
+                userInfo
               ) {
-                const payload = createAeonSignature({
-                  merchantOrderNo: "12312432124",
-                  userId: "logesh.r24@gmail.com",
-                  orderAmount: 1,
-                  payCurrency: "USD",
-                });
                 try {
-                  const res = await axios.post(
-                    `https://sbx-crypto-payment-api.aeon.xyz/open/api/payment/V2`,
-                    payload
+                  const orderId = await createOrder(
+                    userInfo.id,
+                    voices[voices.map((v) => v.id).indexOf(secondaryVoiceId)],
+                    cost
                   );
-                  console.log(res);
+                  const paylod = {
+                    merchantOrderNo: orderId,
+                    userId: userInfo.id,
+                    orderAmount: cost,
+                  };
+                  const webUrlRes = await axios.post(
+                    `${import.meta.env.VITE_VOX_COVER_SERVER}/aeon-signature`,
+                    paylod
+                  );
+                  const webUrl = webUrlRes.data.webUrl;
+                  if (WebApp) {
+                    // WebApp.openTelegramLink(webUrl);
+                    WebApp.openLink(webUrl);
+                    setIsWaitingForPayment(true);
+                    const interval = setInterval(async () => {
+                      const orderStatus = await axios.post(
+                        `https://sbx-crypto-payment-api.aeon.xyz/open/api/payment/query`,
+                        {
+                          merchantOrderNo: orderId,
+                          appId: import.meta.env.VITE_AEON_APP_ID,
+                          sign: webUrlRes.data.sign,
+                        }
+                      );
+                      if (
+                        orderStatus.data?.model?.orderStatus === "COMPLETED"
+                      ) {
+                        await updatePurchasedVoice(
+                          userInfo.id,
+                          `${selectedCoverDocId}_${secondaryVoiceId}`
+                        );
+                        setIsWaitingForPayment(false);
+                        setReadyToStartRace(true);
+                        clearInterval(interval);
+                      } else if (
+                        ["CLOSE", "TIMEOUT", "FAILED", "DELAY_FAILED"].includes(
+                          orderStatus.data?.model?.orderStatus
+                        )
+                      ) {
+                        WebApp.showAlert("Payment Failed");
+                        clearInterval(interval);
+                      }
+                    }, 3000);
+                  }
+                  // window.open(webUrl, "_blank");
+                  // window.location.href = webUrl;
+                  // TODO: Show it in a popup without interuppting the music
                 } catch (e) {
+                  alert("Error Occured, try again later");
                 } finally {
-                  setReadyToStartRace(true);
+                  // setReadyToStartRace(true);
                 }
               } else if (secondaryVoiceId && showOpponentVoiceSelection) {
                 setShowOpponentVoiceSelection(false);
@@ -214,6 +273,16 @@ const VoicesClash = ({
           />
         </Badge>
       )}
+      <Dialog open={isWaitingForPayment}>
+        <DialogContent>
+          <Stack alignItems={"center"} justifyContent={"center"} my={4}>
+            <CircularProgress />
+            <Typography color={"#fff"}>
+              Waiting for the payment status...
+            </Typography>
+          </Stack>
+        </DialogContent>
+      </Dialog>
     </Stack>
   );
 };

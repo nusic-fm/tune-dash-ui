@@ -86,14 +86,15 @@ const SelectTrack = ({
       <Stack
         sx={{
           background: `url(/assets/tunedash/select-track-rect.png)`,
-          width: 345,
+          width: window.innerWidth > 345 ? 345 : window.innerWidth,
           height: 452,
           backgroundRepeat: "no-repeat",
+          backgroundSize: "contain",
         }}
         gap={2}
         alignItems={"center"}
         py={2}
-        px={1}
+        // px={1}
       >
         {coversSnapshot.docs.map(
           (doc: QueryDocumentSnapshot<DocumentData, DocumentData>) => {

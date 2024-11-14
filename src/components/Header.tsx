@@ -79,7 +79,12 @@ const Header = ({
           width: 60,
           height: 60,
         }}
-        onClick={() => {}}
+        onClick={() => {
+          window.open(
+            "//sbx-crypto-payment.alchemypay.org/?orderNum=300217314207413593603",
+            "_blank"
+          );
+        }}
       />
     </Stack>
   );

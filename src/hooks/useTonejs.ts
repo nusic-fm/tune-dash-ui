@@ -113,13 +113,13 @@ const getToneCurrentTime = () => {
   return Tone.Transport.seconds;
 };
 const initializeTone = async () => {
-  if (!isToneInitialized) {
-    isToneInitialized = true;
-    await Tone.start();
-    console.log("context started");
-    setEvents();
-    // if (!db) await initializeDB();
-  }
+  // if (!isToneInitialized) {
+  isToneInitialized = true;
+  await Tone.start();
+  console.log("context started");
+  setEvents();
+  // if (!db) await initializeDB();
+  // }
 };
 
 const setEvents = () => {
@@ -204,6 +204,7 @@ const prepareVocalPlayers = async (urls: string[]) => {
 };
 
 const switchVocals = async (id: string, vId: string, oldVId: string) => {
+  await initializeTone();
   if (oldVId === vId) return;
   // // Delete and dispose the old downloadobj
   // downloadObj[
@@ -241,6 +242,7 @@ const switchVocals = async (id: string, vId: string, oldVId: string) => {
 };
 
 const marbleRacePlayVocals = async (id: string, vId: string) => {
+  await initializeTone();
   const url = `https://voxaudio.nusic.fm/covers/${id}/${vId}.mp3`;
   if (currentlyPlayingUrl) {
     playersRef[currentlyPlayingUrl].stop();
