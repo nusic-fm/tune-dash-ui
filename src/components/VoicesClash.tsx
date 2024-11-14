@@ -223,7 +223,9 @@ const VoicesClash = ({
                           sign: webUrlRes.data.sign,
                         }
                       );
-                      if (orderStatus.data?.orderStatus === "COMPLETED") {
+                      if (
+                        orderStatus.data?.model?.orderStatus === "COMPLETED"
+                      ) {
                         await updatePurchasedVoice(
                           userInfo.id,
                           secondaryVoiceId
@@ -233,7 +235,7 @@ const VoicesClash = ({
                         clearInterval(interval);
                       } else if (
                         ["CLOSE", "TIMEOUT", "FAILED", "DELAY_FAILED"].includes(
-                          orderStatus.data?.orderStatus
+                          orderStatus.data?.model?.orderStatus
                         )
                       ) {
                         WebApp.showAlert("Payment Failed");
