@@ -207,6 +207,7 @@ const prepareVocalPlayers = async (urls: string[]) => {
 };
 
 const switchVocals = async (id: string, vId: string, oldVId: string) => {
+  initializeTone();
   if (oldVId === vId) return;
   // // Delete and dispose the old downloadobj
   // downloadObj[
