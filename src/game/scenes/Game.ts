@@ -447,8 +447,8 @@ export default class Game extends Phaser.Scene {
           } else if (e.label === this.marbles[this.userMarbleIdx].label) {
             this.powerups.map((p) => (p.visible = false));
             this.startRhythmicGame();
+            powerup.destroy();
           }
-          powerup.destroy();
         });
       });
     }
@@ -576,22 +576,17 @@ export default class Game extends Phaser.Scene {
         }
         this.tapResultLabel?.destroy();
         this.tapResultLabel = this.add
-          .text(
-            this.cameras.main.width / 2,
-            this.cameras.main.height / 2,
-            resultText,
-            {
-              fontSize: `${42 * this.dpr}px`,
-              color:
-                resultText === "Perfect"
-                  ? "green"
-                  : resultText === "Great"
-                  ? "yellow"
-                  : "red",
-              stroke: "rgba(0,0,0,1)",
-              strokeThickness: 6,
-            }
-          )
+          .text(this.centerX, targetY + 100, resultText.toUpperCase(), {
+            fontSize: `${28 * this.dpr}px`,
+            color:
+              resultText === "Perfect"
+                ? "green"
+                : resultText === "Great"
+                ? "yellow"
+                : "red",
+            stroke: "rgba(0,0,0,1)",
+            strokeThickness: 6,
+          })
           .setDepth(101)
           .setScrollFactor(0);
         this.tapResultLabel?.setPosition(
