@@ -219,6 +219,7 @@ function App() {
         <SlideUp
           onSlideUp={() => {
             toggleMuteAudio();
+            alert(WebApp?.platform);
             setScreenName("start");
           }}
           enableSlideUp={isDownloaded}
