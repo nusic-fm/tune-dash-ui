@@ -19,7 +19,11 @@ import {
   toggleMuteAudio,
 } from "./hooks/useTonejs";
 import { CoverV1, VoiceV1Cover } from "./services/db/coversV1.service";
-import { createUserDoc, updateGameResult } from "./services/db/user.service";
+import {
+  createUserDoc,
+  updateGameResult,
+  User,
+} from "./services/db/user.service";
 import { getSkinPath, getTrailPath, getVoiceAvatarPath } from "./helpers";
 import ScreenOne from "./components/ScreenOne";
 import ScreenTwo from "./components/ScreenTwo";
@@ -98,7 +102,7 @@ function App() {
   });
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [startSectionIdx, setStartSectionIdx] = useState(1);
-  const [noOfRaceTracks, setNoOfRaceTracks] = useState(2);
+  const [noOfRaceTracks, setNoOfRaceTracks] = useState(10);
   const theme = useTheme();
   const isMobileView = useMediaQuery(theme.breakpoints.down("md"));
   const canvasElemWidth = isMobileView ? window.innerWidth : 414;
@@ -114,9 +118,7 @@ function App() {
     useState<VoiceV1Cover | null>(null);
   const [screenName, setScreenName] = useState("splash");
   const [isDownloaded, setIsDownloaded] = useState(false);
-  const [userInfo, setUserInfo] = useState<{ id: string; fn: string } | null>(
-    null
-  );
+  const [userInfo, setUserInfo] = useState<User | null>(null);
   const [showOpponentVoiceSelection, setShowOpponentVoiceSelection] =
     useState(false);
   const [showGameOverButtons, setShowGameOverButtons] = useState(false);
@@ -151,6 +153,27 @@ function App() {
     if (coversSnapshot?.docs.length) {
       (async () => {
         await downloadAndPlayIntro();
+
+        if (WebApp.initDataUnsafe.user) {
+          try {
+            const user = await createUserDoc(
+              {
+                firstName: WebApp.initDataUnsafe.user.first_name,
+                lastName: WebApp.initDataUnsafe.user.last_name || "",
+                username: WebApp.initDataUnsafe.user.username || "",
+                id: WebApp.initDataUnsafe.user.id.toString(),
+                photoUrl: WebApp.initDataUnsafe.user.photo_url || "",
+                languageCode: WebApp.initDataUnsafe.user.language_code || "",
+                isBot: WebApp.initDataUnsafe.user.is_bot || false,
+                purchasedVoices: null,
+              },
+              WebApp.initDataUnsafe.user.id.toString()
+            );
+            setUserInfo(user);
+          } catch (e) {
+            // TODO: Handle error
+          }
+        }
         setIsDownloaded(true);
         // setScreenName("start");
       })();
@@ -266,7 +289,7 @@ function App() {
                   top={0}
                   left={0}
                   width={"100%"}
-                  height={"90%"}
+                  height={"95%"}
                   display={"flex"}
                   justifyContent={"end"}
                   alignItems={"center"}
@@ -331,32 +354,6 @@ function App() {
               {screenName === "start" && (
                 <ScreenOne
                   onStartClick={async () => {
-                    if (WebApp.initDataUnsafe.user) {
-                      try {
-                        setUserInfo({
-                          id: WebApp.initDataUnsafe.user.id.toString(),
-                          fn: WebApp.initDataUnsafe.user.first_name,
-                        });
-                        createUserDoc(
-                          {
-                            firstName: WebApp.initDataUnsafe.user.first_name,
-                            lastName:
-                              WebApp.initDataUnsafe.user.last_name || "",
-                            username: WebApp.initDataUnsafe.user.username || "",
-                            id: WebApp.initDataUnsafe.user.id.toString(),
-                            photoUrl:
-                              WebApp.initDataUnsafe.user.photo_url || "",
-                            languageCode:
-                              WebApp.initDataUnsafe.user.language_code || "",
-                            isBot: WebApp.initDataUnsafe.user.is_bot || false,
-                          },
-                          WebApp.initDataUnsafe.user.id.toString()
-                        );
-                      } catch (e) {
-                        // TODO: Handle error
-                      }
-                    }
-
                     setScreenName("menu");
                     // const toneStatus = getToneStatus();
                     // if (toneStatus.isTonePlaying === false)

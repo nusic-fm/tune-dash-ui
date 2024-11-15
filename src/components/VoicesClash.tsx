@@ -1,12 +1,4 @@
-import {
-  Stack,
-  Box,
-  Badge,
-  Typography,
-  Dialog,
-  DialogContent,
-  CircularProgress,
-} from "@mui/material";
+import { Stack, Box, Badge, Typography } from "@mui/material";
 import { createRandomNumber, getVoiceAvatarPath } from "../helpers";
 import { useEffect, useState } from "react";
 import ChooseVoice from "./ChooseVoice";
@@ -15,7 +7,7 @@ import LongImageMotionButton from "./Buttons/LongImageMotionButton";
 import BouncingBallsLoading from "./BouncingBallsLoading";
 import axios from "axios";
 import { createOrder } from "../services/db/order.service";
-import { updatePurchasedVoice } from "../services/db/user.service";
+import { updatePurchasedVoice, User } from "../services/db/user.service";
 import WebApp from "@twa-dev/sdk";
 
 type Props = {
@@ -25,7 +17,7 @@ type Props = {
   onStartRaceClick: () => void;
   voices: VoiceV1Cover[];
   downloadProgress: number;
-  userInfo: { id: string; fn: string } | null;
+  userInfo: User | null;
   selectedCoverDocId: string;
   showOpponentVoiceSelection: boolean;
   setShowOpponentVoiceSelection: (show: boolean) => void;
@@ -130,11 +122,13 @@ const VoicesClash = ({
         <ChooseVoice
           voices={voices}
           filterOutVoiceIds={[primaryVoiceId]}
+          selectedCoverDocId={selectedCoverDocId}
           selectedVoiceId={secondaryVoiceId || ""}
           onChooseOpponent={(voiceInfo, cost) => {
             setCost(cost);
             onChooseOpponent(voiceInfo);
           }}
+          purchasedVoices={userInfo?.purchasedVoices || []}
         />
       )}
       {!showOpponentVoiceSelection &&
@@ -214,6 +208,13 @@ const VoicesClash = ({
             onClick={async () => {
               if (!userInfo) return alert("Support only on Telegram Mini App");
               if (
+                (userInfo?.purchasedVoices || []).includes(
+                  `${selectedCoverDocId}_${secondaryVoiceId}`
+                )
+              ) {
+                setShowOpponentVoiceSelection(false);
+                setReadyToStartRace(true);
+              } else if (
                 secondaryVoiceId &&
                 showOpponentVoiceSelection &&
                 !readyToStartRace &&
@@ -254,6 +255,7 @@ const VoicesClash = ({
                           `${selectedCoverDocId}_${secondaryVoiceId}`
                         );
                         setIsWaitingForPayment("");
+                        setShowOpponentVoiceSelection(false);
                         setReadyToStartRace(true);
                         clearInterval(interval);
                       } else if (
@@ -274,7 +276,14 @@ const VoicesClash = ({
                 setShowOpponentVoiceSelection(true);
               }
             }}
-            name={readyToStartRace ? "Start Race" : "Unlock Race"}
+            name={
+              readyToStartRace ||
+              (userInfo?.purchasedVoices || []).includes(
+                `${selectedCoverDocId}_${secondaryVoiceId}`
+              )
+                ? "Start Race"
+                : "Unlock Race"
+            }
             width={290}
             height={93}
           />

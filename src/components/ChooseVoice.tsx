@@ -1,12 +1,15 @@
 import { Badge, Box, Stack, Typography } from "@mui/material";
 import { getVoiceAvatarPath } from "../helpers";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 
 type Props = {
   voices: VoiceV1Cover[];
   selectedVoiceId: string;
   onChooseOpponent: (voiceInfo: VoiceV1Cover, cost: number) => void;
   filterOutVoiceIds: string[];
+  purchasedVoices: string[];
+  selectedCoverDocId: string;
 };
 
 const ChooseVoice = ({
@@ -14,7 +17,10 @@ const ChooseVoice = ({
   selectedVoiceId,
   onChooseOpponent,
   filterOutVoiceIds,
+  purchasedVoices,
+  selectedCoverDocId,
 }: Props) => {
+  console.log(purchasedVoices, selectedCoverDocId);
   return (
     <Box
       width={320}
@@ -95,14 +101,20 @@ const ChooseVoice = ({
                         alignItems={"center"}
                         justifyContent={"center"}
                       >
-                        <Typography
-                          variant="caption"
-                          color={"#000"}
-                          fontSize={8}
-                          fontWeight={900}
-                        >
-                          ${cost}
-                        </Typography>
+                        {purchasedVoices.includes(
+                          `${selectedCoverDocId}_${voice.id}`
+                        ) ? (
+                          <CheckRoundedIcon fontSize="small" />
+                        ) : (
+                          <Typography
+                            variant="caption"
+                            color={"#000"}
+                            fontSize={8}
+                            fontWeight={900}
+                          >
+                            ${cost}
+                          </Typography>
+                        )}
                       </Box>
                     }
                   >
