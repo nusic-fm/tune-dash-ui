@@ -11,7 +11,9 @@ import {
   setDoc,
   increment,
   arrayUnion,
+  collection,
 } from "firebase/firestore";
+import { VoiceV1Cover } from "./coversV1.service";
 
 const DB_NAME = "tune_dash_users";
 
@@ -23,6 +25,7 @@ export type User = {
   languageCode?: string;
   isBot?: boolean;
   id: string;
+  purchasedVoices: string[] | null;
 };
 export type UserDoc = User & {
   createdAt: Timestamp;
@@ -35,12 +38,12 @@ const getUserDocById = async (docId: string) => {
   return (await getDoc(d)).data() as UserDoc;
 };
 
-const createUserDoc = async (userObj: User, docId: string): Promise<void> => {
+const createUserDoc = async (userObj: User, docId: string): Promise<User> => {
   const d = doc(db, DB_NAME, docId);
   const existingUser = await getDoc(d);
   if (existingUser.exists()) {
     await updateDoc(d, { lastSeen: serverTimestamp(), visits: increment(1) });
-    return;
+    return existingUser.data() as User;
   }
   await setDoc(d, {
     ...userObj,
@@ -48,10 +51,47 @@ const createUserDoc = async (userObj: User, docId: string): Promise<void> => {
     lastSeen: serverTimestamp(),
     visits: 1,
   });
+  return userObj;
 };
 
 const updatePurchasedVoice = async (userId: string, voiceId: string) => {
   const d = doc(db, DB_NAME, userId);
   await updateDoc(d, { purchasedVoices: arrayUnion(voiceId) });
 };
-export { createUserDoc, getUserDocById, updatePurchasedVoice };
+
+const updateGameResult = async (
+  userId: string,
+  coverDocId: string,
+  isWinner: boolean,
+  voices: VoiceV1Cover[],
+  winningVoiceId: string
+) => {
+  const d = doc(db, DB_NAME, userId);
+  const existingUser = await getDoc(d);
+  if (!existingUser.exists()) {
+    // TODO: Log User not found
+    return;
+  }
+  await updateDoc(d, {
+    wins: increment(isWinner ? 1 : 0),
+    playedTimes: increment(1),
+  });
+  // Save game in subcollection
+  const gameDoc = doc(
+    collection(db, DB_NAME, userId, "races"),
+    `${Date.now()}`
+  );
+  await setDoc(gameDoc, {
+    voices,
+    isWinner,
+    winningVoiceId,
+    timestamp: serverTimestamp(),
+    coverDocId,
+  });
+};
+export {
+  createUserDoc,
+  getUserDocById,
+  updatePurchasedVoice,
+  updateGameResult,
+};

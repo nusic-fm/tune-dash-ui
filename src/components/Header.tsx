@@ -22,6 +22,10 @@ const Header = ({
       alignItems={"center"}
       width={"100%"}
       py={2}
+      position={"absolute"}
+      top={0}
+      left={0}
+      zIndex={99}
     >
       <Box width={60} height={60}>
         {showBackButton && (
@@ -45,24 +49,26 @@ const Header = ({
           position={"relative"}
           width={229}
           height={32}
-          // sx={{ overflow: "hidden" }}
+          sx={{ overflow: "hidden" }}
         >
           <img src="/assets/tunedash/player-topbar.png" alt="logo" />
           <Typography
             position="absolute"
             top={0}
             left={8}
-            width={"calc(100% - 16px)"}
+            // width={"calc(100% - 24px)"}
             height={"100%"}
             display={"flex"}
             // justifyContent={"center"}
             alignItems={"center"}
             fontSize={"12px"}
             sx={{
-              textOverflow: "ellipsis",
-              overflow: "hidden",
+              // scrolling text
+              // textOverflow: "ellipsis",
+              // overflow: "hidden",
               whiteSpace: "nowrap",
             }}
+            id="scroll-text"
           >
             {coverTitle}
           </Typography>

@@ -1,4 +1,12 @@
-import { Box, Stack, useMediaQuery, useTheme } from "@mui/material";
+import {
+  Box,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import Header from "./components/Header";
 
@@ -11,7 +19,11 @@ import {
   toggleMuteAudio,
 } from "./hooks/useTonejs";
 import { CoverV1, VoiceV1Cover } from "./services/db/coversV1.service";
-import { createUserDoc } from "./services/db/user.service";
+import {
+  createUserDoc,
+  updateGameResult,
+  User,
+} from "./services/db/user.service";
 import { getSkinPath, getTrailPath, getVoiceAvatarPath } from "./helpers";
 import ScreenOne from "./components/ScreenOne";
 import ScreenTwo from "./components/ScreenTwo";
@@ -24,6 +36,8 @@ import SmallImageMotionButton from "./components/Buttons/SmallImageMotionButton"
 import SelectTrack from "./components/SelectTrack";
 import SlideUp from "./components/SlideUp";
 import WebApp from "@twa-dev/sdk";
+import { EventBus } from "./game/EventBus";
+import LongImageMotionButton from "./components/Buttons/LongImageMotionButton";
 
 export const tracks = [
   "01",
@@ -104,9 +118,10 @@ function App() {
     useState<VoiceV1Cover | null>(null);
   const [screenName, setScreenName] = useState("splash");
   const [isDownloaded, setIsDownloaded] = useState(false);
-  const [userInfo, setUserInfo] = useState<{ id: string; fn: string } | null>(
-    null
-  );
+  const [userInfo, setUserInfo] = useState<User | null>(null);
+  const [showOpponentVoiceSelection, setShowOpponentVoiceSelection] =
+    useState(false);
+  const [showGameOverButtons, setShowGameOverButtons] = useState(false);
   const [coversSnapshot, cssLoading, cssError] = useCollection(
     query(
       collection(db, "tunedash_covers"),
@@ -116,18 +131,6 @@ function App() {
         "fEGU8n7EdEqhtMIfse09",
         "i9aUmvBYqdlCjqtQLe8u",
         "lsUBEcaYfOidpvjUxpz1",
-        //   // "PkOBGtGbdyMSEkG0BQ6O",
-        //   //   "f0pmE4twBXnJmVrJzh18",
-        //   //   // "ByE2N5MsLcSYpUR8s6a3",
-        //   //   "YE7LMzWbCKgkLgSKVX9Q",
-        //   //   "bkvtnO1D4fOUYvzwn0NJ",
-        //   //   // "abRoiarmwTRMqWTyqSGn",
-        //   "Sey1qVFqitYhnKkddMuQ",
-        //   "RL2bdU5NJOukDwQzzW1s",
-        //   "NAc4aENdcDHIh2k4K5oG",
-        //   "8FbtvPhkC13vo3HnAirx",
-        //   "lsUBEcaYfOidpvjUxpz1",
-        //   //   "hoZTAYrVO5qYmHz9CZtV",
       ]) // random
     )
   );
@@ -150,6 +153,27 @@ function App() {
     if (coversSnapshot?.docs.length) {
       (async () => {
         await downloadAndPlayIntro();
+
+        if (WebApp.initDataUnsafe.user) {
+          try {
+            const user = await createUserDoc(
+              {
+                firstName: WebApp.initDataUnsafe.user.first_name,
+                lastName: WebApp.initDataUnsafe.user.last_name || "",
+                username: WebApp.initDataUnsafe.user.username || "",
+                id: WebApp.initDataUnsafe.user.id.toString(),
+                photoUrl: WebApp.initDataUnsafe.user.photo_url || "",
+                languageCode: WebApp.initDataUnsafe.user.language_code || "",
+                isBot: WebApp.initDataUnsafe.user.is_bot || false,
+                purchasedVoices: null,
+              },
+              WebApp.initDataUnsafe.user.id.toString()
+            );
+            setUserInfo(user);
+          } catch (e) {
+            // TODO: Handle error
+          }
+        }
         setIsDownloaded(true);
         // setScreenName("start");
       })();
@@ -164,44 +188,43 @@ function App() {
     }
   }, [coversSnapshot]);
 
-  // if (screenName === "splash") {
-  //   return (
-  //     <Stack id="app" gap={2} sx={{ width: "100%", height: "100vh" }}>
-  //       <Box width={"100%"} display="flex" justifyContent={"center"}>
-  //         <Box
-  //           display={"flex"}
-  //           justifyContent="center"
-  //           alignItems={"center"}
-  //           width={canvasElemWidth}
-  //         >
-  //           <Box
-  //             width={canvasElemWidth}
-  //             height={"100vh"}
-  //             sx={{
-  //               background: `url(/assets/tunedash/bgs/splash.png)`,
-  //               backgroundPosition: "center",
-  //               backgroundSize: "cover",
-  //               // borderRadius: 8,
-  //             }}
-  //             display="flex"
-  //             alignItems={"start"}
-  //             justifyContent={"center"}
-  //           >
-  //             <Typography>Loading...</Typography>
-  //           </Box>
-  //         </Box>
-  //       </Box>
-  //     </Stack>
-  //   );
-  // }
+  const onGameOver = async (
+    isWinner: boolean,
+    voices: VoiceV1Cover[],
+    winningVoiceId: string
+  ) => {
+    setShowGameOverButtons(true);
+    if (userInfo?.id) {
+      await updateGameResult(
+        userInfo.id,
+        selectedCoverDocId,
+        isWinner,
+        voices,
+        winningVoiceId
+      );
+    }
+  };
+
+  useEffect(() => {
+    EventBus.on("game-over", onGameOver);
+
+    return () => {
+      EventBus.removeListener("game-over", onGameOver);
+    };
+  }, [onGameOver]);
 
   return (
     <Stack id="app" gap={2} sx={{ width: "100%", height: "100vh" }}>
       {screenName === "splash" && (
         <SlideUp
-          onSlideUp={() => {
-            toggleMuteAudio();
+          onSlideUp={async () => {
             setScreenName("start");
+            await toggleMuteAudio();
+            setTimeout(() => {
+              if (WebApp.platform === "ios") {
+                alert("No Audio? Switch off silent mode.");
+              }
+            }, 0);
           }}
           enableSlideUp={isDownloaded}
         />
@@ -239,7 +262,7 @@ function App() {
               alignItems={"center"}
               position={"relative"}
             >
-              {screenName === "game" ? (
+              {screenName === "game" && !showGameOverButtons ? (
                 <Box
                   position={"absolute"}
                   top={0}
@@ -265,23 +288,70 @@ function App() {
                     }}
                   />
                 </Box>
+              ) : showGameOverButtons ? (
+                <Box
+                  position={"absolute"}
+                  top={0}
+                  left={0}
+                  width={"100%"}
+                  height={"95%"}
+                  display={"flex"}
+                  justifyContent={"end"}
+                  alignItems={"center"}
+                  flexDirection={"column"}
+                  pt={1}
+                  zIndex={999}
+                  gap={2}
+                >
+                  <LongImageMotionButton
+                    name="Play again"
+                    onClick={() => {
+                      setScreenName("voices-clash");
+                      setShowGameOverButtons(false);
+                      setSecondaryVoiceInfo(null);
+                    }}
+                  />
+                  <LongImageMotionButton
+                    name="New Race"
+                    onClick={() => {
+                      setScreenName("select-track");
+                      setShowGameOverButtons(false);
+                      setPrimaryVoiceInfo(null);
+                      setSecondaryVoiceInfo(null);
+                    }}
+                  />
+                </Box>
               ) : (
                 <Header
                   showBackButton={screenName !== "start"}
                   showCoverTitle={!!selectedCoverDocId}
                   onBackButtonClick={() => {
-                    setScreenName(
-                      screenName === "menu"
-                        ? "start"
-                        : screenName === "select-track"
-                        ? "menu"
-                        : screenName === "choose-primary-voice"
-                        ? "select-track"
-                        : screenName === "voices-clash" ||
-                          screenName === "game-ready"
-                        ? "choose-primary-voice"
-                        : "start"
-                    );
+                    switch (screenName) {
+                      case "menu":
+                        setScreenName("start");
+                        break;
+                      case "select-track":
+                        setScreenName("menu");
+                        break;
+                      case "choose-primary-voice":
+                        setScreenName("select-track");
+                        break;
+                      case "voices-clash":
+                      case "game-ready":
+                        debugger;
+                        if (showOpponentVoiceSelection) {
+                          setShowOpponentVoiceSelection(false);
+                          setSecondaryVoiceInfo(null);
+                        } else {
+                          setScreenName("choose-primary-voice");
+                        }
+                        break;
+                      case "game":
+                        setScreenName("voices-clash");
+                        break;
+                      default:
+                        setScreenName("start");
+                    }
                   }}
                   coverTitle={coverDoc?.title || ""}
                 />
@@ -289,32 +359,6 @@ function App() {
               {screenName === "start" && (
                 <ScreenOne
                   onStartClick={async () => {
-                    if (WebApp.initDataUnsafe.user) {
-                      try {
-                        setUserInfo({
-                          id: WebApp.initDataUnsafe.user.id.toString(),
-                          fn: WebApp.initDataUnsafe.user.first_name,
-                        });
-                        createUserDoc(
-                          {
-                            firstName: WebApp.initDataUnsafe.user.first_name,
-                            lastName:
-                              WebApp.initDataUnsafe.user.last_name || "",
-                            username: WebApp.initDataUnsafe.user.username || "",
-                            id: WebApp.initDataUnsafe.user.id.toString(),
-                            photoUrl:
-                              WebApp.initDataUnsafe.user.photo_url || "",
-                            languageCode:
-                              WebApp.initDataUnsafe.user.language_code || "",
-                            isBot: WebApp.initDataUnsafe.user.is_bot || false,
-                          },
-                          WebApp.initDataUnsafe.user.id.toString()
-                        );
-                      } catch (e) {
-                        // TODO: Handle error
-                      }
-                    }
-
                     setScreenName("menu");
                     // const toneStatus = getToneStatus();
                     // if (toneStatus.isTonePlaying === false)
@@ -375,6 +419,10 @@ function App() {
                     }}
                     downloadProgress={downloadProgress}
                     userInfo={userInfo}
+                    showOpponentVoiceSelection={showOpponentVoiceSelection}
+                    setShowOpponentVoiceSelection={
+                      setShowOpponentVoiceSelection
+                    }
                   />
                 )}
               {primaryVoiceInfo &&
@@ -399,47 +447,11 @@ function App() {
                       noOfRaceTracks
                     )}
                     noOfRaceTracks={noOfRaceTracks}
-                    gravityY={9}
+                    gravityY={4}
                     width={canvasElemWidth}
                     trailPath={getTrailPath(selectedTrailPath)}
                   />
                 )}
-              {/* {coverDoc && isDownloading ? (
-                  <LinearProgressWithLabel
-                    value={downloadProgress}
-                    sx={{ height: 10, borderRadius: 5 }}
-                  />
-                ) : !showGameMenu ? (
-                ) : (
-                  <Box width={140} height={65} mt={12}>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      style={{
-                        background: "url(/assets/tunedash/start.png)",
-                        backgroundSize: "contain",
-                        backgroundRepeat: "no-repeat",
-                        backgroundPosition: "center",
-                        width: "100%",
-                        height: "100%",
-                        border: "none",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => {
-                        setShowGameMenu(true);
-                      }}
-                    />
-                  </Box>
-                  // <Button
-                  //     onClick={() => {
-                  //         downloadAndPlay();
-                  //     }}
-                  //     variant="contained"
-                  //     color="primary"
-                  // >
-                  //     Play
-                  // </Button>
-                )} */}
             </Stack>
           </Box>
         </Box>

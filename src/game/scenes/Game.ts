@@ -444,6 +444,7 @@ export default class Game extends Phaser.Scene {
             this.marbleTrailParticles[this.opponentMarbleIdx].setParticleTint(
               0xf83600
             );
+            powerup.destroy();
           } else if (e.label === this.marbles[this.userMarbleIdx].label) {
             this.powerups.map((p) => (p.visible = false));
             this.startRhythmicGame();
@@ -467,6 +468,7 @@ export default class Game extends Phaser.Scene {
           this.cameras.main.width / this.dpr,
           this.cameras.main.height / this.dpr
         )
+        .setDepth(100000)
         // .setScale(this.dpr)
         .setScrollFactor(0);
     else
@@ -476,6 +478,7 @@ export default class Game extends Phaser.Scene {
           this.cameras.main.width / this.dpr,
           this.cameras.main.height / this.dpr
         )
+        .setDepth(100000)
         // .setScale(this.dpr)
         .setScrollFactor(0);
     // Add tween to scale the result image from 0 to 1
@@ -512,7 +515,12 @@ export default class Game extends Phaser.Scene {
     //   labelXp.x - labelXp.width / 2,
     //   labelXp.y - labelXp.height / 2
     // );
-    EventBus.emit("game-over", this.winnerIdx === 1);
+    EventBus.emit(
+      "game-over",
+      this.winnerIdx === 1,
+      this.voices,
+      this.voices[this.userMarbleIdx].id
+    );
     this.isResultShown = true;
   }
 
@@ -613,7 +621,7 @@ export default class Game extends Phaser.Scene {
       });
       const tween = this.tweens.add({
         targets: tile,
-        y: targetY + tile.height / 2,
+        y: targetY + tile.height * this.dpr,
         duration: this.circleShouldFillInMs,
         delay: (startTime - currentTime) * 1000,
         ease: "Linear",
@@ -746,7 +754,7 @@ export default class Game extends Phaser.Scene {
     let coundownValue = 3;
     // Start Countdown:
     const clock = this.time.addEvent({
-      delay: 1000,
+      delay: 500,
       repeat: 2,
       callback: () => {
         if (this.countdownText) {
@@ -988,6 +996,10 @@ export default class Game extends Phaser.Scene {
 
         if (this.winnerIdx === -1 && finishedPositions.length) {
           this.winnerIdx = voicesPositions.indexOf(finishedPositions[0]);
+        }
+        if (this.winnerIdx === this.userMarbleIdx) {
+          this.isGameOver = true;
+          return;
         }
         const largest = Math.max(...unFinishedPositions);
         const largestIndex = voicesPositions.findIndex((v) => v === largest);
