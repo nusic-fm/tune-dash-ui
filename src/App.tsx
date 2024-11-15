@@ -217,12 +217,14 @@ function App() {
     <Stack id="app" gap={2} sx={{ width: "100%", height: "100vh" }}>
       {screenName === "splash" && (
         <SlideUp
-          onSlideUp={() => {
-            toggleMuteAudio();
-            if (WebApp.platform === "ios") {
-              alert("No Audio? Switch off silent mode.");
-            }
+          onSlideUp={async () => {
             setScreenName("start");
+            await toggleMuteAudio();
+            setTimeout(() => {
+              if (WebApp.platform === "ios") {
+                alert("No Audio? Switch off silent mode.");
+              }
+            }, 0);
           }}
           enableSlideUp={isDownloaded}
         />

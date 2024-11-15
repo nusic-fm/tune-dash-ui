@@ -754,7 +754,7 @@ export default class Game extends Phaser.Scene {
     let coundownValue = 3;
     // Start Countdown:
     const clock = this.time.addEvent({
-      delay: 1000,
+      delay: 500,
       repeat: 2,
       callback: () => {
         if (this.countdownText) {
