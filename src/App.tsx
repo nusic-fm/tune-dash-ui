@@ -219,7 +219,9 @@ function App() {
         <SlideUp
           onSlideUp={() => {
             toggleMuteAudio();
-            alert(WebApp?.platform);
+            if (WebApp.platform === "ios") {
+              alert("No Audio? Switch off silent mode.");
+            }
             setScreenName("start");
           }}
           enableSlideUp={isDownloaded}
@@ -443,7 +445,7 @@ function App() {
                       noOfRaceTracks
                     )}
                     noOfRaceTracks={noOfRaceTracks}
-                    gravityY={7}
+                    gravityY={4}
                     width={canvasElemWidth}
                     trailPath={getTrailPath(selectedTrailPath)}
                   />
