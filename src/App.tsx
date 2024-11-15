@@ -1,4 +1,12 @@
-import { Box, Stack, useMediaQuery, useTheme } from "@mui/material";
+import {
+  Box,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import Header from "./components/Header";
 
@@ -444,6 +452,18 @@ function App() {
           </Box>
         </Box>
       </Box>
+      <Dialog open={true} onClose={() => {}} fullScreen>
+        <DialogTitle>Embed AEON</DialogTitle>
+        <DialogContent>
+          <Box height={"100vh"} width={"100vw"}>
+            <iframe
+              src="https://sbx-crypto-payment.alchemypay.org?orderNum=300217316491340263938"
+              width="100%"
+              height="100%"
+            ></iframe>
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Stack>
   );
 }
