@@ -468,6 +468,7 @@ export default class Game extends Phaser.Scene {
           this.cameras.main.width / this.dpr,
           this.cameras.main.height / this.dpr
         )
+        .setDepth(100000)
         // .setScale(this.dpr)
         .setScrollFactor(0);
     else
@@ -477,6 +478,7 @@ export default class Game extends Phaser.Scene {
           this.cameras.main.width / this.dpr,
           this.cameras.main.height / this.dpr
         )
+        .setDepth(100000)
         // .setScale(this.dpr)
         .setScrollFactor(0);
     // Add tween to scale the result image from 0 to 1
@@ -513,7 +515,12 @@ export default class Game extends Phaser.Scene {
     //   labelXp.x - labelXp.width / 2,
     //   labelXp.y - labelXp.height / 2
     // );
-    EventBus.emit("game-over", this.winnerIdx === 1);
+    EventBus.emit(
+      "game-over",
+      this.winnerIdx === 1,
+      this.voices,
+      this.voices[this.userMarbleIdx].id
+    );
     this.isResultShown = true;
   }
 
@@ -989,6 +996,10 @@ export default class Game extends Phaser.Scene {
 
         if (this.winnerIdx === -1 && finishedPositions.length) {
           this.winnerIdx = voicesPositions.indexOf(finishedPositions[0]);
+        }
+        if (this.winnerIdx === this.userMarbleIdx) {
+          this.isGameOver = true;
+          return;
         }
         const largest = Math.max(...unFinishedPositions);
         const largestIndex = voicesPositions.findIndex((v) => v === largest);

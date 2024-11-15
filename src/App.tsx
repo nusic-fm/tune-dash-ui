@@ -19,7 +19,7 @@ import {
   toggleMuteAudio,
 } from "./hooks/useTonejs";
 import { CoverV1, VoiceV1Cover } from "./services/db/coversV1.service";
-import { createUserDoc } from "./services/db/user.service";
+import { createUserDoc, updateGameResult } from "./services/db/user.service";
 import { getSkinPath, getTrailPath, getVoiceAvatarPath } from "./helpers";
 import ScreenOne from "./components/ScreenOne";
 import ScreenTwo from "./components/ScreenTwo";
@@ -32,6 +32,8 @@ import SmallImageMotionButton from "./components/Buttons/SmallImageMotionButton"
 import SelectTrack from "./components/SelectTrack";
 import SlideUp from "./components/SlideUp";
 import WebApp from "@twa-dev/sdk";
+import { EventBus } from "./game/EventBus";
+import LongImageMotionButton from "./components/Buttons/LongImageMotionButton";
 
 export const tracks = [
   "01",
@@ -96,7 +98,7 @@ function App() {
   });
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [startSectionIdx, setStartSectionIdx] = useState(1);
-  const [noOfRaceTracks, setNoOfRaceTracks] = useState(10);
+  const [noOfRaceTracks, setNoOfRaceTracks] = useState(2);
   const theme = useTheme();
   const isMobileView = useMediaQuery(theme.breakpoints.down("md"));
   const canvasElemWidth = isMobileView ? window.innerWidth : 414;
@@ -117,6 +119,7 @@ function App() {
   );
   const [showOpponentVoiceSelection, setShowOpponentVoiceSelection] =
     useState(false);
+  const [showGameOverButtons, setShowGameOverButtons] = useState(false);
   const [coversSnapshot, cssLoading, cssError] = useCollection(
     query(
       collection(db, "tunedash_covers"),
@@ -126,18 +129,6 @@ function App() {
         "fEGU8n7EdEqhtMIfse09",
         "i9aUmvBYqdlCjqtQLe8u",
         "lsUBEcaYfOidpvjUxpz1",
-        //   // "PkOBGtGbdyMSEkG0BQ6O",
-        //   //   "f0pmE4twBXnJmVrJzh18",
-        //   //   // "ByE2N5MsLcSYpUR8s6a3",
-        //   //   "YE7LMzWbCKgkLgSKVX9Q",
-        //   //   "bkvtnO1D4fOUYvzwn0NJ",
-        //   //   // "abRoiarmwTRMqWTyqSGn",
-        //   "Sey1qVFqitYhnKkddMuQ",
-        //   "RL2bdU5NJOukDwQzzW1s",
-        //   "NAc4aENdcDHIh2k4K5oG",
-        //   "8FbtvPhkC13vo3HnAirx",
-        //   "lsUBEcaYfOidpvjUxpz1",
-        //   //   "hoZTAYrVO5qYmHz9CZtV",
       ]) // random
     )
   );
@@ -174,36 +165,30 @@ function App() {
     }
   }, [coversSnapshot]);
 
-  // if (screenName === "splash") {
-  //   return (
-  //     <Stack id="app" gap={2} sx={{ width: "100%", height: "100vh" }}>
-  //       <Box width={"100%"} display="flex" justifyContent={"center"}>
-  //         <Box
-  //           display={"flex"}
-  //           justifyContent="center"
-  //           alignItems={"center"}
-  //           width={canvasElemWidth}
-  //         >
-  //           <Box
-  //             width={canvasElemWidth}
-  //             height={"100vh"}
-  //             sx={{
-  //               background: `url(/assets/tunedash/bgs/splash.png)`,
-  //               backgroundPosition: "center",
-  //               backgroundSize: "cover",
-  //               // borderRadius: 8,
-  //             }}
-  //             display="flex"
-  //             alignItems={"start"}
-  //             justifyContent={"center"}
-  //           >
-  //             <Typography>Loading...</Typography>
-  //           </Box>
-  //         </Box>
-  //       </Box>
-  //     </Stack>
-  //   );
-  // }
+  const onGameOver = async (
+    isWinner: boolean,
+    voices: VoiceV1Cover[],
+    winningVoiceId: string
+  ) => {
+    setShowGameOverButtons(true);
+    if (userInfo?.id) {
+      await updateGameResult(
+        userInfo.id,
+        selectedCoverDocId,
+        isWinner,
+        voices,
+        winningVoiceId
+      );
+    }
+  };
+
+  useEffect(() => {
+    EventBus.on("game-over", onGameOver);
+
+    return () => {
+      EventBus.removeListener("game-over", onGameOver);
+    };
+  }, [onGameOver]);
 
   return (
     <Stack id="app" gap={2} sx={{ width: "100%", height: "100vh" }}>
@@ -249,7 +234,7 @@ function App() {
               alignItems={"center"}
               position={"relative"}
             >
-              {screenName === "game" ? (
+              {screenName === "game" && !showGameOverButtons ? (
                 <Box
                   position={"absolute"}
                   top={0}
@@ -272,6 +257,39 @@ function App() {
                         );
                       setSecondaryVoiceInfo(null);
                       setScreenName("voices-clash");
+                    }}
+                  />
+                </Box>
+              ) : showGameOverButtons ? (
+                <Box
+                  position={"absolute"}
+                  top={0}
+                  left={0}
+                  width={"100%"}
+                  height={"90%"}
+                  display={"flex"}
+                  justifyContent={"end"}
+                  alignItems={"center"}
+                  flexDirection={"column"}
+                  pt={1}
+                  zIndex={999}
+                  gap={2}
+                >
+                  <LongImageMotionButton
+                    name="Play again"
+                    onClick={() => {
+                      setScreenName("voices-clash");
+                      setShowGameOverButtons(false);
+                      setSecondaryVoiceInfo(null);
+                    }}
+                  />
+                  <LongImageMotionButton
+                    name="New Race"
+                    onClick={() => {
+                      setScreenName("select-track");
+                      setShowGameOverButtons(false);
+                      setPrimaryVoiceInfo(null);
+                      setSecondaryVoiceInfo(null);
                     }}
                   />
                 </Box>
