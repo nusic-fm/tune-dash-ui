@@ -115,6 +115,8 @@ function App() {
   const [userInfo, setUserInfo] = useState<{ id: string; fn: string } | null>(
     null
   );
+  const [showOpponentVoiceSelection, setShowOpponentVoiceSelection] =
+    useState(false);
   const [coversSnapshot, cssLoading, cssError] = useCollection(
     query(
       collection(db, "tunedash_covers"),
@@ -278,18 +280,32 @@ function App() {
                   showBackButton={screenName !== "start"}
                   showCoverTitle={!!selectedCoverDocId}
                   onBackButtonClick={() => {
-                    setScreenName(
-                      screenName === "menu"
-                        ? "start"
-                        : screenName === "select-track"
-                        ? "menu"
-                        : screenName === "choose-primary-voice"
-                        ? "select-track"
-                        : screenName === "voices-clash" ||
-                          screenName === "game-ready"
-                        ? "choose-primary-voice"
-                        : "start"
-                    );
+                    switch (screenName) {
+                      case "menu":
+                        setScreenName("start");
+                        break;
+                      case "select-track":
+                        setScreenName("menu");
+                        break;
+                      case "choose-primary-voice":
+                        setScreenName("select-track");
+                        break;
+                      case "voices-clash":
+                      case "game-ready":
+                        debugger;
+                        if (showOpponentVoiceSelection) {
+                          setShowOpponentVoiceSelection(false);
+                          setSecondaryVoiceInfo(null);
+                        } else {
+                          setScreenName("choose-primary-voice");
+                        }
+                        break;
+                      case "game":
+                        setScreenName("voices-clash");
+                        break;
+                      default:
+                        setScreenName("start");
+                    }
                   }}
                   coverTitle={coverDoc?.title || ""}
                 />
@@ -383,6 +399,10 @@ function App() {
                     }}
                     downloadProgress={downloadProgress}
                     userInfo={userInfo}
+                    showOpponentVoiceSelection={showOpponentVoiceSelection}
+                    setShowOpponentVoiceSelection={
+                      setShowOpponentVoiceSelection
+                    }
                   />
                 )}
               {primaryVoiceInfo &&
@@ -412,58 +432,10 @@ function App() {
                     trailPath={getTrailPath(selectedTrailPath)}
                   />
                 )}
-              {/* {coverDoc && isDownloading ? (
-                  <LinearProgressWithLabel
-                    value={downloadProgress}
-                    sx={{ height: 10, borderRadius: 5 }}
-                  />
-                ) : !showGameMenu ? (
-                ) : (
-                  <Box width={140} height={65} mt={12}>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      style={{
-                        background: "url(/assets/tunedash/start.png)",
-                        backgroundSize: "contain",
-                        backgroundRepeat: "no-repeat",
-                        backgroundPosition: "center",
-                        width: "100%",
-                        height: "100%",
-                        border: "none",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => {
-                        setShowGameMenu(true);
-                      }}
-                    />
-                  </Box>
-                  // <Button
-                  //     onClick={() => {
-                  //         downloadAndPlay();
-                  //     }}
-                  //     variant="contained"
-                  //     color="primary"
-                  // >
-                  //     Play
-                  // </Button>
-                )} */}
             </Stack>
           </Box>
         </Box>
       </Box>
-      <Dialog open={true} onClose={() => {}} fullScreen>
-        <DialogTitle>Embed AEON</DialogTitle>
-        <DialogContent>
-          <Box height={"100vh"} width={"100vw"}>
-            <iframe
-              src="https://sbx-crypto-payment.alchemypay.org?orderNum=300217316522961733944"
-              width="100%"
-              height="100%"
-            ></iframe>
-          </Box>
-        </DialogContent>
-      </Dialog>
     </Stack>
   );
 }

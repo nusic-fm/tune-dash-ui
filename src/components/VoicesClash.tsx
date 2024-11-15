@@ -27,6 +27,8 @@ type Props = {
   downloadProgress: number;
   userInfo: { id: string; fn: string } | null;
   selectedCoverDocId: string;
+  showOpponentVoiceSelection: boolean;
+  setShowOpponentVoiceSelection: (show: boolean) => void;
 };
 
 const voiceWidth = 140;
@@ -39,12 +41,12 @@ const VoicesClash = ({
   downloadProgress,
   userInfo,
   selectedCoverDocId,
+  showOpponentVoiceSelection,
+  setShowOpponentVoiceSelection,
 }: Props) => {
-  const [showOpponentVoiceSelection, setShowOpponentVoiceSelection] =
-    useState(false);
   const [readyToStartRace, setReadyToStartRace] = useState(false);
   const [cost, setCost] = useState(0);
-  const [isWaitingForPayment, setIsWaitingForPayment] = useState(false);
+  const [isWaitingForPayment, setIsWaitingForPayment] = useState("");
 
   useEffect(() => {
     if (secondaryVoiceId && readyToStartRace) {
@@ -55,10 +57,11 @@ const VoicesClash = ({
   return (
     <Stack
       width={"100%"}
-      height={"calc(100% - 95px)"}
+      height={"100%"}
       display={"flex"}
-      justifyContent={"start"}
+      justifyContent={"center"}
       alignItems={"center"}
+      position={"relative"}
     >
       <img src="/assets/tunedash/tune-dash.png" />
       <Box
@@ -126,6 +129,7 @@ const VoicesClash = ({
       {showOpponentVoiceSelection && (
         <ChooseVoice
           voices={voices}
+          filterOutVoiceIds={[primaryVoiceId]}
           selectedVoiceId={secondaryVoiceId || ""}
           onChooseOpponent={(voiceInfo, cost) => {
             setCost(cost);
@@ -163,34 +167,52 @@ const VoicesClash = ({
             height={93}
           />
         ))}
-      {!readyToStartRace && (
+      {!readyToStartRace && !showOpponentVoiceSelection && (
         <Badge
           badgeContent={
-            !showOpponentVoiceSelection ? (
-              <Box
-                sx={{
-                  borderRadius: "50%",
-                  width: 25,
-                  height: 25,
-                  backgroundImage: "url(/assets/tunedash/bubble.png)",
-                  backgroundSize: "contain",
-                  position: "absolute",
-                  top: 20,
-                  left: -20,
-                }}
-                display={"flex"}
-                alignItems={"center"}
-                justifyContent={"center"}
-              >
-                <Typography variant="h6" color={"#000"}>
-                  $
-                </Typography>
-              </Box>
-            ) : null
+            <Box
+              sx={{
+                borderRadius: "50%",
+                width: 30,
+                height: 30,
+                backgroundImage: "url(/assets/tunedash/bubble.png)",
+                backgroundSize: "contain",
+                position: "absolute",
+                top: 20,
+                left: -20,
+              }}
+              display={"flex"}
+              alignItems={"center"}
+              justifyContent={"center"}
+            >
+              <Typography variant="h6" color={"#000"}>
+                $
+              </Typography>
+            </Box>
           }
         >
           <LongImageMotionButton
+            onClick={() => {
+              setShowOpponentVoiceSelection(true);
+            }}
+            name={"Choose Opponent"}
+            width={290}
+            height={93}
+          />
+        </Badge>
+      )}
+      {showOpponentVoiceSelection && secondaryVoiceId && (
+        <Box
+          position={"absolute"}
+          bottom={0}
+          width={"100%"}
+          display={"flex"}
+          justifyContent={"center"}
+          zIndex={99}
+        >
+          <LongImageMotionButton
             onClick={async () => {
+              if (!userInfo) return alert("Support only on Telegram Mini App");
               if (
                 secondaryVoiceId &&
                 showOpponentVoiceSelection &&
@@ -214,9 +236,7 @@ const VoicesClash = ({
                   );
                   const webUrl = webUrlRes.data.webUrl;
                   if (WebApp) {
-                    // WebApp.openTelegramLink(webUrl);
-                    WebApp.openLink(webUrl);
-                    setIsWaitingForPayment(true);
+                    // WebApp.openLink(webUrl);
                     const interval = setInterval(async () => {
                       const orderStatus = await axios.post(
                         `https://sbx-crypto-payment-api.aeon.xyz/open/api/payment/query`,
@@ -233,7 +253,7 @@ const VoicesClash = ({
                           userInfo.id,
                           `${selectedCoverDocId}_${secondaryVoiceId}`
                         );
-                        setIsWaitingForPayment(false);
+                        setIsWaitingForPayment("");
                         setReadyToStartRace(true);
                         clearInterval(interval);
                       } else if (
@@ -246,34 +266,21 @@ const VoicesClash = ({
                       }
                     }, 3000);
                   }
-                  // window.open(webUrl, "_blank");
-                  // window.location.href = webUrl;
-                  // TODO: Show it in a popup without interuppting the music
+                  setIsWaitingForPayment(webUrl);
                 } catch (e) {
                   alert("Error Occured, try again later");
-                } finally {
-                  // setReadyToStartRace(true);
                 }
-              } else if (secondaryVoiceId && showOpponentVoiceSelection) {
-                setShowOpponentVoiceSelection(false);
-                setReadyToStartRace(true);
               } else {
                 setShowOpponentVoiceSelection(true);
               }
             }}
-            name={
-              secondaryVoiceId && showOpponentVoiceSelection
-                ? readyToStartRace
-                  ? "Start Race"
-                  : "Purchase Voice"
-                : "Choose Opponent"
-            }
+            name={readyToStartRace ? "Start Race" : "Unlock Race"}
             width={290}
             height={93}
           />
-        </Badge>
+        </Box>
       )}
-      <Dialog open={isWaitingForPayment}>
+      {/* <Dialog open={isWaitingForPayment}>
         <DialogContent>
           <Stack alignItems={"center"} justifyContent={"center"} my={4}>
             <CircularProgress />
@@ -282,7 +289,26 @@ const VoicesClash = ({
             </Typography>
           </Stack>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
+      {!!isWaitingForPayment && (
+        <Box
+          position={"fixed"}
+          left={0}
+          top={0}
+          width={"100vw"}
+          height={"100vh"}
+          zIndex={99999}
+          bgcolor={"#000"}
+          sx={{ overflow: "hidden" }}
+        >
+          <iframe
+            src={isWaitingForPayment}
+            width="100%"
+            height="100%"
+            style={{ border: "none" }}
+          ></iframe>
+        </Box>
+      )}
     </Stack>
   );
 };

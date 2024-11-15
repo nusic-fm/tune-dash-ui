@@ -25,10 +25,10 @@ const ChoosePrimaryVoice = ({
   return (
     <Stack
       gap={4}
-      height={"calc(100% - 95px)"}
+      height={"100%"}
       width={"100%"}
       display={"flex"}
-      justifyContent={"start"}
+      justifyContent={"center"}
       alignItems={"center"}
     >
       <Box

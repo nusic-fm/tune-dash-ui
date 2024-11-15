@@ -76,7 +76,13 @@ const SelectTrack = ({
   }, [selectedCoverDocId]);
 
   return (
-    <Stack width={"100%"} alignItems={"center"} gap={4} height={"100%"}>
+    <Stack
+      width={"100%"}
+      justifyContent={"center"}
+      alignItems={"center"}
+      gap={4}
+      height={"100%"}
+    >
       <img
         src={"/assets/tunedash/select-track.png"}
         alt="select-track"
@@ -175,7 +181,7 @@ const SelectTrack = ({
             currentlyPlayingVoiceInfo || null
           )
         }
-        name="Proceed"
+        name="Choose Voice"
         width={230}
         height={75}
       />

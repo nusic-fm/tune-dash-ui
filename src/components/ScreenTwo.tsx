@@ -12,9 +12,8 @@ const ScreenTwo = ({ onSingleRaceClick }: Props) => {
       height={"100%"}
       width={"100%"}
       display={"flex"}
-      justifyContent={"start"}
+      justifyContent={"center"}
       alignItems={"center"}
-      py={10}
     >
       <img src="/assets/tunedash/tune-dash.png" />
       <Stack

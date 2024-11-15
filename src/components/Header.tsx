@@ -22,6 +22,10 @@ const Header = ({
       alignItems={"center"}
       width={"100%"}
       py={2}
+      position={"absolute"}
+      top={0}
+      left={0}
+      zIndex={99}
     >
       <Box width={60} height={60}>
         {showBackButton && (
