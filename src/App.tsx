@@ -427,7 +427,7 @@ function App() {
                       noOfRaceTracks
                     )}
                     noOfRaceTracks={noOfRaceTracks}
-                    gravityY={9}
+                    gravityY={7}
                     width={canvasElemWidth}
                     trailPath={getTrailPath(selectedTrailPath)}
                   />

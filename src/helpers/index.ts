@@ -240,8 +240,11 @@ export const duplicateArrayElemToN = (
   n: number = 6
 ): string[] => {
   const result = arr;
+  let prevIdx = -1;
   while (result.length < n) {
-    result.push(arr[createRandomNumber(0, arr.length - 1)]);
+    let idx = createRandomNumber(0, arr.length - 1, prevIdx);
+    result.push(arr[idx]);
+    prevIdx = idx;
   }
   return result.sort(() => Math.random() - 0.5);
 };
