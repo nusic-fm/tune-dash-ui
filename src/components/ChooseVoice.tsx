@@ -108,7 +108,6 @@ const ChooseVoice = ({
                         ) : (
                           <Typography
                             variant="caption"
-                            color={"#000"}
                             fontSize={8}
                             fontWeight={900}
                           >

@@ -70,7 +70,6 @@ const ChoosePrimaryVoice = ({
         >
           <Typography
             variant="caption"
-            color={"#000"}
             fontWeight={600}
             sx={{
               whiteSpace: "nowrap",
