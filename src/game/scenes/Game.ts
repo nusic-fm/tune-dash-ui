@@ -462,7 +462,7 @@ export default class Game extends Phaser.Scene {
     this.tiles.map((t) => t.destroy());
     const isWin = this.winnerIdx === 0;
     let resultImage;
-    if (isWin)
+    if (isWin) {
       resultImage = this.add
         .image(this.centerX, this.centerY, "win_result")
         .setDisplaySize(
@@ -472,7 +472,14 @@ export default class Game extends Phaser.Scene {
         .setDepth(100000)
         // .setScale(this.dpr)
         .setScrollFactor(0);
-    else
+      // this.add
+      //   .text(this.centerX, 100 * this.dpr, "+500X", {
+      //     fontSize: `${64 * this.dpr}px`,
+      //     color: "#ffffff",
+      //   })
+      //   .setDepth(1000001);
+      this.sound.play("win_sound");
+    } else {
       resultImage = this.add
         .image(this.centerX, this.centerY, "lose_result")
         .setDisplaySize(
@@ -482,6 +489,8 @@ export default class Game extends Phaser.Scene {
         .setDepth(100000)
         // .setScale(this.dpr)
         .setScrollFactor(0);
+      this.sound.play("lose_sound");
+    }
     // Add tween to scale the result image from 0 to 1
     this.tweens.add({
       targets: resultImage,
@@ -689,10 +698,8 @@ export default class Game extends Phaser.Scene {
 
   create() {
     console.log("Game Scene...");
-    if (this.showObstacles) {
-      this.sound.add("low_whack", { loop: false, volume: 0.5 });
-      this.sound.add("high_whack", { loop: false, volume: 0.5 });
-    }
+    this.sound.add("win_sound", { loop: false, volume: 0.8 });
+    this.sound.add("lose_sound", { loop: false, volume: 0.8 });
     // Center the background image
     const centerX = this.cameras.main.width / 2;
     const centerY = this.cameras.main.height / 2;
