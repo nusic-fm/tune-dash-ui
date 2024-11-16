@@ -1,4 +1,4 @@
-import { Stack, Fab } from "@mui/material";
+import { Stack, Fab, Chip } from "@mui/material";
 import SmallImageMotionButton from "./Buttons/SmallImageMotionButton";
 import VolumeOffRoundedIcon from "@mui/icons-material/VolumeOffRounded";
 import VolumeUpRoundedIcon from "@mui/icons-material/VolumeUpRounded";
@@ -7,9 +7,10 @@ import { useEffect, useState } from "react";
 
 type Props = {
   onStartClick: () => void;
+  showIosNotice: boolean;
 };
 
-const ScreenOne = ({ onStartClick }: Props) => {
+const ScreenOne = ({ onStartClick, showIosNotice }: Props) => {
   const [isMuted, setIsMuted] = useState(false);
 
   useEffect(() => {
@@ -26,7 +27,8 @@ const ScreenOne = ({ onStartClick }: Props) => {
       justifyContent={"center"}
       alignItems={"center"}
     >
-      <Stack mt={12} alignItems={"center"} gap={1}>
+      {showIosNotice && <Chip label="No Audio? Switch off silent mode." />}
+      <Stack alignItems={"center"} gap={1}>
         <SmallImageMotionButton onClick={onStartClick} name="Start" />
         <Fab
           color="warning"

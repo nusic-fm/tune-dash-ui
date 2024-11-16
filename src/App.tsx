@@ -122,6 +122,7 @@ function App() {
   const [showOpponentVoiceSelection, setShowOpponentVoiceSelection] =
     useState(false);
   const [showGameOverButtons, setShowGameOverButtons] = useState(false);
+  const [showIosNotice, setShowIosNotice] = useState(false);
   const [coversSnapshot, cssLoading, cssError] = useCollection(
     query(
       collection(db, "tunedash_covers"),
@@ -218,13 +219,11 @@ function App() {
       {screenName === "splash" && (
         <SlideUp
           onSlideUp={async () => {
+            if (WebApp.platform === "ios") {
+              setShowIosNotice(true);
+            }
             setScreenName("start");
-            await toggleMuteAudio();
-            setTimeout(() => {
-              if (WebApp.platform === "ios") {
-                alert("No Audio? Switch off silent mode.");
-              }
-            }, 0);
+            toggleMuteAudio();
           }}
           enableSlideUp={isDownloaded}
         />
@@ -324,7 +323,9 @@ function App() {
               ) : (
                 <Header
                   showBackButton={screenName !== "start"}
-                  showCoverTitle={!!selectedCoverDocId}
+                  showCoverTitle={
+                    !!selectedCoverDocId && screenName !== "select-track"
+                  }
                   onBackButtonClick={() => {
                     switch (screenName) {
                       case "menu":
@@ -338,7 +339,6 @@ function App() {
                         break;
                       case "voices-clash":
                       case "game-ready":
-                        debugger;
                         if (showOpponentVoiceSelection) {
                           setShowOpponentVoiceSelection(false);
                           setSecondaryVoiceInfo(null);
@@ -364,6 +364,7 @@ function App() {
                     // if (toneStatus.isTonePlaying === false)
                     //   marbleRaceOnlyInstrument(selectedCoverDocId, 120, 0);
                   }}
+                  showIosNotice={showIosNotice}
                 />
               )}
               {screenName === "menu" && (
@@ -385,6 +386,8 @@ function App() {
                     setCoverDoc(coverDoc);
                     setSelectedCoverDocId(coverId);
                     setPrimaryVoiceInfo(voiceInfo);
+                  }}
+                  onNextPageClick={() => {
                     setScreenName("choose-primary-voice");
                   }}
                 />
@@ -408,8 +411,8 @@ function App() {
                   <VoicesClash
                     voices={coverDoc.voices}
                     selectedCoverDocId={selectedCoverDocId}
-                    primaryVoiceId={primaryVoiceInfo.id}
-                    secondaryVoiceId={secondaryVoiceInfo?.id || ""}
+                    primaryVoiceInfo={primaryVoiceInfo}
+                    secondaryVoiceInfo={secondaryVoiceInfo}
                     onChooseOpponent={(voiceInfo) => {
                       setSecondaryVoiceInfo(voiceInfo);
                     }}

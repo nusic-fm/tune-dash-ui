@@ -23,25 +23,24 @@ type Props = {
     voiceId: VoiceV1Cover | null
   ) => void;
   selectedCoverDocId: string;
+  onNextPageClick: () => void;
 };
 
 const SelectTrack = ({
   coversSnapshot,
   onTrackSelected,
+  onNextPageClick,
   selectedCoverDocId,
 }: Props) => {
-  const [selectedSnapshot, setSelectedSnapshot] =
-    useState<QueryDocumentSnapshot<DocumentData, DocumentData>>();
-  const [downloading, setDownloading] = useState(false);
-  const [currentlyPlayingVoiceInfo, setCurrentlyPlayingVoiceInfo] =
-    useState<VoiceV1Cover>();
+  const [downloadingCoverId, setDownloadingCoverId] = useState<string>("");
 
-  const downloadInstrumental = async (_coverId: string, _coverDoc: CoverV1) => {
-    setDownloading(true);
+  const downloadInstrumental = async (
+    _coverId: string,
+    _coverDoc: CoverV1,
+    _voiceInfo: VoiceV1Cover
+  ) => {
+    setDownloadingCoverId(_coverId);
     stopAndDestroyPlayers();
-    const randomVoice =
-      _coverDoc.voices[createRandomNumber(0, _coverDoc.voices.length - 1)];
-    setCurrentlyPlayingVoiceInfo(randomVoice);
     await downloadAudioFiles(
       [
         `https://voxaudio.nusic.fm/covers/${_coverId}/instrumental.mp3`,
@@ -53,7 +52,7 @@ const SelectTrack = ({
         //         _coverId || selectedCoverDocId
         //       }/${v}.mp3`
         //   ),
-        `https://voxaudio.nusic.fm/covers/${_coverId}/${randomVoice.id}.mp3`,
+        `https://voxaudio.nusic.fm/covers/${_coverId}/${_voiceInfo.id}.mp3`,
       ],
       (progress: number) => {
         console.log(progress);
@@ -62,18 +61,11 @@ const SelectTrack = ({
     marbleRaceOnlyInstrument(
       _coverId,
       _coverDoc.bpm || 120,
-      _coverDoc.vocalsStartOffset || 0
+      _coverDoc.vocalsStartOffset || 0,
+      _coverDoc.vocalsEndOffset || _coverDoc.duration || 0
     );
-    setDownloading(false);
+    setDownloadingCoverId("");
   };
-
-  useEffect(() => {
-    if (selectedCoverDocId) {
-      setSelectedSnapshot(
-        coversSnapshot.docs.find((doc) => doc.id === selectedCoverDocId)
-      );
-    }
-  }, [selectedCoverDocId]);
 
   return (
     <Stack
@@ -108,7 +100,10 @@ const SelectTrack = ({
             return (
               <Box
                 sx={{
-                  background: `url(/assets/tunedash/track-rect.png)`,
+                  background:
+                    doc.id === "fEGU8n7EdEqhtMIfse09"
+                      ? `url(/assets/tunedash/special-rect.png)`
+                      : `url(/assets/tunedash/track-rect.png)`,
                   width: 312,
                   height: 67,
                   backgroundRepeat: "no-repeat",
@@ -119,51 +114,55 @@ const SelectTrack = ({
                 justifyContent={"center"}
                 gap={1}
                 zIndex={9}
-                onClick={() => {
-                  if (doc.id !== selectedSnapshot?.id) {
-                    setSelectedSnapshot(doc);
-                    downloadInstrumental(doc.id, coverDoc);
+                onClick={async () => {
+                  if (doc.id !== selectedCoverDocId) {
+                    const randomVoice =
+                      coverDoc.voices[
+                        createRandomNumber(0, coverDoc.voices.length - 1)
+                      ];
+                    await downloadInstrumental(doc.id, coverDoc, randomVoice);
+                    onTrackSelected(coverDoc, doc.id, randomVoice);
                   }
                 }}
               >
-                <Typography
-                  sx={{
-                    // ellipsis
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                  alignSelf={"center"}
-                  width={"70%"}
-                  fontSize={14}
-                >
-                  {coverDoc.title}
-                </Typography>
-                {selectedSnapshot?.id === doc.id ? (
-                  !downloading && (
-                    <HeadsetRoundedIcon />
-                    // <video
-                    //   src="/assets/tunedash/playing.webm"
-                    //   autoPlay
-                    //   loop
-                    //   width={62}
-                    //   height={24}
-                    //   style={{ borderRadius: "16px", objectFit: "cover" }}
-                    // />
-                  )
+                <Box width={"70%"} sx={{ overflow: "hidden" }}>
+                  <Typography
+                    sx={{
+                      // ellipsis
+                      whiteSpace: "nowrap",
+                      // overflow: "hidden",
+                      // textOverflow: "ellipsis",
+                    }}
+                    alignSelf={"center"}
+                    // width={"70%"}
+                    fontSize={14}
+                    id={selectedCoverDocId === doc.id ? "scroll-text" : ""}
+                  >
+                    {coverDoc.title}
+                  </Typography>
+                </Box>
+                {downloadingCoverId === doc.id ? (
+                  <CircularProgress
+                    variant="indeterminate"
+                    size={20}
+                    sx={{ color: "#000" }}
+                  />
+                ) : selectedCoverDocId === doc.id ? (
+                  <HeadsetRoundedIcon />
                 ) : (
+                  // <video
+                  //   src="/assets/tunedash/playing.webm"
+                  //   autoPlay
+                  //   loop
+                  //   width={62}
+                  //   height={24}
+                  //   style={{ borderRadius: "16px", objectFit: "cover" }}
+                  // />
                   <Chip
                     label="Select"
                     size="small"
                     clickable
                     sx={{ backgroundColor: "#000", color: "#FFA500" }}
-                  />
-                )}
-                {downloading && selectedSnapshot?.id === doc.id && (
-                  <CircularProgress
-                    variant="indeterminate"
-                    size={20}
-                    sx={{ color: "#000" }}
                   />
                 )}
               </Box>
@@ -172,14 +171,13 @@ const SelectTrack = ({
         )}
       </Stack>
       <LongImageMotionButton
-        onClick={() =>
-          !downloading &&
-          selectedSnapshot &&
-          onTrackSelected(
-            selectedSnapshot.data() as CoverV1,
-            selectedSnapshot.id,
-            currentlyPlayingVoiceInfo || null
-          )
+        onClick={
+          () => !downloadingCoverId && selectedCoverDocId && onNextPageClick()
+          // onTrackSelected(
+          //   selectedSnapshot.data() as CoverV1,
+          //   selectedSnapshot.id,
+          //   currentlyPlayingVoiceInfo || null
+          // )
         }
         name="Choose Voice"
         width={230}

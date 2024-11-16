@@ -438,7 +438,8 @@ export default class Game extends Phaser.Scene {
           if (e.label === this.marbles[this.opponentMarbleIdx].label) {
             this.isOpponentBoosted = true;
             this.opponentMarbleMaxSpeed =
-              this.marbles[this.opponentMarbleIdx].velocity.y + 10;
+              this.marbles[this.opponentMarbleIdx].velocity.y +
+              createRandomNumber(10, 20);
             this.opponentBoostMultipler =
               this.marbles[this.opponentMarbleIdx].velocity.y;
             this.marbleTrailParticles[this.opponentMarbleIdx].setParticleTint(
@@ -461,7 +462,7 @@ export default class Game extends Phaser.Scene {
     this.tiles.map((t) => t.destroy());
     const isWin = this.winnerIdx === 0;
     let resultImage;
-    if (isWin)
+    if (isWin) {
       resultImage = this.add
         .image(this.centerX, this.centerY, "win_result")
         .setDisplaySize(
@@ -471,7 +472,14 @@ export default class Game extends Phaser.Scene {
         .setDepth(100000)
         // .setScale(this.dpr)
         .setScrollFactor(0);
-    else
+      // this.add
+      //   .text(this.centerX, 100 * this.dpr, "+500X", {
+      //     fontSize: `${64 * this.dpr}px`,
+      //     color: "#ffffff",
+      //   })
+      //   .setDepth(1000001);
+      this.sound.play("win_sound");
+    } else {
       resultImage = this.add
         .image(this.centerX, this.centerY, "lose_result")
         .setDisplaySize(
@@ -481,6 +489,8 @@ export default class Game extends Phaser.Scene {
         .setDepth(100000)
         // .setScale(this.dpr)
         .setScrollFactor(0);
+      this.sound.play("lose_sound");
+    }
     // Add tween to scale the result image from 0 to 1
     this.tweens.add({
       targets: resultImage,
@@ -645,16 +655,51 @@ export default class Game extends Phaser.Scene {
         this.finishTap?.setVisible(false);
         this.showRhythmPads = false;
         this.powerups.map((p) => (p.visible = true));
+        // Start the booster after the completion of the rhythmic game
+        if (this.tapScore) {
+          const currentSpeed = this.marbles[this.userMarbleIdx].velocity.y;
+          this.boostMultipler = currentSpeed;
+          const addedSpeed = (this.tapScore / 80) * 25;
+          this.userMarbleMaxSpeed = currentSpeed + addedSpeed;
+          this.isBoosted = true;
+          this.marbleTrailParticles[this.userMarbleIdx].setParticleTint(
+            0xf83600
+          );
+          this.tapResultLabel?.destroy();
+          this.tapResultLabel = this.add
+            .text(
+              this.cameras.main.width / 2,
+              this.cameras.main.height / 2,
+              "Boosted",
+              {
+                fontSize: `${42 * this.dpr}px`,
+                color: "white",
+                stroke: "rgba(0,0,0,1)",
+                strokeThickness: 6,
+                // backgroundColor: "rgba(0,0,0,1)",
+              }
+            )
+            .setScrollFactor(0);
+          this.tapResultLabel?.setPosition(
+            this.tapResultLabel.x - this.tapResultLabel.width / 2,
+            this.tapResultLabel.y - this.tapResultLabel.height / 2
+          );
+          if (this.tapResultLabelTimer) {
+            clearTimeout(this.tapResultLabelTimer);
+          }
+          this.tapResultLabelTimer = setTimeout(() => {
+            // this.matter.world.setGravity(0, this.initialGravity);
+            this.tapResultLabel?.destroy();
+          }, 2000);
+        }
       },
     });
   }
 
   create() {
     console.log("Game Scene...");
-    if (this.showObstacles) {
-      this.sound.add("low_whack", { loop: false, volume: 0.5 });
-      this.sound.add("high_whack", { loop: false, volume: 0.5 });
-    }
+    this.sound.add("win_sound", { loop: false, volume: 0.8 });
+    this.sound.add("lose_sound", { loop: false, volume: 0.8 });
     // Center the background image
     const centerX = this.cameras.main.width / 2;
     const centerY = this.cameras.main.height / 2;
@@ -788,40 +833,40 @@ export default class Game extends Phaser.Scene {
   }
   // update(time: number, delta: number): void {
   update(): void {
-    if (this.tapScore >= 60) {
-      this.tapScore = 0;
-      this.isBoosted = true;
-      this.userMarbleMaxSpeed =
-        this.marbles[this.userMarbleIdx].velocity.y + 20;
-      this.boostMultipler = this.marbles[this.userMarbleIdx].velocity.y;
-      this.marbleTrailParticles[this.userMarbleIdx].setParticleTint(0xf83600);
-      this.tapResultLabel?.destroy();
-      this.tapResultLabel = this.add
-        .text(
-          this.cameras.main.width / 2,
-          this.cameras.main.height / 2,
-          "Boosted",
-          {
-            fontSize: `${42 * this.dpr}px`,
-            color: "white",
-            stroke: "rgba(0,0,0,1)",
-            strokeThickness: 6,
-            // backgroundColor: "rgba(0,0,0,1)",
-          }
-        )
-        .setScrollFactor(0);
-      this.tapResultLabel?.setPosition(
-        this.tapResultLabel.x - this.tapResultLabel.width / 2,
-        this.tapResultLabel.y - this.tapResultLabel.height / 2
-      );
-      if (this.tapResultLabelTimer) {
-        clearTimeout(this.tapResultLabelTimer);
-      }
-      this.tapResultLabelTimer = setTimeout(() => {
-        // this.matter.world.setGravity(0, this.initialGravity);
-        this.tapResultLabel?.destroy();
-      }, 2000);
-    }
+    // if (this.tapScore >= 60) {
+    //   this.tapScore = 0;
+    //   this.isBoosted = true;
+    //   this.userMarbleMaxSpeed =
+    //     this.marbles[this.userMarbleIdx].velocity.y + 20;
+    //   this.boostMultipler = this.marbles[this.userMarbleIdx].velocity.y;
+    //   this.marbleTrailParticles[this.userMarbleIdx].setParticleTint(0xf83600);
+    //   this.tapResultLabel?.destroy();
+    //   this.tapResultLabel = this.add
+    //     .text(
+    //       this.cameras.main.width / 2,
+    //       this.cameras.main.height / 2,
+    //       "Boosted",
+    //       {
+    //         fontSize: `${42 * this.dpr}px`,
+    //         color: "white",
+    //         stroke: "rgba(0,0,0,1)",
+    //         strokeThickness: 6,
+    //         // backgroundColor: "rgba(0,0,0,1)",
+    //       }
+    //     )
+    //     .setScrollFactor(0);
+    //   this.tapResultLabel?.setPosition(
+    //     this.tapResultLabel.x - this.tapResultLabel.width / 2,
+    //     this.tapResultLabel.y - this.tapResultLabel.height / 2
+    //   );
+    //   if (this.tapResultLabelTimer) {
+    //     clearTimeout(this.tapResultLabelTimer);
+    //   }
+    //   this.tapResultLabelTimer = setTimeout(() => {
+    //     // this.matter.world.setGravity(0, this.initialGravity);
+    //     this.tapResultLabel?.destroy();
+    //   }, 2000);
+    // }
     if (this.isBoosted && this.boostMultipler < this.userMarbleMaxSpeed) {
       const userMarble = this.marbles[this.userMarbleIdx]; // TODO: User chosen marble
       this.matter.body.setVelocity(userMarble, {

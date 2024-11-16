@@ -10,10 +10,10 @@ body {
   -webkit-transform: translateX(100%);
   transform: translateX(100%);
 
-  -moz-animation: my-animation 15s linear infinite;
-  -webkit-animation: my-animation 15s linear infinite;
-  animation: my-animation 15s linear infinite;
-  overflow: hidden;
+  -moz-animation: my-animation 6s linear infinite;
+  -webkit-animation: my-animation 6s linear infinite;
+  animation: my-animation 6s linear infinite;
+  /* overflow: hidden; */
   z-index: 1;
 }
 

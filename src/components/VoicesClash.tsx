@@ -11,8 +11,8 @@ import { updatePurchasedVoice, User } from "../services/db/user.service";
 import WebApp from "@twa-dev/sdk";
 
 type Props = {
-  primaryVoiceId: string;
-  secondaryVoiceId: string | null;
+  primaryVoiceInfo: VoiceV1Cover;
+  secondaryVoiceInfo: VoiceV1Cover | null;
   onChooseOpponent: (voiceInfo: VoiceV1Cover) => void;
   onStartRaceClick: () => void;
   voices: VoiceV1Cover[];
@@ -26,8 +26,8 @@ type Props = {
 const voiceWidth = 140;
 const VoicesClash = ({
   voices,
-  primaryVoiceId,
-  secondaryVoiceId,
+  primaryVoiceInfo,
+  secondaryVoiceInfo,
   onChooseOpponent,
   onStartRaceClick,
   downloadProgress,
@@ -39,6 +39,9 @@ const VoicesClash = ({
   const [readyToStartRace, setReadyToStartRace] = useState(false);
   const [cost, setCost] = useState(0);
   const [isWaitingForPayment, setIsWaitingForPayment] = useState("");
+
+  const primaryVoiceId = primaryVoiceInfo.id;
+  const secondaryVoiceId = secondaryVoiceInfo?.id;
 
   useEffect(() => {
     if (secondaryVoiceId && readyToStartRace) {
@@ -55,42 +58,15 @@ const VoicesClash = ({
       alignItems={"center"}
       position={"relative"}
     >
-      <img src="/assets/tunedash/tune-dash.png" />
-      <Box
-        display={"flex"}
-        alignItems={"center"}
-        height={200}
-        position={"relative"}
-      >
-        <Box width={voiceWidth} height={voiceWidth}>
-          <img
-            src={getVoiceAvatarPath(primaryVoiceId)}
-            style={{
-              borderRadius: "50%",
-              outline: "8px solid #04344d",
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              objectPosition: "center",
-            }}
-          />
-        </Box>
-        <Box
-          position={"absolute"}
-          top={0}
-          left={0}
-          width={"100%"}
-          height={"100%"}
-          display={"flex"}
-          justifyContent={"center"}
-          alignItems={"center"}
-        >
-          <img src="/assets/tunedash/vs.png" width={90} height={91} />
-        </Box>
-        {secondaryVoiceId ? (
-          <Box width={voiceWidth} height={voiceWidth}>
+      {!showOpponentVoiceSelection && (
+        <img src="/assets/tunedash/tune-dash.png" />
+      )}
+
+      <Stack height={220} gap={2} justifyContent={"center"}>
+        <Box display={"flex"} alignItems={"center"} position={"relative"}>
+          <Box width={voiceWidth} height={voiceWidth} position={"relative"}>
             <img
-              src={getVoiceAvatarPath(secondaryVoiceId)}
+              src={getVoiceAvatarPath(primaryVoiceId)}
               style={{
                 borderRadius: "50%",
                 outline: "8px solid #04344d",
@@ -101,23 +77,82 @@ const VoicesClash = ({
               }}
             />
           </Box>
-        ) : (
           <Box
-            sx={{
-              bgcolor: "white",
-              borderRadius: "50%",
-              outline: "8px solid #04344d",
-            }}
-            width={voiceWidth}
-            height={voiceWidth}
+            position={"absolute"}
+            top={0}
+            left={0}
+            width={"100%"}
+            height={"100%"}
             display={"flex"}
-            alignItems={"center"}
             justifyContent={"center"}
+            alignItems={"center"}
           >
-            <img src="/assets/tunedash/question-mark.png" />
+            <img src="/assets/tunedash/vs.png" width={90} height={91} />
           </Box>
-        )}
-      </Box>
+          {secondaryVoiceId ? (
+            <Box width={voiceWidth} height={voiceWidth}>
+              <img
+                src={getVoiceAvatarPath(secondaryVoiceId)}
+                style={{
+                  borderRadius: "50%",
+                  outline: "8px solid #04344d",
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  objectPosition: "center",
+                }}
+              />
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                bgcolor: "white",
+                borderRadius: "50%",
+                outline: "8px solid #04344d",
+              }}
+              width={voiceWidth}
+              height={voiceWidth}
+              display={"flex"}
+              alignItems={"center"}
+              justifyContent={"center"}
+            >
+              <img src="/assets/tunedash/question-mark.png" />
+            </Box>
+          )}
+        </Box>
+        <Box display={"flex"} justifyContent={"center"} alignItems={"center"}>
+          <Typography
+            color={"#f0f0f0"}
+            fontSize={12}
+            fontWeight={900}
+            textAlign={"center"}
+            width={140}
+            sx={{
+              textOverflow: "ellipsis",
+              overflow: "hidden",
+            }}
+          >
+            {primaryVoiceInfo.name}
+          </Typography>
+          {secondaryVoiceId ? (
+            <Typography
+              color={"#f0f0f0"}
+              fontSize={12}
+              fontWeight={900}
+              textAlign={"center"}
+              width={140}
+              sx={{
+                textOverflow: "ellipsis",
+                overflow: "hidden",
+              }}
+            >
+              {secondaryVoiceInfo?.name}
+            </Typography>
+          ) : (
+            <Box width={140}></Box>
+          )}
+        </Box>
+      </Stack>
       {showOpponentVoiceSelection && (
         <ChooseVoice
           voices={voices}
@@ -207,6 +242,7 @@ const VoicesClash = ({
           <LongImageMotionButton
             onClick={async () => {
               if (!userInfo) return alert("Support only on Telegram Mini App");
+              if (!cost) return alert("This voice is not available yet");
               if (
                 (userInfo?.purchasedVoices || []).includes(
                   `${selectedCoverDocId}_${secondaryVoiceId}`
