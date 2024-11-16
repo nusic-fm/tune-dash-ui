@@ -81,8 +81,8 @@ const downloadAudioFiles = async (
     delete downloadObj[key];
     delete playersRef[key];
   });
-  console.log("playersObj", playersRef);
-  console.log("downloadObj", downloadObj);
+  // console.log("playersObj", playersRef);
+  // console.log("downloadObj", downloadObj);
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
     if (!downloadObj[url]) {

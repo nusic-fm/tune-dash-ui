@@ -323,7 +323,9 @@ function App() {
               ) : (
                 <Header
                   showBackButton={screenName !== "start"}
-                  showCoverTitle={!!selectedCoverDocId}
+                  showCoverTitle={
+                    !!selectedCoverDocId && screenName !== "select-track"
+                  }
                   onBackButtonClick={() => {
                     switch (screenName) {
                       case "menu":
@@ -384,6 +386,8 @@ function App() {
                     setCoverDoc(coverDoc);
                     setSelectedCoverDocId(coverId);
                     setPrimaryVoiceInfo(voiceInfo);
+                  }}
+                  onNextPageClick={() => {
                     setScreenName("choose-primary-voice");
                   }}
                 />
