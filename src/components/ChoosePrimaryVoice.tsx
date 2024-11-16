@@ -24,40 +24,26 @@ const ChoosePrimaryVoice = ({
 
   return (
     <Stack
-      gap={4}
+      gap={2}
       height={"100%"}
       width={"100%"}
-      display={"flex"}
       justifyContent={"center"}
       alignItems={"center"}
+      position={"relative"}
     >
-      <Box
-        width={172}
-        height={180}
-        // sx={{
-        //   background: `url(/assets/tunedash/voice-card.png)`,
-        //   backgroundSize: "cover",
-        //   backgroundPosition: "center",
-        // }}
-        position={"relative"}
-        display={"flex"}
-        justifyContent={"center"}
-      >
+      <Stack alignItems={"center"} gap={0.5}>
         <img
           src={getVoiceAvatarPath(selectedVoiceInfo.id)}
-          width={"60%"}
+          width={105}
+          height={105}
           style={{
             borderRadius: "12px",
             cursor: "pointer",
-            top: "45%",
-            transform: "translateY(-50%)",
-            position: "absolute",
           }}
         />
         <Box
-          position={"absolute"}
-          top="83%"
-          width={100}
+          px={2}
+          // width={100}
           height={20}
           sx={{
             background: `url(/assets/tunedash/track-rect.png)`,
@@ -80,7 +66,7 @@ const ChoosePrimaryVoice = ({
             {selectedVoiceInfo.name}
           </Typography>
         </Box>
-      </Box>
+      </Stack>
       <Box
         width={window.innerWidth > 350 ? 350 : window.innerWidth}
         height={430}
@@ -168,14 +154,16 @@ const ChoosePrimaryVoice = ({
           ))}
         </Box>
       </Box>
-      <LongImageMotionButton
-        onClick={() => {
-          onPrimaryVoiceSelected(selectedVoiceInfo);
-        }}
-        name="Proceed"
-        width={230}
-        height={75}
-      />
+      <Box position={"absolute"} bottom={20} zIndex={100}>
+        <LongImageMotionButton
+          onClick={() => {
+            onPrimaryVoiceSelected(selectedVoiceInfo);
+          }}
+          name="Proceed"
+          width={230}
+          height={75}
+        />
+      </Box>
       {/* <motion.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
