@@ -123,49 +123,63 @@ const initializeTone = async () => {
 };
 
 const setEvents = () => {
-  Tone.Transport.on("start", () => {
+  const transport = Tone.getTransport();
+  transport.on("start", () => {
     console.log("Tone Started");
     isTonePlaying = true;
   });
-  Tone.Transport.on("stop", () => {
+  transport.on("stop", () => {
     console.log("Tone Stopped");
     isTonePlaying = false;
   });
-  Tone.Transport.on("pause", () => {
+  transport.on("pause", () => {
     console.log("Tone Paused");
     isTonePlaying = false;
   });
-  Tone.Transport.on("loopEnd", () => {
+  transport.on("loopStart", () => {
+    console.log("Tone Loop Started");
+    isEnded = false;
+  });
+  transport.on("loopEnd", () => {
+    console.log("Tone Loop Ended");
     isEnded = true;
   });
 };
 
 const pausePlayer = () => {
-  Tone.Transport.pause();
+  const transport = Tone.getTransport();
+  transport.pause();
 };
 
 const playPlayer = () => {
-  Tone.Transport.start();
+  const transport = Tone.getTransport();
+  transport.start();
 };
 
 const stopPlayer = () => {
-  Tone.Transport.stop();
+  const transport = Tone.getTransport();
+  transport.stop();
 };
 
 const marbleRaceOnlyInstrument = async (
   id: string,
   bpm: number,
-  startOffset: number
+  startOffset: number,
+  endOffset: number
 ) => {
   if (introPlayerRef) {
     introPlayerRef?.stop();
     introPlayerRef?.dispose();
     introPlayerRef = null;
   }
-  if (bpm) Tone.Transport.bpm.value = bpm;
-  else Tone.Transport.bpm.dispose();
+  const transport = Tone.getTransport();
+  if (bpm) transport.bpm.value = bpm;
+  else transport.bpm.dispose();
   await initializeTone();
-  if (Tone.Transport.seconds) Tone.Transport.stop();
+  if (transport.seconds) {
+    transport.seconds = 0;
+    transport.stop();
+  }
   if (instrPlayerRef) {
     instrPlayerRef.stop();
     instrPlayerRef.dispose();
@@ -189,9 +203,15 @@ const marbleRaceOnlyInstrument = async (
   }
   await Tone.loaded();
   instrPlayerRef.start();
-  playersRef[voicesUrls[0]].start(undefined, startOffset);
-  currentlyPlayingUrl = voicesUrls[0];
-  Tone.Transport.start(undefined, startOffset);
+  const voiceUrl = voicesUrls[0];
+  playersRef[voiceUrl].start(undefined, startOffset);
+  currentlyPlayingUrl = voiceUrl;
+  transport.setLoopPoints(startOffset, endOffset);
+  transport.loop = true;
+  playersRef[voiceUrl].setLoopPoints(startOffset, endOffset);
+  playersRef[voiceUrl].loop = true;
+  transport.start(undefined, startOffset);
+  // console.log("Loop points: ", startOffset, endOffset);
 };
 
 const prepareVocalPlayers = async (urls: string[]) => {
@@ -203,7 +223,11 @@ const prepareVocalPlayers = async (urls: string[]) => {
   await Tone.loaded();
 };
 
-const switchVocals = async (id: string, vId: string, oldVId: string) => {
+const switchVocalsByDownloading = async (
+  id: string,
+  vId: string,
+  oldVId: string
+) => {
   await initializeTone();
   if (oldVId === vId) return;
   // // Delete and dispose the old downloadobj
@@ -237,7 +261,11 @@ const switchVocals = async (id: string, vId: string, oldVId: string) => {
     delete playersRef[currentlyPlayingUrl];
     currentlyPlayingUrl = "";
   }
-  playersRef[url].start(undefined, Tone.Transport.seconds);
+  const transport = Tone.getTransport();
+  playersRef[url].start(undefined, transport.seconds);
+  // console.log("Loop points: ", transport.loopStart, transport.loopEnd);
+  playersRef[url].setLoopPoints(transport.loopStart, transport.loopEnd);
+  playersRef[url].loop = true;
   currentlyPlayingUrl = url;
 };
 
@@ -250,7 +278,10 @@ const marbleRacePlayVocals = async (id: string, vId: string) => {
   }
   if (url in playersRef) {
     currentlyPlayingUrl = url;
-    playersRef[url].start(undefined, Tone.Transport.seconds);
+    const transport = Tone.getTransport();
+    playersRef[url].start(undefined, transport.seconds);
+    playersRef[url].setLoopPoints(transport.loopStart, transport.loopEnd);
+    playersRef[url].loop = true;
   }
 };
 
@@ -321,6 +352,8 @@ const downloadAndPlayIntro = async () => {
   // bf = buffer;
   // }
   const introPlayer = new Tone.Player(buffer).toDestination();
+  introPlayer.setLoopPoints(164.3, 246.5);
+  introPlayer.loop = true;
   introPlayerRef = introPlayer;
 };
 
@@ -338,5 +371,5 @@ export {
   prepareVocalPlayers,
   toggleMuteAudio,
   downloadAndPlayIntro,
-  switchVocals,
+  switchVocalsByDownloading,
 };

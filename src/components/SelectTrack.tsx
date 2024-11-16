@@ -61,7 +61,8 @@ const SelectTrack = ({
     marbleRaceOnlyInstrument(
       _coverId,
       _coverDoc.bpm || 120,
-      _coverDoc.vocalsStartOffset || 0
+      _coverDoc.vocalsStartOffset || 0,
+      _coverDoc.vocalsEndOffset || _coverDoc.duration || 0
     );
     setDownloadingCoverId("");
   };

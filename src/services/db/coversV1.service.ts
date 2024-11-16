@@ -74,6 +74,7 @@ export type CoverV1 = {
   prevRank: number;
   createdAt?: Timestamp;
   vocalsStartOffset?: number;
+  vocalsEndOffset?: number;
 };
 
 const getCoverDocById = async (docId: string) => {

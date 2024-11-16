@@ -3,7 +3,7 @@ import { VoiceV1Cover } from "../services/db/coversV1.service";
 import { getVoiceAvatarPath } from "../helpers";
 import { useState } from "react";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
-import { switchVocals } from "../hooks/useTonejs";
+import { switchVocalsByDownloading } from "../hooks/useTonejs";
 
 type Props = {
   onPrimaryVoiceSelected: (voiceInfo: VoiceV1Cover) => void;
@@ -113,7 +113,11 @@ const ChoosePrimaryVoice = ({
               <Box
                 onClick={() => {
                   setSelectedVoiceInfo(voice);
-                  switchVocals(selectedCoverId, voice.id, selectedVoiceInfo.id);
+                  switchVocalsByDownloading(
+                    selectedCoverId,
+                    voice.id,
+                    selectedVoiceInfo.id
+                  );
                 }}
                 position={"relative"}
                 width={65}
