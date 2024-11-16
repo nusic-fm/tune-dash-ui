@@ -58,7 +58,9 @@ const VoicesClash = ({
       alignItems={"center"}
       position={"relative"}
     >
-      <img src="/assets/tunedash/tune-dash.png" />
+      {!showOpponentVoiceSelection && (
+        <img src="/assets/tunedash/tune-dash.png" />
+      )}
 
       <Stack height={220} gap={2} justifyContent={"center"}>
         <Box display={"flex"} alignItems={"center"} position={"relative"}>

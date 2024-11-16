@@ -246,7 +246,7 @@ export const duplicateArrayElemToN = (
     result.push(arr[idx]);
     prevIdx = idx;
   }
-  return result.sort(() => Math.random() - 0.5);
+  return result;
 };
 
 export const getBeatsArray = (id: string, startOffset: number): number[] => {
