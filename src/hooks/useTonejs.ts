@@ -1,6 +1,7 @@
 // import { openDB, DBSchema, IDBPDatabase } from "idb";
 import * as Tone from "tone";
 import { ToneAudioBuffer } from "tone";
+import { updateIntroPlayedSeconds } from "../services/db/config.service";
 
 // // Database Configuration
 // const idbConfig = {
@@ -42,6 +43,7 @@ let isEnded: boolean = false;
 const downloadObj: { [key: string]: ToneAudioBuffer } = {};
 const playersRef: { [key: string]: Tone.Player } = {}; // For keeping track of players
 let currentlyPlayingUrl: string = "";
+let introStartTime: number = 0;
 // let db: Promise<IDBPDatabase<CoversDB>> | null = null;
 
 // const initializeDB = async () => {
@@ -168,6 +170,8 @@ const marbleRaceOnlyInstrument = async (
   endOffset: number
 ) => {
   if (introPlayerRef) {
+    const totalSecondsPlayed = Tone.now() - introStartTime;
+    updateIntroPlayedSeconds(totalSecondsPlayed);
     introPlayerRef?.stop();
     introPlayerRef?.dispose();
     introPlayerRef = null;
@@ -321,7 +325,8 @@ const toggleMuteAudio = async () => {
   if (introPlayerRef) {
     if (!isTonePlaying) {
       await initializeTone();
-      introPlayerRef.start(0, 164.3);
+      introStartTime = Tone.now();
+      introPlayerRef.start(introStartTime, 164.3);
       isTonePlaying = true;
     }
     introPlayerRef.mute = isMuted;
