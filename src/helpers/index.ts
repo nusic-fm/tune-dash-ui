@@ -1054,4 +1054,4 @@ export const tireList = [
   1, 1, 1, 3, 1, 2, 3,
 ];
 
-export const tireCost = [0.99, 2, 3];
+export const tireCost = [3, 2, 0.99];
