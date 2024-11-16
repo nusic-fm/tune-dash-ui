@@ -1,5 +1,5 @@
 import { Badge, Box, Stack, Typography } from "@mui/material";
-import { getVoiceAvatarPath } from "../helpers";
+import { getVoiceAvatarPath, tireCost, tireList, voiceList } from "../helpers";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 
@@ -20,7 +20,6 @@ const ChooseVoice = ({
   purchasedVoices,
   selectedCoverDocId,
 }: Props) => {
-  console.log(purchasedVoices, selectedCoverDocId);
   return (
     <Box
       width={320}
@@ -52,8 +51,9 @@ const ChooseVoice = ({
         {voices
           .filter((v) => !filterOutVoiceIds.includes(v.id))
           .map((voice, idx) => {
-            const cost =
-              idx > voices.length / 2 ? 5 : idx > voices.length / 3 ? 2 : 0.99;
+            const voiceIdx = voiceList.indexOf(voice.id);
+            const tireIdx = tireList[voiceIdx];
+            const cost = tireCost[tireIdx - 1];
             return (
               <Stack key={idx}>
                 <Box

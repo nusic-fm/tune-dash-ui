@@ -207,6 +207,7 @@ const VoicesClash = ({
           <LongImageMotionButton
             onClick={async () => {
               if (!userInfo) return alert("Support only on Telegram Mini App");
+              if (!cost) return alert("This voice is not available yet");
               if (
                 (userInfo?.purchasedVoices || []).includes(
                   `${selectedCoverDocId}_${secondaryVoiceId}`
