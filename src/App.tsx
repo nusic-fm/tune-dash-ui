@@ -411,8 +411,8 @@ function App() {
                   <VoicesClash
                     voices={coverDoc.voices}
                     selectedCoverDocId={selectedCoverDocId}
-                    primaryVoiceId={primaryVoiceInfo.id}
-                    secondaryVoiceId={secondaryVoiceInfo?.id || ""}
+                    primaryVoiceInfo={primaryVoiceInfo}
+                    secondaryVoiceInfo={secondaryVoiceInfo}
                     onChooseOpponent={(voiceInfo) => {
                       setSecondaryVoiceInfo(voiceInfo);
                     }}
