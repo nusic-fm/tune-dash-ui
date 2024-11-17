@@ -94,7 +94,7 @@ function App() {
   });
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [startSectionIdx, setStartSectionIdx] = useState(1);
-  const [noOfRaceTracks, setNoOfRaceTracks] = useState(10);
+  const [noOfRaceTracks, setNoOfRaceTracks] = useState(2);
   const theme = useTheme();
   const isMobileView = useMediaQuery(theme.breakpoints.down("md"));
   const canvasElemWidth = isMobileView ? window.innerWidth : 414;
@@ -192,7 +192,7 @@ function App() {
       () => {
         setShowGameOverButtons(true);
       },
-      isWinner ? 3000 : 1800
+      isWinner ? 2500 : 1800
     );
     if (userInfo?.id) {
       await updateGameResult(

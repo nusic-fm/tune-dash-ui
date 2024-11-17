@@ -462,6 +462,7 @@ export default class Game extends Phaser.Scene {
     this.tiles.map((t) => t.destroy());
     const isWin = this.winnerIdx === 0;
     let resultImage;
+    let xpText: Phaser.GameObjects.Text | undefined;
     if (isWin) {
       resultImage = this.add
         .image(this.centerX, this.centerY, "win_result")
@@ -472,12 +473,20 @@ export default class Game extends Phaser.Scene {
         .setDepth(100000)
         // .setScale(this.dpr)
         .setScrollFactor(0);
-      // this.add
-      //   .text(this.centerX, 100 * this.dpr, "+500X", {
-      //     fontSize: `${64 * this.dpr}px`,
-      //     color: "#ffffff",
-      //   })
-      //   .setDepth(1000001);
+      xpText = this.add
+        .text(this.centerX, 90 * this.dpr, "+500XP", {
+          fontSize: `${52 * this.dpr}px`,
+          color: "#573FC8",
+          stroke: "#fff",
+          strokeThickness: 4,
+        })
+        .setVisible(false)
+        .setDepth(1000001)
+        .setScrollFactor(0);
+      xpText.setPosition(
+        xpText.x - xpText.width / 2,
+        xpText.y - xpText.height / 2
+      );
       this.sound.play("win_sound");
     } else {
       resultImage = this.add
@@ -497,6 +506,9 @@ export default class Game extends Phaser.Scene {
       scale: this.dpr * 0.9,
       duration: 500,
       ease: "Bounce.out",
+      onStart: () => {
+        xpText?.setVisible(true);
+      },
     });
     // const labelContent = isWin ? "You Win!" : "You Lose";
     // // const xpContent = this.winnerIdx === 1 ? "+500 XP" : "+0 XP";
@@ -527,7 +539,7 @@ export default class Game extends Phaser.Scene {
     // );
     EventBus.emit(
       "game-over",
-      this.winnerIdx === 1,
+      this.winnerIdx === this.userMarbleIdx,
       this.voices,
       this.voices[this.userMarbleIdx].id
     );
