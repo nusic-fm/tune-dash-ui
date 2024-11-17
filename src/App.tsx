@@ -455,6 +455,7 @@ function App() {
                     gravityY={4}
                     width={canvasElemWidth}
                     trailPath={getTrailPath(selectedTrailPath)}
+                    dpr={window.devicePixelRatio || 2}
                   />
                 )}
             </Stack>
