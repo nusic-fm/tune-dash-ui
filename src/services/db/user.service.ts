@@ -75,6 +75,7 @@ const updateGameResult = async (
   await updateDoc(d, {
     wins: increment(isWinner ? 1 : 0),
     playedTimes: increment(1),
+    xp: increment(isWinner ? 500 : 0),
   });
   // Save game in subcollection
   const gameDoc = doc(

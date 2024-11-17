@@ -462,6 +462,7 @@ export default class Game extends Phaser.Scene {
     this.tiles.map((t) => t.destroy());
     const isWin = this.winnerIdx === 0;
     let resultImage;
+    let xpText: Phaser.GameObjects.Text | undefined;
     if (isWin) {
       resultImage = this.add
         .image(this.centerX, this.centerY, "win_result")
@@ -472,12 +473,20 @@ export default class Game extends Phaser.Scene {
         .setDepth(100000)
         // .setScale(this.dpr)
         .setScrollFactor(0);
-      // this.add
-      //   .text(this.centerX, 100 * this.dpr, "+500X", {
-      //     fontSize: `${64 * this.dpr}px`,
-      //     color: "#ffffff",
-      //   })
-      //   .setDepth(1000001);
+      xpText = this.add
+        .text(this.centerX, 60 * this.dpr, "+500XP", {
+          fontSize: `${52 * this.dpr}px`,
+          color: "#573FC8",
+          stroke: "#fff",
+          strokeThickness: 4,
+        })
+        .setVisible(false)
+        .setDepth(1000001)
+        .setScrollFactor(0);
+      xpText.setPosition(
+        xpText.x - xpText.width / 2,
+        xpText.y - xpText.height / 2
+      );
       this.sound.play("win_sound");
     } else {
       resultImage = this.add
@@ -497,6 +506,9 @@ export default class Game extends Phaser.Scene {
       scale: this.dpr * 0.9,
       duration: 500,
       ease: "Bounce.out",
+      onStart: () => {
+        xpText?.setVisible(true);
+      },
     });
     // const labelContent = isWin ? "You Win!" : "You Lose";
     // // const xpContent = this.winnerIdx === 1 ? "+500 XP" : "+0 XP";
@@ -527,7 +539,7 @@ export default class Game extends Phaser.Scene {
     // );
     EventBus.emit(
       "game-over",
-      this.winnerIdx === 1,
+      this.winnerIdx === this.userMarbleIdx,
       this.voices,
       this.voices[this.userMarbleIdx].id
     );
@@ -574,13 +586,27 @@ export default class Game extends Phaser.Scene {
     animationStartTimes.map((startTime) => {
       const currentX = _.sample([leftOffset, righOffset]);
       const tile = this.add
-        .image(currentX, 0, "tile")
+        .sprite(currentX, 0, "tile")
         .setDepth(101)
         .setScrollFactor(0)
         .setScale(this.dpr)
         .setInteractive()
         .setVisible(false);
       this.tiles.push(tile);
+      const tileTrail = this.add
+        .particles(0, 0, "tile", {
+          speedY: 80,
+          lifespan: 500,
+          scale: {
+            start: this.dpr,
+            end: this.dpr * 0.8,
+          },
+          alpha: { start: 0.05, end: 0 },
+          follow: tile,
+          visible: false,
+        })
+        .setDepth(100)
+        .setScrollFactor(0);
       tile.once("pointerdown", () => {
         const tileY = tile.y;
         const delta = targetY - tileY;
@@ -589,6 +615,7 @@ export default class Game extends Phaser.Scene {
         this.tapScore +=
           resultText === "Perfect" ? 10 : resultText === "Great" ? 5 : 0;
         tile.destroy();
+        tileTrail.destroy();
         if (this.tapResultLabelTimer) {
           clearTimeout(this.tapResultLabelTimer);
         }
@@ -638,9 +665,11 @@ export default class Game extends Phaser.Scene {
         onComplete: () => {
           tile.destroy();
           this.tweens.remove(tween);
+          tileTrail.destroy();
         },
         onStart: () => {
           tile.setVisible(true);
+          tileTrail.setVisible(true);
         },
       });
     });
