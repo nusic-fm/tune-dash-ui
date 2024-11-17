@@ -474,7 +474,7 @@ export default class Game extends Phaser.Scene {
         // .setScale(this.dpr)
         .setScrollFactor(0);
       xpText = this.add
-        .text(this.centerX, 90 * this.dpr, "+500XP", {
+        .text(this.centerX, 60 * this.dpr, "+500XP", {
           fontSize: `${52 * this.dpr}px`,
           color: "#573FC8",
           stroke: "#fff",
