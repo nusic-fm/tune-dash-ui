@@ -102,10 +102,10 @@ const SelectTrack = ({
                 sx={{
                   background:
                     doc.id === "fEGU8n7EdEqhtMIfse09"
-                      ? `url(/assets/tunedash/special-rect.png)`
+                      ? `url(/assets/tunedash/sr.png)`
                       : `url(/assets/tunedash/track-rect.png)`,
                   width: 312,
-                  height: 67,
+                  height: doc.id === "fEGU8n7EdEqhtMIfse09" ? 85 : 67,
                   backgroundRepeat: "no-repeat",
                 }}
                 key={doc.id}
