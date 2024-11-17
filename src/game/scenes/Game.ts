@@ -574,13 +574,27 @@ export default class Game extends Phaser.Scene {
     animationStartTimes.map((startTime) => {
       const currentX = _.sample([leftOffset, righOffset]);
       const tile = this.add
-        .image(currentX, 0, "tile")
+        .sprite(currentX, 0, "tile")
         .setDepth(101)
         .setScrollFactor(0)
         .setScale(this.dpr)
         .setInteractive()
         .setVisible(false);
       this.tiles.push(tile);
+      const tileTrail = this.add
+        .particles(0, 0, "tile", {
+          speedY: 80,
+          lifespan: 500,
+          scale: {
+            start: this.dpr,
+            end: this.dpr * 0.8,
+          },
+          alpha: { start: 0.05, end: 0 },
+          follow: tile,
+          visible: false,
+        })
+        .setDepth(100)
+        .setScrollFactor(0);
       tile.once("pointerdown", () => {
         const tileY = tile.y;
         const delta = targetY - tileY;
@@ -589,6 +603,7 @@ export default class Game extends Phaser.Scene {
         this.tapScore +=
           resultText === "Perfect" ? 10 : resultText === "Great" ? 5 : 0;
         tile.destroy();
+        tileTrail.destroy();
         if (this.tapResultLabelTimer) {
           clearTimeout(this.tapResultLabelTimer);
         }
@@ -638,9 +653,11 @@ export default class Game extends Phaser.Scene {
         onComplete: () => {
           tile.destroy();
           this.tweens.remove(tween);
+          tileTrail.destroy();
         },
         onStart: () => {
           tile.setVisible(true);
+          tileTrail.setVisible(true);
         },
       });
     });
