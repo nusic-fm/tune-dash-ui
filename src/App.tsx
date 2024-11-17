@@ -1,12 +1,4 @@
-import {
-  Box,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Stack,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
+import { Box, Stack, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import Header from "./components/Header";
 
@@ -122,6 +114,7 @@ function App() {
   const [showOpponentVoiceSelection, setShowOpponentVoiceSelection] =
     useState(false);
   const [showGameOverButtons, setShowGameOverButtons] = useState(false);
+  const [isPlayingGame, setIsPlayingGame] = useState(false);
   const [showIosNotice, setShowIosNotice] = useState(false);
   const [coversSnapshot, cssLoading, cssError] = useCollection(
     query(
@@ -194,7 +187,13 @@ function App() {
     voices: VoiceV1Cover[],
     winningVoiceId: string
   ) => {
-    setShowGameOverButtons(true);
+    setIsPlayingGame(false);
+    setTimeout(
+      () => {
+        setShowGameOverButtons(true);
+      },
+      isWinner ? 3000 : 1800
+    );
     if (userInfo?.id) {
       await updateGameResult(
         userInfo.id,
@@ -261,7 +260,7 @@ function App() {
               alignItems={"center"}
               position={"relative"}
             >
-              {screenName === "game" && !showGameOverButtons ? (
+              {screenName === "game" && isPlayingGame ? (
                 <Box
                   position={"absolute"}
                   top={0}
@@ -320,6 +319,8 @@ function App() {
                     }}
                   />
                 </Box>
+              ) : screenName === "game" ? (
+                <></>
               ) : (
                 <Header
                   showBackButton={screenName !== "start"}
@@ -418,6 +419,7 @@ function App() {
                     }}
                     onStartRaceClick={async () => {
                       await downloadVocalsAndStartGame();
+                      setIsPlayingGame(true);
                       setScreenName("game");
                     }}
                     downloadProgress={downloadProgress}
