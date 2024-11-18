@@ -171,6 +171,10 @@ const marbleRaceOnlyInstrument = async (
 ) => {
   if (introPlayerRef) {
     const totalSecondsPlayed = Tone.now() - introStartTime;
+    // console.warn(
+    //   `%c Intro played for: ${totalSecondsPlayed.toFixed(2)}s`,
+    //   "background: #222; color: #bada55"
+    // );
     updateIntroPlayedSeconds(totalSecondsPlayed);
     introPlayerRef?.stop();
     introPlayerRef?.dispose();
@@ -208,13 +212,15 @@ const marbleRaceOnlyInstrument = async (
   await Tone.loaded();
   instrPlayerRef.start();
   const voiceUrl = voicesUrls[0];
-  playersRef[voiceUrl].start(undefined, startOffset);
   currentlyPlayingUrl = voiceUrl;
+  console.log("Loop points", startOffset, endOffset);
   transport.setLoopPoints(startOffset, endOffset);
   transport.loop = true;
   playersRef[voiceUrl].setLoopPoints(startOffset, endOffset);
   playersRef[voiceUrl].loop = true;
+  playersRef[voiceUrl].start(undefined, startOffset);
   transport.start(undefined, startOffset);
+  // introStartTime = Tone.now();
   // console.log("Loop points: ", startOffset, endOffset);
 };
 
@@ -265,12 +271,18 @@ const switchVocalsByDownloading = async (
     delete playersRef[currentlyPlayingUrl];
     currentlyPlayingUrl = "";
   }
+  // const totalSecondsPlayed = Tone.now() - introStartTime;
+  // console.warn(
+  //   `%c ${oldVId} played for: ${totalSecondsPlayed.toFixed(2)}s`,
+  //   "background: #222; color: #bada55"
+  // );
   const transport = Tone.getTransport();
   playersRef[url].start(undefined, transport.seconds);
   // console.log("Loop points: ", transport.loopStart, transport.loopEnd);
   playersRef[url].setLoopPoints(transport.loopStart, transport.loopEnd);
   playersRef[url].loop = true;
   currentlyPlayingUrl = url;
+  // introStartTime = Tone.now();
 };
 
 const marbleRacePlayVocals = async (id: string, vId: string) => {
@@ -362,6 +374,12 @@ const downloadAndPlayIntro = async () => {
   introPlayerRef = introPlayer;
 };
 
+// const downloadAndPlaySound = async (url: string) => {
+//   await initializeTone();
+//   const player = new Tone.Player(downloadObj[url]).toDestination();
+//   player.start();
+// };
+
 export {
   initializeTone,
   downloadAudioFiles,
@@ -377,4 +395,5 @@ export {
   toggleMuteAudio,
   downloadAndPlayIntro,
   switchVocalsByDownloading,
+  // downloadAndPlaySound,
 };

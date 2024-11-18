@@ -31,18 +31,7 @@ import WebApp from "@twa-dev/sdk";
 import { EventBus } from "./game/EventBus";
 import LongImageMotionButton from "./components/Buttons/LongImageMotionButton";
 
-export const tracks = [
-  "01",
-  // "02",
-  "03",
-  "06",
-  "07",
-  // "11",
-  // "14",
-  "16",
-  // "21",
-  // "22",
-];
+export const tracks = ["01", "03", "06", "07", "16"];
 
 // const gameBgPaths = [
 //   "/assets/tunedash/bgs/home.png",

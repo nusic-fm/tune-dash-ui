@@ -98,7 +98,7 @@ export default class Game extends Phaser.Scene {
   userMarbleIdx: number = 0;
   tapTimings: number[] = [];
   allTapTimings: number[] = [];
-  circleShouldFillInMs = 1250;
+  circleShouldFillInMs = 1500;
   beatsGroupLength = 8;
   resultLabel: Phaser.GameObjects.Text | undefined;
   tapScore: number = 0;
@@ -245,7 +245,7 @@ export default class Game extends Phaser.Scene {
       .setScale(this.dpr * (this.canvasWidth / (512 - 100)));
     this.createTextureMask(xOffset, yOffset, baseSprite);
     [
-      [100 * this.dpr, startOffset + 350 * this.dpr],
+      [100 * this.dpr, startOffset + 260 * this.dpr],
       [(this.canvasWidth / 414) * 310 * this.dpr, startOffset + 260 * this.dpr],
     ].map(([x, y]) => {
       this.powerups.push(
@@ -333,6 +333,26 @@ export default class Game extends Phaser.Scene {
       startOffset + baseSprite.height / 2,
       baseSprite
     );
+    const left: [number, number] = _.sample([
+      [this.centerX - 360, startOffset],
+      [this.centerX - 360, startOffset + 450],
+      // [this.centerX - 360, startOffset + 900],
+    ]);
+    const right: [number, number] = _.sample([
+      [this.centerX + 360, startOffset],
+      [this.centerX + 360, startOffset + 450],
+      // [this.centerX + 360, startOffset + 900],
+    ]);
+    [left, right].map(([x, y]) => {
+      this.powerups.push(
+        this.matter.add
+          .image(x, y, "booster_powerup", undefined, {
+            isStatic: true,
+          })
+          .setScale(this.dpr)
+          .setSensor(true)
+      );
+    });
     return startOffset + baseSprite.height * this.dpr;
   };
   createMarbles = (marbleRadius: number, miniShapes: any) => {
@@ -740,7 +760,7 @@ export default class Game extends Phaser.Scene {
     var prodShapes = this.cache.json.get("prod_shapes");
     var miniShapes = this.cache.json.get("mini_shapes");
 
-    let startOffset = (this.cameras.main.height / 2) * this.dpr;
+    let startOffset = this.centerY * 2;
     const xOffset = this.centerX;
     // this.selectedTracks = ["06", "07", "03", "01", "16"];
     this.selectedTracks.map((trackNo) => {
