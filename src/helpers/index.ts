@@ -1,6 +1,6 @@
 import { Timestamp } from "firebase/firestore";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
-import crypto from "crypto-js";
+import _ from "lodash";
 
 export const getClosesNoInArr = (arr: number[], goal: number) =>
   arr.reduce((prev, curr) =>
@@ -239,14 +239,19 @@ export const duplicateArrayElemToN = (
   arr: string[],
   n: number = 6
 ): string[] => {
-  const result = arr;
-  let prevIdx = -1;
-  while (result.length < n) {
-    let idx = createRandomNumber(0, arr.length - 1, prevIdx);
-    result.push(arr[idx]);
-    prevIdx = idx;
+  const result = [];
+  const everySecondResultShouldBe = arr.filter((v) =>
+    ["01", "03", "07"].includes(v)
+  );
+  const others = arr.filter((v) => !["01", "03", "07"].includes(v));
+  for (let i = 0; i < n; i++) {
+    if (i % 2 === 0) {
+      result.push(_.sample(everySecondResultShouldBe));
+    } else {
+      result.push(_.sample(others));
+    }
   }
-  return result;
+  return result as string[];
 };
 
 export const getBeatsArray = (id: string, startOffset: number): number[] => {

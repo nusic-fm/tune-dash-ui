@@ -23,7 +23,7 @@ export interface IGameDataParams {
   dprAdjustedWidth?: number;
   dprAdjustedHeight?: number;
   showObstacles?: boolean;
-  dpr?: number;
+  dpr: number;
 }
 
 interface IProps extends IGameDataParams {
@@ -43,12 +43,12 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
       gravityY,
       width,
       trailPath,
+      dpr,
     },
     ref
   ) {
     const height = window.innerHeight;
     const game = useRef<Phaser.Game | null>(null!);
-    const [dpr] = useState(2);
 
     // useEffect(() => {
     //   if (
