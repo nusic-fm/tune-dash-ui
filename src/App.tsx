@@ -30,6 +30,7 @@ import SlideUp from "./components/SlideUp";
 import WebApp from "@twa-dev/sdk";
 import { EventBus } from "./game/EventBus";
 import LongImageMotionButton from "./components/Buttons/LongImageMotionButton";
+import { logPosthog } from "./services/posthog.service";
 
 export const tracks = ["01", "03", "06", "07", "16"];
 
@@ -350,6 +351,7 @@ function App() {
                 <ScreenOne
                   onStartClick={async () => {
                     setScreenName("menu");
+                    logPosthog("Start", { username: userInfo?.username });
                     // const toneStatus = getToneStatus();
                     // if (toneStatus.isTonePlaying === false)
                     //   marbleRaceOnlyInstrument(selectedCoverDocId, 120, 0);
@@ -361,6 +363,9 @@ function App() {
                 <ScreenTwo
                   onSingleRaceClick={() => {
                     setScreenName("select-track");
+                    logPosthog("Single Race", {
+                      username: userInfo?.username,
+                    });
                   }}
                 />
               )}
@@ -376,9 +381,18 @@ function App() {
                     setCoverDoc(coverDoc);
                     setSelectedCoverDocId(coverId);
                     setPrimaryVoiceInfo(voiceInfo);
+                    logPosthog("Play Track", {
+                      username: userInfo?.username,
+                      coverId,
+                      autoPlayedVoiceId: voiceInfo?.id,
+                    });
                   }}
                   onNextPageClick={() => {
                     setScreenName("choose-primary-voice");
+                    logPosthog("Select Track", {
+                      username: userInfo?.username,
+                      coverId: selectedCoverDocId,
+                    });
                   }}
                 />
               )}
@@ -391,6 +405,11 @@ function App() {
                     setPrimaryVoiceInfo(voiceInfo);
                     // setScreenName("voices-clash");
                     setScreenName("game-ready");
+                    logPosthog("Select Voice", {
+                      username: userInfo?.username,
+                      coverId: selectedCoverDocId,
+                      voiceId: voiceInfo.id,
+                    });
                   }}
                 />
               )}
@@ -410,6 +429,12 @@ function App() {
                       await downloadVocalsAndStartGame();
                       setIsPlayingGame(true);
                       setScreenName("game");
+                      logPosthog("Select Voice", {
+                        username: userInfo?.username,
+                        coverId: selectedCoverDocId,
+                        primaryVoiceId: primaryVoiceInfo.id,
+                        secondaryVoiceId: secondaryVoiceInfo?.id,
+                      });
                     }}
                     downloadProgress={downloadProgress}
                     userInfo={userInfo}
