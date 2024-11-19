@@ -276,7 +276,7 @@ const VoicesClash = ({
                     // WebApp.openLink(webUrl);
                     const interval = setInterval(async () => {
                       const orderStatus = await axios.post(
-                        `https://sbx-crypto-payment-api.aeon.xyz/open/api/payment/query`,
+                        `https://crypto-payment.alchemytech.cc/open/api/payment/query`,
                         {
                           merchantOrderNo: orderId,
                           appId: import.meta.env.VITE_AEON_APP_ID,
