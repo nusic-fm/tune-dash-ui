@@ -51,9 +51,9 @@ const ChooseVoice = ({
         {voices
           .filter((v) => !filterOutVoiceIds.includes(v.id))
           .map((voice, idx) => {
-            const voiceIdx = voiceList.indexOf(voice.id);
-            const tireIdx = tireList[voiceIdx];
-            const cost = tireCost[tireIdx - 1];
+            // const voiceIdx = voiceList.indexOf(voice.id);
+            // const tireIdx = tireList[voiceIdx];
+            const cost = 0.1;
             return (
               <Stack key={idx}>
                 <Box
