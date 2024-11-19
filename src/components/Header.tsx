@@ -76,21 +76,17 @@ const Header = ({
       )}
 
       <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+        // whileHover={{ scale: 1.1 }}
+        // whileTap={{ scale: 0.9 }}
         style={{
           background: `url("/assets/tunedash/hamburger-menu.png") center center / contain no-repeat`,
           border: "none",
           cursor: "pointer",
           width: 60,
           height: 60,
+          opacity: 0,
         }}
-        onClick={() => {
-          window.open(
-            "//sbx-crypto-payment.alchemypay.org/?orderNum=300217314207413593603",
-            "_blank"
-          );
-        }}
+        onClick={() => {}}
       />
     </Stack>
   );
