@@ -1,4 +1,4 @@
-import { db } from "../firebase.service";
+import { db, logFirebaseEvent } from "../firebase.service";
 import {
   doc,
   serverTimestamp,
@@ -46,6 +46,9 @@ const createUserDoc = async (userObj: User, docId: string): Promise<User> => {
   const existingUser = await getDoc(d);
   if (existingUser.exists()) {
     await updateDoc(d, { lastSeen: serverTimestamp(), visits: increment(1) });
+    logFirebaseEvent("login", {
+      user_id: docId,
+    });
     return existingUser.data() as User;
   }
   const newUserObj = {
@@ -59,6 +62,9 @@ const createUserDoc = async (userObj: User, docId: string): Promise<User> => {
     ...newUserObj,
     createdAt: serverTimestamp(),
     lastSeen: serverTimestamp(),
+  });
+  logFirebaseEvent("sign_up", {
+    user_id: docId,
   });
   return newUserObj;
 };

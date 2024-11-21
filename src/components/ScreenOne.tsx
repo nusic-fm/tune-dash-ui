@@ -4,7 +4,7 @@ import VolumeOffRoundedIcon from "@mui/icons-material/VolumeOffRounded";
 import VolumeUpRoundedIcon from "@mui/icons-material/VolumeUpRounded";
 import { getToneStatus, toggleMuteAudio } from "../hooks/useTonejs";
 import { useEffect, useState } from "react";
-import { logPosthog } from "../services/posthog.service";
+import { logFirebaseEvent } from "../services/firebase.service";
 
 type Props = {
   onStartClick: () => void;
@@ -37,7 +37,9 @@ const ScreenOne = ({ onStartClick, showIosNotice }: Props) => {
           onClick={() => {
             toggleMuteAudio();
             const { isMuted } = getToneStatus();
-            logPosthog("Mute", isMuted);
+            logFirebaseEvent("audio_interaction", {
+              is_muted: isMuted,
+            });
             setIsMuted(isMuted);
           }}
         >
