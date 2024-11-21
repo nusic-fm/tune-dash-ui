@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Chip, Typography } from "@mui/material";
 import { Stack } from "@mui/system";
 import { motion } from "framer-motion";
 
@@ -7,6 +7,7 @@ type Props = {
   showCoverTitle: boolean;
   onBackButtonClick?: () => void;
   coverTitle: string;
+  xp: number;
 };
 
 const Header = ({
@@ -14,6 +15,7 @@ const Header = ({
   showCoverTitle,
   onBackButtonClick,
   coverTitle,
+  xp,
 }: Props) => {
   return (
     <Stack
@@ -75,7 +77,7 @@ const Header = ({
         </Box>
       )}
 
-      <motion.button
+      {/* <motion.button
         // whileHover={{ scale: 1.1 }}
         // whileTap={{ scale: 0.9 }}
         style={{
@@ -87,6 +89,10 @@ const Header = ({
           opacity: 0,
         }}
         onClick={() => {}}
+      /> */}
+      <Chip
+        sx={{ mx: 1, color: "white", fontSize: "12px" }}
+        label={xp + " XP"}
       />
     </Stack>
   );

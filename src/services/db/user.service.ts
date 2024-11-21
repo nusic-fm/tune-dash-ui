@@ -26,6 +26,9 @@ export type User = {
   isBot?: boolean;
   id: string;
   purchasedVoices: string[] | null;
+  xp?: number;
+  wins?: number;
+  playedTimes?: number;
 };
 export type UserDoc = User & {
   createdAt: Timestamp;
@@ -45,13 +48,19 @@ const createUserDoc = async (userObj: User, docId: string): Promise<User> => {
     await updateDoc(d, { lastSeen: serverTimestamp(), visits: increment(1) });
     return existingUser.data() as User;
   }
-  await setDoc(d, {
+  const newUserObj = {
     ...userObj,
+    visits: 1,
+    xp: 0,
+    wins: 0,
+    playedTimes: 0,
+  };
+  await setDoc(d, {
+    ...newUserObj,
     createdAt: serverTimestamp(),
     lastSeen: serverTimestamp(),
-    visits: 1,
   });
-  return userObj;
+  return newUserObj;
 };
 
 const updatePurchasedVoice = async (userId: string, voiceId: string) => {

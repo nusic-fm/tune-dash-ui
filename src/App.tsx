@@ -313,6 +313,7 @@ function App() {
                 <></>
               ) : (
                 <Header
+                  xp={userInfo?.xp || 0}
                   showBackButton={screenName !== "start"}
                   showCoverTitle={
                     !!selectedCoverDocId && screenName !== "select-track"
