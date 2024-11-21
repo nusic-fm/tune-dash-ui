@@ -51,9 +51,13 @@ const Header = ({
           position={"relative"}
           width={229}
           height={32}
-          sx={{ overflow: "hidden" }}
+          sx={{
+            overflow: "hidden",
+            height: "30px",
+            background: `url("/assets/tunedash/player-topbar.png") center center / contain no-repeat`,
+          }}
         >
-          <img src="/assets/tunedash/player-topbar.png" alt="logo" />
+          {/* <img src="/assets/tunedash/player-topbar.png" alt="logo" /> */}
           <Typography
             position="absolute"
             top={0}
@@ -91,7 +95,7 @@ const Header = ({
         onClick={() => {}}
       /> */}
       <Chip
-        sx={{ mx: 1, color: "white", fontSize: "12px" }}
+        sx={{ mx: 1, color: "white", fontSize: "12px", fontWeight: 900 }}
         label={xp + " XP"}
       />
     </Stack>
