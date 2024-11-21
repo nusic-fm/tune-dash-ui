@@ -879,8 +879,11 @@ export default class Game extends Phaser.Scene {
     // );
     this.isInstrumentPlaying = true;
     // if (this.showRythmicPads) this.renderJoystickButtons();
+    // this.matter.world.engine.timing.timeScale = 0.9;
+    // this.matter.world.runner.delta = 1.5;
   }
   // update(time: number, delta: number): void {
+  // console.log("fps: ", this.game.loop.actualFps);
   update(): void {
     // if (this.tapScore >= 60) {
     //   this.tapScore = 0;
@@ -961,7 +964,7 @@ export default class Game extends Phaser.Scene {
         this.largeCircle?.setRotation(this.baseAngle);
         this.matter.body.setAngularVelocity(
           this.largeCircle?.body as BodyType,
-          0.15
+          0.07
         );
       }
       // Optimize marble updates

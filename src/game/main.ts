@@ -13,10 +13,20 @@ const config: Phaser.Types.Core.GameConfig = {
     default: "matter",
     matter: {
       gravity: { x: 0, y: 0.2 },
+      runner: {
+        //   deltaMin: 17,
+        //   deltaMax: 32,
+        delta: 1.5,
+        //   //   // isFixed: true,
+      },
       // setBounds: true
       // debug: true,
     },
   },
+  // fps: {
+  //   target: 60,
+  //   forceSetTimeOut: true,
+  // },
   // pixelArt: true,
   // antialias: false,
   // scale: {
