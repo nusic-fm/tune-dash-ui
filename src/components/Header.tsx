@@ -73,6 +73,8 @@ const Header = ({
               // textOverflow: "ellipsis",
               // overflow: "hidden",
               whiteSpace: "nowrap",
+              fontSize: "10px",
+              pl: 2,
             }}
             id="scroll-text"
           >
@@ -95,7 +97,7 @@ const Header = ({
         onClick={() => {}}
       /> */}
       <Chip
-        sx={{ mx: 1, color: "white", fontSize: "12px", fontWeight: 900 }}
+        sx={{ mx: 0.5, color: "white", fontSize: "12px", fontWeight: 900 }}
         label={xp + " XP"}
       />
     </Stack>
