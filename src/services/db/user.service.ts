@@ -29,6 +29,7 @@ export type User = {
   xp?: number;
   wins?: number;
   playedTimes?: number;
+  isVip?: boolean;
 };
 export type UserDoc = User & {
   createdAt: Timestamp;

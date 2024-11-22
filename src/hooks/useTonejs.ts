@@ -338,7 +338,7 @@ const toggleMuteAudio = async () => {
     if (!isTonePlaying) {
       await initializeTone();
       introStartTime = Tone.now();
-      introPlayerRef.start(introStartTime, 164.3);
+      introPlayerRef.start(0, 164.3);
       isTonePlaying = true;
     }
     introPlayerRef.mute = isMuted;
@@ -369,7 +369,7 @@ const downloadAndPlayIntro = async () => {
   // bf = buffer;
   // }
   const introPlayer = new Tone.Player(buffer).toDestination();
-  introPlayer.setLoopPoints(164.3, 246.5);
+  introPlayer.setLoopPoints(0, 246.5);
   introPlayer.loop = true;
   introPlayerRef = introPlayer;
 };

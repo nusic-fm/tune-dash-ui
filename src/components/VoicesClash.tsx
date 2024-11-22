@@ -256,7 +256,8 @@ const VoicesClash = ({
               if (
                 (userInfo?.purchasedVoices || []).includes(
                   `${selectedCoverDocId}_${secondaryVoiceId}`
-                )
+                ) ||
+                userInfo?.isVip
               ) {
                 logFirebaseEvent("race_start", {
                   track_id: selectedCoverDocId,
@@ -352,7 +353,8 @@ const VoicesClash = ({
               readyToStartRace ||
               (userInfo?.purchasedVoices || []).includes(
                 `${selectedCoverDocId}_${secondaryVoiceId}`
-              )
+              ) ||
+              userInfo?.isVip
                 ? "Start Race"
                 : "Unlock Race"
             }
