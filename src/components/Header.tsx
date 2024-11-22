@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Chip, Typography } from "@mui/material";
 import { Stack } from "@mui/system";
 import { motion } from "framer-motion";
 
@@ -7,6 +7,7 @@ type Props = {
   showCoverTitle: boolean;
   onBackButtonClick?: () => void;
   coverTitle: string;
+  xp: number;
 };
 
 const Header = ({
@@ -14,6 +15,7 @@ const Header = ({
   showCoverTitle,
   onBackButtonClick,
   coverTitle,
+  xp,
 }: Props) => {
   return (
     <Stack
@@ -49,9 +51,13 @@ const Header = ({
           position={"relative"}
           width={229}
           height={32}
-          sx={{ overflow: "hidden" }}
+          sx={{
+            overflow: "hidden",
+            height: "30px",
+            background: `url("/assets/tunedash/player-topbar.png") center center / contain no-repeat`,
+          }}
         >
-          <img src="/assets/tunedash/player-topbar.png" alt="logo" />
+          {/* <img src="/assets/tunedash/player-topbar.png" alt="logo" /> */}
           <Typography
             position="absolute"
             top={0}
@@ -67,6 +73,8 @@ const Header = ({
               // textOverflow: "ellipsis",
               // overflow: "hidden",
               whiteSpace: "nowrap",
+              fontSize: "10px",
+              pl: 2,
             }}
             id="scroll-text"
           >
@@ -75,7 +83,7 @@ const Header = ({
         </Box>
       )}
 
-      <motion.button
+      {/* <motion.button
         // whileHover={{ scale: 1.1 }}
         // whileTap={{ scale: 0.9 }}
         style={{
@@ -87,6 +95,10 @@ const Header = ({
           opacity: 0,
         }}
         onClick={() => {}}
+      /> */}
+      <Chip
+        sx={{ mx: 0.5, color: "white", fontSize: "12px", fontWeight: 900 }}
+        label={xp + " XP"}
       />
     </Stack>
   );

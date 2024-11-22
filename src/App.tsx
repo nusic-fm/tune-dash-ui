@@ -6,6 +6,7 @@ import { IRefPhaserGame, PhaserGame } from "./game/PhaserGame";
 import {
   downloadAndPlayIntro,
   downloadAudioFiles,
+  getDurationOnScreen,
   marbleRacePlayVocals,
   prepareVocalPlayers,
   toggleMuteAudio,
@@ -22,7 +23,11 @@ import ScreenTwo from "./components/ScreenTwo";
 import ChoosePrimaryVoice from "./components/ChoosePrimaryVoice";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { query, collection, where, documentId } from "firebase/firestore";
-import { db } from "./services/firebase.service";
+import {
+  db,
+  logFirebaseEvent,
+  setUserIdForAnalytics,
+} from "./services/firebase.service";
 import VoicesClash from "./components/VoicesClash";
 import SmallImageMotionButton from "./components/Buttons/SmallImageMotionButton";
 import SelectTrack from "./components/SelectTrack";
@@ -153,6 +158,7 @@ function App() {
               WebApp.initDataUnsafe.user.id.toString()
             );
             setUserInfo(user);
+            setUserIdForAnalytics(user.id);
           } catch (e) {
             // TODO: Handle error
           }
@@ -184,6 +190,13 @@ function App() {
       isWinner ? 2500 : 1800
     );
     if (userInfo?.id) {
+      logFirebaseEvent("race_result", {
+        track_id: selectedCoverDocId,
+        primary_voice_id: primaryVoiceInfo?.id,
+        secondary_voice_id: secondaryVoiceInfo?.id,
+        winning_voice_id: winningVoiceId,
+        is_user_win: isWinner,
+      });
       await updateGameResult(
         userInfo.id,
         selectedCoverDocId,
@@ -293,6 +306,11 @@ function App() {
                   <LongImageMotionButton
                     name="Play again"
                     onClick={() => {
+                      logFirebaseEvent("race_again", {
+                        track_id: selectedCoverDocId,
+                        track_title: coverDoc?.title,
+                        primary_voice_id: primaryVoiceInfo?.id,
+                      });
                       setScreenName("voices-clash");
                       setShowGameOverButtons(false);
                       setSecondaryVoiceInfo(null);
@@ -301,6 +319,11 @@ function App() {
                   <LongImageMotionButton
                     name="New Race"
                     onClick={() => {
+                      logFirebaseEvent("new_race", {
+                        track_id: selectedCoverDocId,
+                        track_title: coverDoc?.title,
+                        primary_voice_id: primaryVoiceInfo?.id,
+                      });
                       setScreenName("select-track");
                       setShowGameOverButtons(false);
                       setPrimaryVoiceInfo(null);
@@ -312,6 +335,7 @@ function App() {
                 <></>
               ) : (
                 <Header
+                  xp={userInfo?.xp || 0}
                   showBackButton={screenName !== "start"}
                   showCoverTitle={
                     !!selectedCoverDocId && screenName !== "select-track"
@@ -350,6 +374,9 @@ function App() {
                 <ScreenOne
                   onStartClick={async () => {
                     setScreenName("menu");
+                    logFirebaseEvent("start_from_landing_page", {
+                      duration_on_screen: getDurationOnScreen(),
+                    });
                     // const toneStatus = getToneStatus();
                     // if (toneStatus.isTonePlaying === false)
                     //   marbleRaceOnlyInstrument(selectedCoverDocId, 120, 0);
@@ -361,6 +388,9 @@ function App() {
                 <ScreenTwo
                   onSingleRaceClick={() => {
                     setScreenName("select-track");
+                    logFirebaseEvent("menu_selection", {
+                      selected_option: "single_race",
+                    });
                   }}
                 />
               )}
@@ -376,9 +406,19 @@ function App() {
                     setCoverDoc(coverDoc);
                     setSelectedCoverDocId(coverId);
                     setPrimaryVoiceInfo(voiceInfo);
+                    logFirebaseEvent("track_playback", {
+                      track_id: coverId,
+                      track_title: coverDoc?.title,
+                      voice_id: voiceInfo?.id,
+                    });
                   }}
                   onNextPageClick={() => {
                     setScreenName("choose-primary-voice");
+                    logFirebaseEvent("track_selection", {
+                      track_id: selectedCoverDocId,
+                      track_title: coverDoc?.title,
+                      voice_id: primaryVoiceInfo?.id,
+                    });
                   }}
                 />
               )}
@@ -391,6 +431,12 @@ function App() {
                     setPrimaryVoiceInfo(voiceInfo);
                     // setScreenName("voices-clash");
                     setScreenName("game-ready");
+                    logFirebaseEvent("voice_selection", {
+                      track_id: selectedCoverDocId,
+                      track_title: coverDoc?.title,
+                      voice_id: voiceInfo.id,
+                      voice_name: voiceInfo.name,
+                    });
                   }}
                 />
               )}

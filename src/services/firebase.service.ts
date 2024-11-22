@@ -2,10 +2,9 @@
 // import { getStripePayments } from "@stripe/firestore-stripe-payments";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getAnalytics, logEvent } from "firebase/analytics";
+import { getAnalytics, logEvent, setUserId } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { fetchAndActivate, getRemoteConfig } from "firebase/remote-config";
 // import { getStripePayments } from "@invertase/firestore-stripe-payments";
 // import { getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -27,13 +26,42 @@ const auth = getAuth(app);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
-const remoteConfig = getRemoteConfig(app);
 
-const logFirebaseEvent = (
-  type: "login" | "sign_up" | "purchase" | "select_content" | "share" | "revox",
-  additionalParams: any
-) => {
-  // logEvent(analytics, type as any, additionalParams);
+const setUserIdForAnalytics = (userId: string) => {
+  setUserId(analytics, userId);
 };
 
-export { app, auth, logFirebaseEvent, db, storage, analytics, remoteConfig };
+const logFirebaseEvent = (
+  type:
+    | "audio_interaction"
+    | "start_from_landing_page"
+    | "menu_selection"
+    | "track_playback"
+    | "track_selection"
+    | "voice_selection"
+    | "choose_opponent"
+    | "opponent_voice_selection"
+    | "voice_purchase_attempt"
+    | "voice_purchase_success"
+    | "voice_purchase_failure"
+    | "race_start"
+    | "race_end"
+    | "race_again"
+    | "new_race"
+    | "race_result"
+    | "sign_up"
+    | "login",
+  additionalParams: any
+) => {
+  logEvent(analytics, type as any, additionalParams);
+};
+
+export {
+  app,
+  auth,
+  logFirebaseEvent,
+  db,
+  storage,
+  analytics,
+  setUserIdForAnalytics,
+};

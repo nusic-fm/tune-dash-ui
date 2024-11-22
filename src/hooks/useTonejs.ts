@@ -374,6 +374,10 @@ const downloadAndPlayIntro = async () => {
   introPlayerRef = introPlayer;
 };
 
+const getDurationOnScreen = () => {
+  return Math.round(Tone.now() - introStartTime);
+};
+
 // const downloadAndPlaySound = async (url: string) => {
 //   await initializeTone();
 //   const player = new Tone.Player(downloadObj[url]).toDestination();
@@ -395,5 +399,6 @@ export {
   toggleMuteAudio,
   downloadAndPlayIntro,
   switchVocalsByDownloading,
+  getDurationOnScreen,
   // downloadAndPlaySound,
 };

@@ -457,9 +457,15 @@ export default class Game extends Phaser.Scene {
           if (this.showRhythmPads) return;
           if (e.label === this.marbles[this.opponentMarbleIdx].label) {
             this.isOpponentBoosted = true;
+            const currentSpeed =
+              this.marbles[this.opponentMarbleIdx].velocity.y;
+            // console.log("Opponent Current Speed: ", currentSpeed);
             this.opponentMarbleMaxSpeed =
-              this.marbles[this.opponentMarbleIdx].velocity.y +
-              createRandomNumber(10, 20);
+              currentSpeed + createRandomNumber(10, 20);
+            // console.log(
+            //   "Opponent Marble Max Speed: ",
+            //   this.opponentMarbleMaxSpeed
+            // );
             this.opponentBoostMultipler =
               this.marbles[this.opponentMarbleIdx].velocity.y;
             this.marbleTrailParticles[this.opponentMarbleIdx].setParticleTint(
@@ -707,9 +713,11 @@ export default class Game extends Phaser.Scene {
         // Start the booster after the completion of the rhythmic game
         if (this.tapScore) {
           const currentSpeed = this.marbles[this.userMarbleIdx].velocity.y;
+          // console.log("Current Speed: ", currentSpeed);
           this.boostMultipler = currentSpeed;
           const addedSpeed = (this.tapScore / 80) * 25;
           this.userMarbleMaxSpeed = currentSpeed + addedSpeed;
+          // console.log("User Marble Max Speed: ", this.userMarbleMaxSpeed);
           this.isBoosted = true;
           this.marbleTrailParticles[this.userMarbleIdx].setParticleTint(
             0xf83600
@@ -879,8 +887,11 @@ export default class Game extends Phaser.Scene {
     // );
     this.isInstrumentPlaying = true;
     // if (this.showRythmicPads) this.renderJoystickButtons();
+    // this.matter.world.engine.timing.timeScale = 0.9;
+    // this.matter.world.runner.delta = 1.5;
   }
   // update(time: number, delta: number): void {
+  // console.log("fps: ", this.game.loop.actualFps);
   update(): void {
     // if (this.tapScore >= 60) {
     //   this.tapScore = 0;
@@ -920,7 +931,7 @@ export default class Game extends Phaser.Scene {
       const userMarble = this.marbles[this.userMarbleIdx]; // TODO: User chosen marble
       this.matter.body.setVelocity(userMarble, {
         x: userMarble.velocity.x,
-        y: this.boostMultipler,
+        y: userMarble.velocity.y + 1,
       });
       this.boostMultipler += 0.1;
       if (this.boostMultipler >= this.userMarbleMaxSpeed) {
@@ -937,7 +948,7 @@ export default class Game extends Phaser.Scene {
       const opponentMarble = this.marbles[this.opponentMarbleIdx];
       this.matter.body.setVelocity(opponentMarble, {
         x: opponentMarble.velocity.x,
-        y: this.opponentBoostMultipler,
+        y: opponentMarble.velocity.y + 1,
       });
       this.opponentBoostMultipler += 0.1;
       if (this.opponentBoostMultipler >= this.opponentMarbleMaxSpeed) {
@@ -961,7 +972,7 @@ export default class Game extends Phaser.Scene {
         this.largeCircle?.setRotation(this.baseAngle);
         this.matter.body.setAngularVelocity(
           this.largeCircle?.body as BodyType,
-          0.15
+          0.07
         );
       }
       // Optimize marble updates
