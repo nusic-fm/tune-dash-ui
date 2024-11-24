@@ -635,9 +635,20 @@ export default class Game extends Phaser.Scene {
         .setScrollFactor(0);
       tile.once("pointerdown", () => {
         const tileY = tile.y;
-        const delta = targetY - tileY;
-        const resultText =
-          delta < 150 ? "Perfect" : delta < 500 ? "Great" : "Too Early";
+        let resultText = "";
+        if (
+          tileY >= targetY - 10 * this.dpr &&
+          tileY <= targetY + 10 * this.dpr
+        ) {
+          resultText = "Perfect";
+        } else if (
+          tileY >= targetY - tile.height * this.dpr &&
+          tileY <= targetY + tile.height * this.dpr
+        ) {
+          resultText = "Great";
+        } else {
+          resultText = "Too Early";
+        }
         this.tapScore +=
           resultText === "Perfect" ? 10 : resultText === "Great" ? 5 : 0;
         tile.destroy();
