@@ -282,7 +282,7 @@ const VoicesClash = ({
                   );
                   const starsLink = await axios.post(
                     `${
-                      import.meta.env.VITE_VOX_COVER_SERVER
+                      import.meta.env.VITE_TG_BOT_SERVER
                     }/create-stars-invoice-link`,
                     {
                       title: "Unlock Race",
