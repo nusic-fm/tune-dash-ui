@@ -1,6 +1,6 @@
-import { Stack, Box, Badge, Typography } from "@mui/material";
+import { Stack, Box, Badge, Typography, Chip } from "@mui/material";
 import { createRandomNumber, getVoiceAvatarPath } from "../helpers";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ChooseVoice from "./ChooseVoice";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
@@ -10,6 +10,7 @@ import { createOrder } from "../services/db/order.service";
 import { updatePurchasedVoice, User } from "../services/db/user.service";
 import WebApp from "@twa-dev/sdk";
 import { logFirebaseEvent } from "../services/firebase.service";
+import { useAdsgram } from "../hooks/useAdsgram";
 
 type Props = {
   primaryVoiceInfo: VoiceV1Cover;
@@ -39,6 +40,18 @@ const VoicesClash = ({
 }: Props) => {
   const [readyToStartRace, setReadyToStartRace] = useState(false);
   const [cost, setCost] = useState(0);
+
+  const onReward = useCallback(() => {
+    setReadyToStartRace(true);
+  }, []);
+  const onError = useCallback((result: any) => {
+    alert(JSON.stringify(result, null, 4));
+  }, []);
+  const showAd = useAdsgram({
+    blockId: import.meta.env.VITE_UNLOCK_RACE_ADSGRAM_BLOCK_ID,
+    onReward,
+    onError,
+  });
   // const [isWaitingForPayment, setIsWaitingForPayment] = useState("");
 
   const primaryVoiceId = primaryVoiceInfo.id;
@@ -397,6 +410,16 @@ const VoicesClash = ({
             width={290}
             height={93}
           />
+          <Box position={"absolute"} top={0} right={0}>
+            <Chip
+              clickable
+              label="Watch Ad"
+              variant="filled"
+              color="primary"
+              size="small"
+              onClick={showAd}
+            />
+          </Box>
         </Box>
       )}
       {/* <Dialog open={isWaitingForPayment}>
