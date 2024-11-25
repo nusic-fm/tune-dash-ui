@@ -1,4 +1,4 @@
-import { db } from "../firebase.service";
+import { db, logFirebaseEvent } from "../firebase.service";
 import {
   doc,
   serverTimestamp,
@@ -26,6 +26,10 @@ export type User = {
   isBot?: boolean;
   id: string;
   purchasedVoices: string[] | null;
+  xp?: number;
+  wins?: number;
+  playedTimes?: number;
+  isVip?: boolean;
 };
 export type UserDoc = User & {
   createdAt: Timestamp;
@@ -43,15 +47,27 @@ const createUserDoc = async (userObj: User, docId: string): Promise<User> => {
   const existingUser = await getDoc(d);
   if (existingUser.exists()) {
     await updateDoc(d, { lastSeen: serverTimestamp(), visits: increment(1) });
+    logFirebaseEvent("login", {
+      user_id: docId,
+    });
     return existingUser.data() as User;
   }
-  await setDoc(d, {
+  const newUserObj = {
     ...userObj,
+    visits: 1,
+    xp: 0,
+    wins: 0,
+    playedTimes: 0,
+  };
+  await setDoc(d, {
+    ...newUserObj,
     createdAt: serverTimestamp(),
     lastSeen: serverTimestamp(),
-    visits: 1,
   });
-  return userObj;
+  logFirebaseEvent("sign_up", {
+    user_id: docId,
+  });
+  return newUserObj;
 };
 
 const updatePurchasedVoice = async (userId: string, voiceId: string) => {

@@ -9,6 +9,7 @@ import axios from "axios";
 import { createOrder } from "../services/db/order.service";
 import { updatePurchasedVoice, User } from "../services/db/user.service";
 import WebApp from "@twa-dev/sdk";
+import { logFirebaseEvent } from "../services/firebase.service";
 
 type Props = {
   primaryVoiceInfo: VoiceV1Cover;
@@ -189,6 +190,11 @@ const VoicesClash = ({
                   )
                 ]
               );
+              logFirebaseEvent("race_start", {
+                track_id: selectedCoverDocId,
+                primary_voice_id: primaryVoiceInfo.id,
+                random_secondary_voice_id: secondaryVoiceInfo?.id,
+              });
               setReadyToStartRace(true);
             }}
             name={"Start Race"}
@@ -222,6 +228,10 @@ const VoicesClash = ({
         >
           <LongImageMotionButton
             onClick={() => {
+              logFirebaseEvent("choose_opponent", {
+                track_id: selectedCoverDocId,
+                primary_voice_id: primaryVoiceInfo.id,
+              });
               setShowOpponentVoiceSelection(true);
             }}
             name={"Choose Opponent"}
@@ -246,8 +256,15 @@ const VoicesClash = ({
               if (
                 (userInfo?.purchasedVoices || []).includes(
                   `${selectedCoverDocId}_${secondaryVoiceId}`
-                )
+                ) ||
+                userInfo?.isVip
               ) {
+                logFirebaseEvent("race_start", {
+                  track_id: selectedCoverDocId,
+                  primary_voice_id: primaryVoiceInfo.id,
+                  secondary_voice_id: secondaryVoiceId,
+                  is_unlocked_race: true,
+                });
                 setShowOpponentVoiceSelection(false);
                 setReadyToStartRace(true);
               } else if (
@@ -286,6 +303,13 @@ const VoicesClash = ({
                       if (
                         orderStatus.data?.model?.orderStatus === "COMPLETED"
                       ) {
+                        logFirebaseEvent("voice_purchase_success", {
+                          track_id: selectedCoverDocId,
+                          primary_voice_id: primaryVoiceInfo.id,
+                          voice_id: secondaryVoiceId,
+                          amount: cost,
+                          order_number: orderId,
+                        });
                         await updatePurchasedVoice(
                           userInfo.id,
                           `${selectedCoverDocId}_${secondaryVoiceId}`
@@ -299,11 +323,24 @@ const VoicesClash = ({
                           orderStatus.data?.model?.orderStatus
                         )
                       ) {
+                        logFirebaseEvent("voice_purchase_failure", {
+                          track_id: selectedCoverDocId,
+                          voice_id: secondaryVoiceId,
+                          amount: cost,
+                          order_number: orderId,
+                          status: orderStatus.data?.model?.orderStatus,
+                        });
                         WebApp.showAlert("Payment Failed");
                         clearInterval(interval);
                       }
                     }, 3000);
                   }
+                  logFirebaseEvent("voice_purchase_attempt", {
+                    track_id: selectedCoverDocId,
+                    voice_id: secondaryVoiceId,
+                    amount: cost,
+                    order_number: orderId,
+                  });
                   setIsWaitingForPayment(webUrl);
                 } catch (e) {
                   alert("Error Occured, try again later");
@@ -316,7 +353,8 @@ const VoicesClash = ({
               readyToStartRace ||
               (userInfo?.purchasedVoices || []).includes(
                 `${selectedCoverDocId}_${secondaryVoiceId}`
-              )
+              ) ||
+              userInfo?.isVip
                 ? "Start Race"
                 : "Unlock Race"
             }
