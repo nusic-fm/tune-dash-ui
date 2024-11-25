@@ -285,7 +285,7 @@ const VoicesClash = ({
                       import.meta.env.VITE_TG_BOT_SERVER
                     }/create-stars-invoice-link`,
                     {
-                      title: "Unlock Race",
+                      title: `Unlock Race: ${primaryVoiceInfo.name} vs ${secondaryVoiceInfo.name}`,
                       description: `${primaryVoiceInfo.name} vs ${secondaryVoiceInfo.name}`,
                       prices: [
                         {
