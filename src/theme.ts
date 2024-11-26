@@ -3,7 +3,7 @@ import WebFont from "webfontloader";
 
 WebFont.load({
   google: {
-    families: ["Audiowide", "Roboto", "Space Grotesk"],
+    families: ["Audiowide"],
   },
 });
 declare module "@mui/material/styles/createPalette" {
