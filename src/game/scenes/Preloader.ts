@@ -62,23 +62,44 @@ export default class Preloader extends Phaser.Scene {
     this.params.selectedTracks.map((trackNo) => {
       switch (trackNo) {
         case "01":
-          this.load.image("prod_texture_loaded_01", "assets/sprite/01.png");
+          this.load.image(
+            "prod_texture_loaded_01",
+            `https://voxaudio.nusic.fm/marble_race%2Frace_tracks%2F01.png?alt=media`
+          );
           break;
         case "03":
-          this.load.image("prod_texture_loaded_03", "assets/sprite/03.png");
+          this.load.image(
+            "prod_texture_loaded_03",
+            `https://voxaudio.nusic.fm/marble_race%2Frace_tracks%2F03.png?alt=media`
+          );
           break;
         case "06":
-          this.load.image("prod_texture_loaded_06", "assets/sprite/06.png");
-          this.load.image("06b", "assets/sprite/06b.png");
+          this.load.image(
+            "prod_texture_loaded_06",
+            `https://voxaudio.nusic.fm/marble_race%2Frace_tracks%2F06.png?alt=media`
+          );
+          this.load.image(
+            "06b",
+            `https://voxaudio.nusic.fm/marble_race%2Frace_tracks%2F06b.png?alt=media`
+          );
           break;
         case "07":
-          this.load.image("prod_texture_loaded_07", "assets/sprite/07.png");
+          this.load.image(
+            "prod_texture_loaded_07",
+            `https://voxaudio.nusic.fm/marble_race%2Frace_tracks%2F07.png?alt=media`
+          );
           break;
         case "16":
-          this.load.image("prod_texture_loaded_16", "assets/sprite/16.png");
+          this.load.image(
+            "prod_texture_loaded_16",
+            `https://voxaudio.nusic.fm/marble_race%2Frace_tracks%2F16.png?alt=media`
+          );
           break;
         case "21":
-          this.load.image("prod_texture_loaded_21", "assets/sprite/21.png");
+          this.load.image(
+            "prod_texture_loaded_21",
+            `https://voxaudio.nusic.fm/marble_race%2Frace_tracks%2F21.png?alt=media`
+          );
           break;
       }
     });
@@ -87,7 +108,10 @@ export default class Preloader extends Phaser.Scene {
     // Mini
     this.load.json("mini_shapes", "assets/physics/mini_shapes.json");
     this.load.image("textureImage", this.params.skinPath);
-    this.load.image("wheel", "assets/sprite/wheel.png");
+    this.load.image(
+      "wheel",
+      `https://voxaudio.nusic.fm/marble_race%2Frace_tracks%2Fwheel.png?alt=media`
+    );
     this.load.image("finish_line", "assets/finish_line.png");
     this.load.image("trail", this.params.trailPath);
     this.load.image(
