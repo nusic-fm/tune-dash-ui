@@ -132,10 +132,9 @@ function App() {
     if (coversSnapshot?.docs.length) {
       (async () => {
         await downloadAndPlayIntro();
-
         if (WebApp.initDataUnsafe.user) {
           try {
-            const user = await createUserDoc(
+            await createUserDoc(
               {
                 firstName: WebApp.initDataUnsafe.user.first_name,
                 lastName: WebApp.initDataUnsafe.user.last_name || "",
@@ -146,10 +145,12 @@ function App() {
                 isBot: WebApp.initDataUnsafe.user.is_bot || false,
                 purchasedVoices: null,
               },
-              WebApp.initDataUnsafe.user.id.toString()
+              WebApp.initDataUnsafe.user.id.toString(),
+              (user) => {
+                setUserInfo(user);
+                setUserIdForAnalytics(user.id);
+              }
             );
-            setUserInfo(user);
-            setUserIdForAnalytics(user.id);
           } catch (e) {
             // TODO: Handle error
           }

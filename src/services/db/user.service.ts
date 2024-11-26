@@ -12,6 +12,7 @@ import {
   increment,
   arrayUnion,
   collection,
+  onSnapshot,
 } from "firebase/firestore";
 import { VoiceV1Cover } from "./coversV1.service";
 
@@ -42,8 +43,16 @@ const getUserDocById = async (docId: string) => {
   return (await getDoc(d)).data() as UserDoc;
 };
 
-const createUserDoc = async (userObj: User, docId: string): Promise<User> => {
+const createUserDoc = async (
+  userObj: User,
+  docId: string,
+  listener?: (user: User) => void
+): Promise<User> => {
   const d = doc(db, DB_NAME, docId);
+  if (!!listener)
+    onSnapshot(d, (snapshot) => {
+      listener?.(snapshot.data() as User);
+    });
   const existingUser = await getDoc(d);
   if (existingUser.exists()) {
     await updateDoc(d, { lastSeen: serverTimestamp(), visits: increment(1) });
