@@ -54,7 +54,7 @@ const SlideUp = ({
         height: "100vh",
         transform: `translateY(-${position}px)`,
         transition: isDragging ? "none" : "transform 0.3s ease-out",
-        backgroundImage: "url(/assets/tunedash/bgs/splash.png)",
+        backgroundImage: "url(/assets/tunedash/bgs/splash.webp)",
         backgroundSize: "cover",
         backgroundPosition: "center",
         zIndex: 1000,

@@ -38,27 +38,18 @@ import LongImageMotionButton from "./components/Buttons/LongImageMotionButton";
 
 export const tracks = ["01", "03", "06", "07", "16"];
 
-// const gameBgPaths = [
-//   "/assets/tunedash/bgs/home.png",
-//   "/assets/tunedash/bgs/home-menu.png",
-//   "/assets/tunedash/bgs/home-menu.png",
-//   "/assets/tunedash/bgs/home-voice.png",
-// ];
 const getGameBgPath = (screenName: string) => {
   switch (screenName) {
     case "splash":
     case "start":
-      return "/assets/tunedash/bgs/start.png";
+      return "/assets/tunedash/bgs/start.webp";
     case "menu":
-      return "/assets/tunedash/bgs/menu.png";
     case "select-track":
-      return "/assets/tunedash/bgs/menu.png";
+      return "/assets/tunedash/bgs/menu.webp";
     case "choose-primary-voice":
-      return "/assets/tunedash/bgs/voice.png";
     case "voices-clash":
-      return "/assets/tunedash/bgs/voice.png";
     case "game-ready":
-      return "/assets/tunedash/bgs/voice.png"; //TODO
+      return "/assets/tunedash/bgs/voice.webp";
   }
 };
 
