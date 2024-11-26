@@ -1,6 +1,6 @@
-import { Stack, Box, Badge, Typography } from "@mui/material";
+import { Stack, Box, Badge, Typography, Chip } from "@mui/material";
 import { createRandomNumber, getVoiceAvatarPath } from "../helpers";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ChooseVoice from "./ChooseVoice";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
@@ -10,6 +10,7 @@ import { createOrder } from "../services/db/order.service";
 import { updatePurchasedVoice, User } from "../services/db/user.service";
 import WebApp from "@twa-dev/sdk";
 import { logFirebaseEvent } from "../services/firebase.service";
+import { useAdsgram } from "../hooks/useAdsgram";
 
 type Props = {
   primaryVoiceInfo: VoiceV1Cover;
@@ -39,7 +40,19 @@ const VoicesClash = ({
 }: Props) => {
   const [readyToStartRace, setReadyToStartRace] = useState(false);
   const [cost, setCost] = useState(0);
-  const [isWaitingForPayment, setIsWaitingForPayment] = useState("");
+
+  const onReward = useCallback(() => {
+    setReadyToStartRace(true);
+  }, []);
+  const onError = useCallback((result: any) => {
+    alert(JSON.stringify(result, null, 4));
+  }, []);
+  const showAd = useAdsgram({
+    blockId: import.meta.env.VITE_UNLOCK_RACE_ADSGRAM_BLOCK_ID,
+    onReward,
+    onError,
+  });
+  // const [isWaitingForPayment, setIsWaitingForPayment] = useState("");
 
   const primaryVoiceId = primaryVoiceInfo.id;
   const secondaryVoiceId = secondaryVoiceInfo?.id;
@@ -251,7 +264,8 @@ const VoicesClash = ({
         >
           <LongImageMotionButton
             onClick={async () => {
-              if (!userInfo) return alert("Support only on Telegram Mini App");
+              if (!userInfo)
+                return alert("Supported only on Telegram Mini App");
               if (!cost) return alert("This voice is not available yet");
               if (
                 (userInfo?.purchasedVoices || []).includes(
@@ -279,69 +293,104 @@ const VoicesClash = ({
                     voices[voices.map((v) => v.id).indexOf(secondaryVoiceId)],
                     cost
                   );
-                  const paylod = {
-                    merchantOrderNo: orderId,
-                    userId: userInfo.id,
-                    orderAmount: cost,
-                  };
-                  const webUrlRes = await axios.post(
-                    `${import.meta.env.VITE_VOX_COVER_SERVER}/aeon-signature`,
-                    paylod
-                  );
-                  const webUrl = webUrlRes.data.webUrl;
-                  if (WebApp) {
-                    // WebApp.openLink(webUrl);
-                    const interval = setInterval(async () => {
-                      const orderStatus = await axios.post(
-                        `https://crypto-payment.alchemytech.cc/open/api/payment/query`,
+                  const starsLink = await axios.post(
+                    `${
+                      import.meta.env.VITE_TG_BOT_SERVER
+                    }/create-stars-invoice-link`,
+                    {
+                      title: `Unlock Race: ${primaryVoiceInfo.name} vs ${secondaryVoiceInfo.name}`,
+                      description: `${primaryVoiceInfo.name} vs ${secondaryVoiceInfo.name}`,
+                      prices: [
                         {
-                          merchantOrderNo: orderId,
-                          appId: import.meta.env.VITE_AEON_APP_ID,
-                          sign: webUrlRes.data.sign,
-                        }
+                          label: secondaryVoiceInfo.name,
+                          amount: cost === 0.99 ? 50 : cost * 50,
+                        },
+                      ],
+                      payload: { orderId, userId: userInfo.id },
+                    }
+                  );
+                  // const paylod = {
+                  //   merchantOrderNo: orderId,
+                  //   userId: userInfo.id,
+                  //   orderAmount: cost,
+                  // };
+                  // const webUrlRes = await axios.post(
+                  //   `${import.meta.env.VITE_VOX_COVER_SERVER}/aeon-signature`,
+                  //   paylod
+                  // );
+                  // const webUrl = webUrlRes.data.webUrl;
+                  WebApp.openInvoice(starsLink.data, async (status) => {
+                    if (status === "paid") {
+                      logFirebaseEvent("voice_purchase_success", {
+                        track_id: selectedCoverDocId,
+                        primary_voice_id: primaryVoiceInfo.id,
+                        voice_id: secondaryVoiceId,
+                        amount: cost,
+                        order_number: orderId,
+                      });
+                      await updatePurchasedVoice(
+                        userInfo.id,
+                        `${selectedCoverDocId}_${secondaryVoiceId}`
                       );
-                      if (
-                        orderStatus.data?.model?.orderStatus === "COMPLETED"
-                      ) {
-                        logFirebaseEvent("voice_purchase_success", {
-                          track_id: selectedCoverDocId,
-                          primary_voice_id: primaryVoiceInfo.id,
-                          voice_id: secondaryVoiceId,
-                          amount: cost,
-                          order_number: orderId,
-                        });
-                        await updatePurchasedVoice(
-                          userInfo.id,
-                          `${selectedCoverDocId}_${secondaryVoiceId}`
-                        );
-                        setIsWaitingForPayment("");
-                        setShowOpponentVoiceSelection(false);
-                        setReadyToStartRace(true);
-                        clearInterval(interval);
-                      } else if (
-                        ["CLOSE", "TIMEOUT", "FAILED", "DELAY_FAILED"].includes(
-                          orderStatus.data?.model?.orderStatus
-                        )
-                      ) {
-                        logFirebaseEvent("voice_purchase_failure", {
-                          track_id: selectedCoverDocId,
-                          voice_id: secondaryVoiceId,
-                          amount: cost,
-                          order_number: orderId,
-                          status: orderStatus.data?.model?.orderStatus,
-                        });
-                        WebApp.showAlert("Payment Failed");
-                        clearInterval(interval);
-                      }
-                    }, 3000);
-                  }
+                      setShowOpponentVoiceSelection(false);
+                      setReadyToStartRace(true);
+                    } else if (status === "pending") {
+                      // TODO: payment pending
+                    } else {
+                      alert("Payment Failed");
+                    }
+                  });
+                  // const interval = setInterval(async () => {
+                  //   const orderStatus = await axios.post(
+                  //     `https://crypto-payment.alchemytech.cc/open/api/payment/query`,
+                  //     {
+                  //       merchantOrderNo: orderId,
+                  //       appId: import.meta.env.VITE_AEON_APP_ID,
+                  //       sign: webUrlRes.data.sign,
+                  //     }
+                  //   );
+                  //   if (
+                  //     orderStatus.data?.model?.orderStatus === "COMPLETED"
+                  //   ) {
+                  //     logFirebaseEvent("voice_purchase_success", {
+                  //       track_id: selectedCoverDocId,
+                  //       primary_voice_id: primaryVoiceInfo.id,
+                  //       voice_id: secondaryVoiceId,
+                  //       amount: cost,
+                  //       order_number: orderId,
+                  //     });
+                  //     await updatePurchasedVoice(
+                  //       userInfo.id,
+                  //       `${selectedCoverDocId}_${secondaryVoiceId}`
+                  //     );
+                  //     setIsWaitingForPayment("");
+                  //     setShowOpponentVoiceSelection(false);
+                  //     setReadyToStartRace(true);
+                  //     clearInterval(interval);
+                  //   } else if (
+                  //     ["CLOSE", "TIMEOUT", "FAILED", "DELAY_FAILED"].includes(
+                  //       orderStatus.data?.model?.orderStatus
+                  //     )
+                  //   ) {
+                  //     logFirebaseEvent("voice_purchase_failure", {
+                  //       track_id: selectedCoverDocId,
+                  //       voice_id: secondaryVoiceId,
+                  //       amount: cost,
+                  //       order_number: orderId,
+                  //       status: orderStatus.data?.model?.orderStatus,
+                  //     });
+                  //     WebApp.showAlert("Payment Failed");
+                  //     clearInterval(interval);
+                  //   }
+                  // }, 3000);
+
                   logFirebaseEvent("voice_purchase_attempt", {
                     track_id: selectedCoverDocId,
                     voice_id: secondaryVoiceId,
                     amount: cost,
                     order_number: orderId,
                   });
-                  setIsWaitingForPayment(webUrl);
+                  // setIsWaitingForPayment(webUrl);
                 } catch (e) {
                   alert("Error Occured, try again later");
                 }
@@ -361,6 +410,16 @@ const VoicesClash = ({
             width={290}
             height={93}
           />
+          <Box position={"absolute"} top={0} right={0}>
+            <Chip
+              clickable
+              label="Watch Ad"
+              variant="filled"
+              color="primary"
+              size="small"
+              onClick={showAd}
+            />
+          </Box>
         </Box>
       )}
       {/* <Dialog open={isWaitingForPayment}>
@@ -373,7 +432,7 @@ const VoicesClash = ({
           </Stack>
         </DialogContent>
       </Dialog> */}
-      {!!isWaitingForPayment && (
+      {/* {!!isWaitingForPayment && (
         <Box
           position={"fixed"}
           left={0}
@@ -391,7 +450,7 @@ const VoicesClash = ({
             style={{ border: "none" }}
           ></iframe>
         </Box>
-      )}
+      )} */}
     </Stack>
   );
 };
