@@ -1063,3 +1063,9 @@ export const tireList = [
 ];
 
 export const tireCost = [3, 2, 0.99];
+
+export const hasTimestampCrossedOneDay = (timestamp: Timestamp) => {
+  const now = new Date();
+  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  return timestamp.toDate() < oneDayAgo;
+};
