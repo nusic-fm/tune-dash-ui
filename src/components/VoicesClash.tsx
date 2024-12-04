@@ -14,7 +14,7 @@ import { logFirebaseEvent } from "../services/firebase.service";
 type Props = {
   primaryVoiceInfo: VoiceV1Cover;
   secondaryVoiceInfo: VoiceV1Cover | null;
-  onChooseOpponent: (voiceInfo: VoiceV1Cover) => void;
+  onChooseOpponent: (voiceInfo: VoiceV1Cover[]) => void;
   onStartRaceClick: () => void;
   voices: VoiceV1Cover[];
   downloadProgress: number;
@@ -162,7 +162,7 @@ const VoicesClash = ({
           selectedVoiceId={secondaryVoiceId || ""}
           onChooseOpponent={(voiceInfo, cost) => {
             setCost(cost);
-            onChooseOpponent(voiceInfo);
+            onChooseOpponent([voiceInfo]);
           }}
           purchasedVoices={userDoc?.purchasedVoices || []}
         />
@@ -181,15 +181,20 @@ const VoicesClash = ({
         ) : (
           <LongImageMotionButton
             onClick={() => {
-              onChooseOpponent(
-                voices[
-                  createRandomNumber(
-                    0,
-                    voices.length - 1,
-                    voices.map((v) => v.id).indexOf(primaryVoiceId)
-                  )
-                ]
+              const randomVoiceIdx = createRandomNumber(
+                0,
+                voices.length - 1,
+                voices.map((v) => v.id).indexOf(primaryVoiceId)
               );
+              const randomSecondaryVoiceIdx = createRandomNumber(
+                0,
+                voices.length - 1,
+                voices.map((v) => v.id).indexOf(primaryVoiceId)
+              );
+              onChooseOpponent([
+                voices[randomVoiceIdx],
+                voices[randomSecondaryVoiceIdx],
+              ]);
               logFirebaseEvent("race_start", {
                 track_id: selectedCoverDocId,
                 primary_voice_id: primaryVoiceInfo.id,

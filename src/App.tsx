@@ -92,8 +92,9 @@ function App() {
   const [primaryVoiceInfo, setPrimaryVoiceInfo] = useState<VoiceV1Cover | null>(
     null
   );
-  const [secondaryVoiceInfo, setSecondaryVoiceInfo] =
-    useState<VoiceV1Cover | null>(null);
+  const [secondaryVoiceInfo, setSecondaryVoiceInfo] = useState<
+    VoiceV1Cover[] | null
+  >(null);
   const [screenName, setScreenName] = useState("splash");
   const [isDownloaded, setIsDownloaded] = useState(false);
   const [userDoc, setUserDoc] = useState<UserDoc | null>(null);
@@ -119,7 +120,10 @@ function App() {
       const urls = [
         `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/instrumental.mp3`,
         `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/${primaryVoiceInfo.id}.mp3`,
-        `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/${secondaryVoiceInfo?.id}.mp3`,
+        ...secondaryVoiceInfo.map(
+          (info) =>
+            `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/${info.id}.mp3`
+        ),
       ];
       await downloadAudioFiles(urls, (progress: number) => {
         console.log("progress", progress);
@@ -192,7 +196,7 @@ function App() {
       logFirebaseEvent("race_result", {
         track_id: selectedCoverDocId,
         primary_voice_id: primaryVoiceInfo?.id,
-        secondary_voice_id: secondaryVoiceInfo?.id,
+        // secondary_voice_id: secondaryVoiceInfo?.[0]?.id,
         winning_voice_id: winningVoiceId,
         is_user_win: isWinner,
       });
@@ -451,7 +455,7 @@ function App() {
                     voices={coverDoc.voices}
                     selectedCoverDocId={selectedCoverDocId}
                     primaryVoiceInfo={primaryVoiceInfo}
-                    secondaryVoiceInfo={secondaryVoiceInfo}
+                    secondaryVoiceInfo={secondaryVoiceInfo?.at(0) || null}
                     onChooseOpponent={(voiceInfo) => {
                       setSecondaryVoiceInfo(voiceInfo);
                     }}
@@ -474,11 +478,13 @@ function App() {
                 coverDoc && (
                   <PhaserGame
                     ref={phaserRef}
-                    voices={[primaryVoiceInfo, secondaryVoiceInfo].map((v) => ({
-                      id: v.id,
-                      name: v.name,
-                      avatar: getVoiceAvatarPath(v.id),
-                    }))}
+                    voices={[primaryVoiceInfo, ...secondaryVoiceInfo].map(
+                      (v) => ({
+                        id: v.id,
+                        name: v.name,
+                        avatar: getVoiceAvatarPath(v.id),
+                      })
+                    )}
                     coverDocId={selectedCoverDocId}
                     musicStartOffset={
                       coverDoc?.sections?.at(startSectionIdx - 1)?.start || 0
