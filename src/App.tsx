@@ -14,8 +14,9 @@ import {
 import { CoverV1, VoiceV1Cover } from "./services/db/coversV1.service";
 import {
   createUserDoc,
+  getUserDocById,
   updateGameResult,
-  User,
+  UserDoc,
 } from "./services/db/user.service";
 import { getSkinPath, getTrailPath, getVoiceAvatarPath } from "./helpers";
 import ScreenOne from "./components/ScreenOne";
@@ -95,7 +96,7 @@ function App() {
     useState<VoiceV1Cover | null>(null);
   const [screenName, setScreenName] = useState("splash");
   const [isDownloaded, setIsDownloaded] = useState(false);
-  const [userInfo, setUserInfo] = useState<User | null>(null);
+  const [userDoc, setUserDoc] = useState<UserDoc | null>(null);
   const [showOpponentVoiceSelection, setShowOpponentVoiceSelection] =
     useState(false);
   const [showGameOverButtons, setShowGameOverButtons] = useState(false);
@@ -144,16 +145,22 @@ function App() {
                 languageCode: WebApp.initDataUnsafe.user.language_code || "",
                 isBot: WebApp.initDataUnsafe.user.is_bot || false,
                 purchasedVoices: null,
+                chatId: WebApp.initDataUnsafe.chat?.id || null,
+                chatTitle: WebApp.initDataUnsafe.chat?.title || null,
+                chatPhotoUrl: WebApp.initDataUnsafe.chat?.photo_url || null,
               },
               WebApp.initDataUnsafe.user.id.toString(),
               (user) => {
-                setUserInfo(user);
+                setUserDoc(user);
                 setUserIdForAnalytics(user.id);
               }
             );
           } catch (e) {
             // TODO: Handle error
           }
+        } else {
+          const ud = await getUserDocById("839574155");
+          setUserDoc(ud);
         }
         setIsDownloaded(true);
         // setScreenName("start");
@@ -181,7 +188,7 @@ function App() {
       },
       isWinner ? 2500 : 1800
     );
-    if (userInfo?.id) {
+    if (userDoc?.id) {
       logFirebaseEvent("race_result", {
         track_id: selectedCoverDocId,
         primary_voice_id: primaryVoiceInfo?.id,
@@ -190,7 +197,7 @@ function App() {
         is_user_win: isWinner,
       });
       await updateGameResult(
-        userInfo.id,
+        userDoc.id,
         selectedCoverDocId,
         isWinner,
         voices,
@@ -327,7 +334,8 @@ function App() {
                 <></>
               ) : (
                 <Header
-                  xp={userInfo?.xp || 0}
+                  xp={userDoc?.xp || 0}
+                  inGameTokensCount={userDoc?.inGameTokensCount || 0}
                   showBackButton={screenName !== "start"}
                   showCoverTitle={
                     !!selectedCoverDocId && screenName !== "select-track"
@@ -360,6 +368,7 @@ function App() {
                     }
                   }}
                   coverTitle={coverDoc?.title || ""}
+                  userDoc={userDoc}
                 />
               )}
               {screenName === "start" && (
@@ -430,6 +439,8 @@ function App() {
                       voice_name: voiceInfo.name,
                     });
                   }}
+                  coverTitle={coverDoc.title}
+                  userDoc={userDoc}
                 />
               )}
               {primaryVoiceInfo &&
@@ -450,7 +461,7 @@ function App() {
                       setScreenName("game");
                     }}
                     downloadProgress={downloadProgress}
-                    userInfo={userInfo}
+                    userDoc={userDoc}
                     showOpponentVoiceSelection={showOpponentVoiceSelection}
                     setShowOpponentVoiceSelection={
                       setShowOpponentVoiceSelection

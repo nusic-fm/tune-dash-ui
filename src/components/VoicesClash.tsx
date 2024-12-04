@@ -7,7 +7,7 @@ import LongImageMotionButton from "./Buttons/LongImageMotionButton";
 import BouncingBallsLoading from "./BouncingBallsLoading";
 import axios from "axios";
 import { createOrder } from "../services/db/order.service";
-import { updatePurchasedVoice, User } from "../services/db/user.service";
+import { updatePurchasedVoice, UserDoc } from "../services/db/user.service";
 import WebApp from "@twa-dev/sdk";
 import { logFirebaseEvent } from "../services/firebase.service";
 
@@ -18,7 +18,7 @@ type Props = {
   onStartRaceClick: () => void;
   voices: VoiceV1Cover[];
   downloadProgress: number;
-  userInfo: User | null;
+  userDoc: UserDoc | null;
   selectedCoverDocId: string;
   showOpponentVoiceSelection: boolean;
   setShowOpponentVoiceSelection: (show: boolean) => void;
@@ -32,7 +32,7 @@ const VoicesClash = ({
   onChooseOpponent,
   onStartRaceClick,
   downloadProgress,
-  userInfo,
+  userDoc,
   selectedCoverDocId,
   showOpponentVoiceSelection,
   setShowOpponentVoiceSelection,
@@ -164,7 +164,7 @@ const VoicesClash = ({
             setCost(cost);
             onChooseOpponent(voiceInfo);
           }}
-          purchasedVoices={userInfo?.purchasedVoices || []}
+          purchasedVoices={userDoc?.purchasedVoices || []}
         />
       )}
       {!showOpponentVoiceSelection &&
@@ -251,13 +251,13 @@ const VoicesClash = ({
         >
           <LongImageMotionButton
             onClick={async () => {
-              if (!userInfo) return alert("Support only on Telegram Mini App");
+              if (!userDoc) return alert("Support only on Telegram Mini App");
               if (!cost) return alert("This voice is not available yet");
               if (
-                (userInfo?.purchasedVoices || []).includes(
+                (userDoc?.purchasedVoices || []).includes(
                   `${selectedCoverDocId}_${secondaryVoiceId}`
                 ) ||
-                userInfo?.isVip
+                userDoc?.isVip
               ) {
                 logFirebaseEvent("race_start", {
                   track_id: selectedCoverDocId,
@@ -271,17 +271,17 @@ const VoicesClash = ({
                 secondaryVoiceId &&
                 showOpponentVoiceSelection &&
                 !readyToStartRace &&
-                userInfo
+                userDoc
               ) {
                 try {
                   const orderId = await createOrder(
-                    userInfo.id,
+                    userDoc.id,
                     voices[voices.map((v) => v.id).indexOf(secondaryVoiceId)],
                     cost
                   );
                   const paylod = {
                     merchantOrderNo: orderId,
-                    userId: userInfo.id,
+                    userId: userDoc.id,
                     orderAmount: cost,
                   };
                   const webUrlRes = await axios.post(
@@ -311,7 +311,7 @@ const VoicesClash = ({
                           order_number: orderId,
                         });
                         await updatePurchasedVoice(
-                          userInfo.id,
+                          userDoc.id,
                           `${selectedCoverDocId}_${secondaryVoiceId}`
                         );
                         setIsWaitingForPayment("");
@@ -351,10 +351,10 @@ const VoicesClash = ({
             }}
             name={
               readyToStartRace ||
-              (userInfo?.purchasedVoices || []).includes(
+              (userDoc?.purchasedVoices || []).includes(
                 `${selectedCoverDocId}_${secondaryVoiceId}`
               ) ||
-              userInfo?.isVip
+              userDoc?.isVip
                 ? "Start Race"
                 : "Unlock Race"
             }
