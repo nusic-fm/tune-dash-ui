@@ -638,22 +638,37 @@ export default class Game extends Phaser.Scene {
         .setScrollFactor(0);
       tile.once("pointerdown", () => {
         const tileY = tile.y;
+        const perfectYRange = 10 * this.dpr;
+        const greatYRange = 31 * this.dpr;
+        const goodYRange = 62 * this.dpr;
+        const okYRange = 83 * this.dpr;
         let resultText = "";
+        let points = 0;
         if (
-          tileY >= targetY - 10 * this.dpr &&
-          tileY <= targetY + 10 * this.dpr
+          tileY >= targetY - perfectYRange &&
+          tileY <= targetY + perfectYRange
         ) {
+          points = 10;
           resultText = "Perfect";
         } else if (
-          tileY >= targetY - tile.height * this.dpr &&
-          tileY <= targetY + tile.height * this.dpr
+          tileY >= targetY - greatYRange &&
+          tileY <= targetY + greatYRange
         ) {
+          points = 8;
           resultText = "Great";
+        } else if (
+          tileY >= targetY - goodYRange &&
+          tileY <= targetY + goodYRange
+        ) {
+          points = 5;
+          resultText = "Good";
+        } else if (tileY >= targetY - okYRange && tileY <= targetY + okYRange) {
+          points = 2;
+          resultText = "OK";
         } else {
           resultText = "Too Early";
         }
-        this.tapScore +=
-          resultText === "Perfect" ? 10 : resultText === "Great" ? 5 : 0;
+        this.tapScore += points;
         tile.destroy();
         tileTrail.destroy();
         if (this.tapResultLabelTimer) {
@@ -666,7 +681,9 @@ export default class Game extends Phaser.Scene {
             color:
               resultText === "Perfect"
                 ? "green"
-                : resultText === "Great"
+                : resultText === "Great" ||
+                  resultText === "Good" ||
+                  resultText === "OK"
                 ? "yellow"
                 : "red",
             stroke: "rgba(0,0,0,1)",

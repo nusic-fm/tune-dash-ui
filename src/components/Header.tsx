@@ -42,7 +42,7 @@ const Header = ({
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             style={{
-              background: `url("/assets/tunedash/back.png") center center / contain no-repeat`,
+              background: `url("/assets/tunedash/back.png") center center / cover no-repeat`,
               border: "none",
               cursor: "pointer",
               width: 60,
