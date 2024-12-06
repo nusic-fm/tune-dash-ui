@@ -42,7 +42,7 @@ const Header = ({
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             style={{
-              background: `url("/assets/tunedash/back.png") center center / cover no-repeat`,
+              background: `url("/assets/tunedash/back.png") center center / contain no-repeat`,
               border: "none",
               cursor: "pointer",
               width: 60,
@@ -61,7 +61,7 @@ const Header = ({
           sx={{
             overflow: "hidden",
             height: "30px",
-            background: `url("/assets/tunedash/player-topbar.png") center center / contain no-repeat`,
+            background: `url("/assets/tunedash/player-topbar.png") center center / cover no-repeat`,
           }}
         >
           {/* <img src="/assets/tunedash/player-topbar.png" alt="logo" /> */}
