@@ -1,18 +1,19 @@
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
   Stack,
   TextField,
   Typography,
+  Modal,
+  Box,
+  Paper,
+  IconButton,
 } from "@mui/material";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
-import { DialogTransition } from "./TaskListDialog";
 import { useCallback, useState } from "react";
 import axios from "axios";
 import { createVoiceRequest } from "../services/db/voiceRequests.service";
 import { hasTimestampCrossedOneDay } from "../helpers";
 import { UserDoc } from "../services/db/user.service";
+import SearchIcon from "@mui/icons-material/Search";
 
 type Props = {
   showAddVoiceDialog: boolean;
@@ -51,6 +52,7 @@ const SearchVoiceModelsDialog = ({
       return;
     }
     try {
+      setVoiceModels([]);
       setIsLoading(true);
       const result = await axios.post(
         `${import.meta.env.VITE_VOX_COVER_SERVER}/search-voice-models`,
@@ -73,134 +75,179 @@ const SearchVoiceModelsDialog = ({
   }, [searchText]);
 
   return (
-    <Dialog
+    <Modal
       open={showAddVoiceDialog}
       onClose={() => setShowAddVoiceDialog(false)}
-      TransitionComponent={DialogTransition}
-      keepMounted
-      fullWidth
-      sx={{
-        "& .MuiPaper-root": {
-          height: 452,
-          background: `url(/assets/tunedash/select-track-rect.png)`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          //   backgroundRepeat: "no-repeat",
-          // All child with background transparent
-          "& > *": {
-            background: "transparent",
-          },
-        },
-      }}
     >
-      <DialogTitle>Add a Voice</DialogTitle>
-      {/* <Box
-        sx={{
-          position: "absolute",
-          right: 8,
-          top: 8,
-        }}
+      <Stack
+        position={"absolute"}
+        top={"50%"}
+        left={"50%"}
+        sx={{ transform: "translate(-50%, -50%)" }}
+        width={"100%"}
+        display={"flex"}
+        alignItems={"center"}
       >
-        <Chip
-          sx={{
-            border: "1px solid #00FF48",
-            background: "#0B9833 !",
-            borderRadius: "8.5px",
-            fontSize: 12,
-          }}
-          color="success"
-          label="300 DASH"
-          size="small"
-        />
-      </Box> */}
-
-      <DialogContent>
         <Stack
-          gap={2}
+          height={150}
+          width={"90%"}
+          sx={{
+            background: "#E3A32E",
+            border: "2px solid #F2F102",
+            borderRadius: "18px",
+          }}
           alignItems={"center"}
-          justifyContent={"space-between"}
-          height={"100%"}
-          py={2}
+          justifyContent={"center"}
+          position={"relative"}
+          gap={2}
         >
-          <Stack>
-            <TextField
-              label="Voice Name"
-              onChange={(e) => setSearchText(e.target.value)}
-            />
-            <Stack
-              py={2}
-              gap={2}
-              alignItems={"center"}
-              sx={{ overflowY: "auto", height: 200 }}
-            >
-              {isLoading && (
-                <Typography variant="caption">Loading...</Typography>
-              )}
-              {noResult && (
-                <Typography variant="caption" color={"red"}>
-                  No results found
-                </Typography>
-              )}
-              {voiceModels.map((voiceModel) => (
-                <Stack
-                  direction={"row"}
-                  justifyContent={"center"}
-                  onClick={() => {
-                    if (selectedVoiceModel?.title === voiceModel.title) {
-                      setSelectedVoiceModel(null);
-                    } else {
-                      setSelectedVoiceModel(voiceModel);
-                    }
-                  }}
-                  width={"100%"}
-                  sx={{
-                    outline:
-                      selectedVoiceModel?.title === voiceModel.title
-                        ? "1px solid #000"
-                        : "none",
-                    borderRadius: 4,
-                  }}
-                  px={1}
-                >
-                  <Typography align="center" variant="caption">
-                    {voiceModel.title}
-                  </Typography>
-                </Stack>
-              ))}
-            </Stack>
-          </Stack>
-          <LongImageMotionButton
-            disabled={(hideSearchButton && !selectedVoiceModel) || isLoading}
-            onClick={async () => {
-              // TODO: check if can create voice request
-              if (
-                userDoc?.dailyVoiceRequestTimestamp &&
-                hasTimestampCrossedOneDay(userDoc.dailyVoiceRequestTimestamp)
-              ) {
-                return alert("You have already requested a voice today");
-              }
-              if (selectedVoiceModel && userDoc) {
-                await createVoiceRequest({
-                  coverId,
-                  coverTitle,
-                  modelId: selectedVoiceModel.id,
-                  userId: userDoc.id,
-                  userName: userDoc.username || "",
-                  voiceModelName: selectedVoiceModel.title,
-                });
-                alert("Voice request created successfully");
-                setShowAddVoiceDialog(false);
-              } else {
-                onSearch();
-              }
+          <Box
+            position={"absolute"}
+            top={-50}
+            sx={{
+              background: "#ECB375",
+              border: "2px solid #FFD280",
+              borderRadius: "10px",
             }}
-            name={selectedVoiceModel ? "Submit" : "Search"}
-            width={150}
-            height={50}
-          />
+            px={2}
+          >
+            <Typography>Add a Voice</Typography>
+          </Box>
+          <Box
+            // position={"absolute"}
+            // top={10}
+            sx={{
+              background: "#FFB632",
+              border: "2px solid #FFBE48",
+              borderRadius: "10px",
+            }}
+            px={1}
+          >
+            <Typography variant="caption">Voice Name</Typography>
+          </Box>
+          <Box
+            display={"flex"}
+            alignItems={"center"}
+            justifyContent={"center"}
+            width={"100%"}
+            gap={1}
+          >
+            <TextField
+              // label="voice name"
+              size="small"
+              // variant="filled"
+              onChange={(e) => setSearchText(e.target.value)}
+              sx={{
+                background: "#F8CA76",
+                borderRadius: 2,
+                ".MuiOutlinedInput-notchedOutline": {
+                  border: "none",
+                },
+              }}
+            />
+            <IconButton
+              size="small"
+              onClick={onSearch}
+              sx={{
+                background: "#FFB632",
+                border: "2px solid #FFBE48",
+                borderRadius: 2,
+                padding: "2px",
+              }}
+            >
+              <SearchIcon />
+            </IconButton>
+          </Box>
         </Stack>
-      </DialogContent>
-    </Dialog>
+        {(voiceModels.length > 0 || noResult || isLoading) && (
+          <Paper
+            sx={{
+              mt: -2.5,
+              // background: "#E3A32E",
+              background:
+                "linear-gradient(181deg, rgba(255, 182, 50, 0.63) 31.04%, rgba(253, 171, 23, 0.63) 55.47%, rgba(240, 190, 99, 0.63) 83.03%)",
+              backdropFilter: "blur(5px)",
+              border: "3px solid #FFB632",
+              borderRadius: "13px",
+              width: "85%",
+            }}
+          >
+            <Stack gap={2} alignItems={"center"}>
+              <Stack
+                sx={{ overflowY: "auto", maxHeight: "400px", px: 1 }}
+                alignItems={"center"}
+                gap={2}
+                py={2}
+              >
+                {isLoading && (
+                  <Typography variant="caption">Loading...</Typography>
+                )}
+                {noResult && (
+                  <Typography variant="caption" color={"red"}>
+                    No results found
+                  </Typography>
+                )}
+                {voiceModels.map((voiceModel) => (
+                  <Stack
+                    direction={"row"}
+                    justifyContent={"center"}
+                    onClick={() => {
+                      if (selectedVoiceModel?.title === voiceModel.title) {
+                        setSelectedVoiceModel(null);
+                      } else {
+                        setSelectedVoiceModel(voiceModel);
+                      }
+                    }}
+                    width={"100%"}
+                    sx={{
+                      outline:
+                        selectedVoiceModel?.title === voiceModel.title
+                          ? "1px solid #000"
+                          : "none",
+                      borderRadius: 4,
+                    }}
+                    px={1}
+                  >
+                    <Typography align="center">{voiceModel.title}</Typography>
+                  </Stack>
+                ))}
+              </Stack>
+              <LongImageMotionButton
+                disabled={
+                  (hideSearchButton && !selectedVoiceModel) || isLoading
+                }
+                onClick={async () => {
+                  // TODO: check if user can create voice request
+                  if (
+                    userDoc?.dailyVoiceRequestTimestamp &&
+                    hasTimestampCrossedOneDay(
+                      userDoc.dailyVoiceRequestTimestamp
+                    )
+                  ) {
+                    return alert("You have already requested a voice today");
+                  }
+                  if (selectedVoiceModel && userDoc) {
+                    await createVoiceRequest({
+                      coverId,
+                      coverTitle,
+                      modelId: selectedVoiceModel.id,
+                      userId: userDoc.id,
+                      userName: userDoc.username || "",
+                      voiceModelName: selectedVoiceModel.title,
+                    });
+                    alert("Voice request created successfully");
+                    setShowAddVoiceDialog(false);
+                  }
+                }}
+                name={"Submit"}
+                width={150}
+                height={50}
+              />
+            </Stack>
+          </Paper>
+        )}
+      </Stack>
+    </Modal>
   );
 };
 
