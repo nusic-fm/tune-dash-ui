@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Dialog,
   DialogContent,
   Slide,
@@ -122,19 +123,30 @@ const TaskListDialog = ({ userDoc, open, onClose }: Props) => {
           },
         },
       }}
-      onClick={(e) => {
-        // check if the clicked  positions is top right corner of the dialog element
-        const dialogRect = (e.target as HTMLDivElement).getBoundingClientRect();
-        if (
-          e.clientX > dialogRect.right - 140 &&
-          e.clientY < dialogRect.top + 100
-        ) {
-          setShowStore(true);
-        } else {
-          setShowStore(false);
-        }
-      }}
     >
+      <Box
+        position={"absolute"}
+        display={"flex"}
+        justifyContent={"space-between"}
+        width={"100%"}
+        height={"65px"}
+        alignItems={"center"}
+        left={0}
+        top={0}
+      >
+        <Button
+          sx={{ width: "50%", height: "100%", opacity: 0 }}
+          onClick={() => {
+            setShowStore(false);
+          }}
+        ></Button>
+        <Button
+          sx={{ width: "50%", height: "100%", opacity: 0 }}
+          onClick={() => {
+            setShowStore(true);
+          }}
+        ></Button>
+      </Box>
       <DialogContent>
         <Box height={"400px"} mt={8}>
           <Stack

@@ -132,6 +132,22 @@ function App() {
       await prepareVocalPlayers(urls);
     }
   };
+  // Get UTM params from the url
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const utmSource = urlParams.get("utm_source");
+    const utmMedium = urlParams.get("utm_medium");
+    const utmCampaign = urlParams.get("utm_campaign");
+    const utmTerm = urlParams.get("utm_term");
+    const utmContent = urlParams.get("utm_content");
+    console.log("utm params", {
+      utmSource,
+      utmMedium,
+      utmCampaign,
+      utmTerm,
+      utmContent,
+    });
+  }, []);
 
   useEffect(() => {
     if (coversSnapshot?.docs.length) {
