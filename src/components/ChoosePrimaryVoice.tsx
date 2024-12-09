@@ -1,15 +1,20 @@
-import { Stack, Box, Typography } from "@mui/material";
+import { Stack, Box, Typography, Chip } from "@mui/material";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
 import { getVoiceAvatarPath } from "../helpers";
 import { useState } from "react";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
 import { switchVocalsByDownloading } from "../hooks/useTonejs";
+import SearchVoiceModelsDialog from "./SearchVoiceModelsDialog";
+import { UserDoc } from "../services/db/user.service";
+import { motion } from "framer-motion";
 
 type Props = {
   onPrimaryVoiceSelected: (voiceInfo: VoiceV1Cover) => void;
   voices: VoiceV1Cover[];
   primaryVoiceInfo: VoiceV1Cover | null;
   selectedCoverId: string;
+  coverTitle: string;
+  userDoc: UserDoc | null;
 };
 
 const ChoosePrimaryVoice = ({
@@ -17,10 +22,13 @@ const ChoosePrimaryVoice = ({
   voices,
   primaryVoiceInfo,
   selectedCoverId,
+  coverTitle,
+  userDoc,
 }: Props) => {
   const [selectedVoiceInfo, setSelectedVoiceInfo] = useState<VoiceV1Cover>(
     primaryVoiceInfo || voices[0]
   );
+  const [showAddVoiceDialog, setShowAddVoiceDialog] = useState(false);
 
   return (
     <Stack
@@ -79,7 +87,54 @@ const ChoosePrimaryVoice = ({
         display={"flex"}
         alignItems={"center"}
         justifyContent={"center"}
+        position={"relative"}
+        mb={2}
       >
+        <Box
+          position={"absolute"}
+          bottom={0}
+          left={0}
+          sx={{ transform: "translateY(50%)" }}
+          width={"100%"}
+          display={"flex"}
+          justifyContent={"center"}
+          alignItems={"center"}
+          zIndex={10}
+        >
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setShowAddVoiceDialog(true)}
+            style={{
+              width: 70,
+              height: 70,
+              borderRadius: "8.5px",
+              background: "url(/assets/tunedash/add-voice.png)",
+              backgroundSize: "contain",
+              backgroundRepeat: "no-repeat",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          ></motion.button>
+          <Box></Box>
+          <Chip
+            sx={{
+              position: "absolute",
+              bottom: 0,
+              transform: "translateY(50%)",
+              border: "1px solid #00FF48",
+              background: "#0B9833",
+              borderRadius: "8.5px",
+              fontSize: 12,
+            }}
+            color="success"
+            label="Add Voice"
+            size="small"
+          />
+        </Box>
         <Box
           display={"flex"}
           justifyContent={"center"}
@@ -181,6 +236,13 @@ const ChoosePrimaryVoice = ({
           onPrimaryVoiceSelected(selectedVoiceInfo);
         }}
       /> */}
+      <SearchVoiceModelsDialog
+        showAddVoiceDialog={showAddVoiceDialog}
+        setShowAddVoiceDialog={setShowAddVoiceDialog}
+        coverId={selectedCoverId}
+        coverTitle={coverTitle}
+        userDoc={userDoc}
+      />
     </Stack>
   );
 };

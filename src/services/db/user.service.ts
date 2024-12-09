@@ -13,6 +13,7 @@ import {
   arrayUnion,
   collection,
   onSnapshot,
+  FieldValue,
 } from "firebase/firestore";
 import { VoiceV1Cover } from "./coversV1.service";
 
@@ -31,11 +32,17 @@ export type User = {
   wins?: number;
   playedTimes?: number;
   isVip?: boolean;
+  chatId: number | null;
+  chatTitle: string | null;
+  chatPhotoUrl: string | null;
 };
 export type UserDoc = User & {
   createdAt: Timestamp;
   lastSeen: Timestamp;
-  visits: number;
+  lastDailyRacePlayedTimestamp?: Timestamp;
+  lastDailyCheckInTimestamp?: Timestamp;
+  inGameTokensCount?: number;
+  dailyVoiceRequestTimestamp?: Timestamp;
 };
 
 const getUserDocById = async (docId: string) => {
@@ -46,24 +53,37 @@ const getUserDocById = async (docId: string) => {
 const createUserDoc = async (
   userObj: User,
   docId: string,
-  listener?: (user: User) => void
+  listener?: (user: UserDoc) => void
 ): Promise<User> => {
   const d = doc(db, DB_NAME, docId);
   if (!!listener)
     onSnapshot(d, (snapshot) => {
-      listener?.(snapshot.data() as User);
+      listener?.(snapshot.data() as UserDoc);
     });
   const existingUser = await getDoc(d);
   if (existingUser.exists()) {
-    await updateDoc(d, { lastSeen: serverTimestamp(), visits: increment(1) });
+    const existingUserDoc = existingUser.data() as UserDoc;
+    const visitObj: {
+      lastSeen: FieldValue;
+      chatId?: number | null;
+      chatTitle?: string | null;
+      chatPhotoUrl?: string | null;
+    } = {
+      lastSeen: serverTimestamp(),
+    };
+    if (!existingUserDoc.chatId && userObj.chatId) {
+      visitObj["chatId"] = userObj.chatId;
+      visitObj["chatTitle"] = userObj.chatTitle;
+      visitObj["chatPhotoUrl"] = userObj.chatPhotoUrl;
+    }
+    await updateDoc(d, visitObj);
     logFirebaseEvent("login", {
       user_id: docId,
     });
-    return existingUser.data() as User;
+    return existingUserDoc;
   }
   const newUserObj = {
     ...userObj,
-    visits: 1,
     xp: 0,
     wins: 0,
     playedTimes: 0,
@@ -115,9 +135,67 @@ const updateGameResult = async (
     coverDocId,
   });
 };
+
+type RewardType =
+  | "DAILY_CHECK_IN"
+  | "WATCH_AD"
+  | "CONNECT_TON"
+  | "PLAY_DAILY_RACE"
+  | "PLAY_CHALLENGE"
+  | "BONUS"
+  | "REFERRAL";
+
+export const getRewardTokensAmount = (rewardType: RewardType) => {
+  switch (rewardType) {
+    case "DAILY_CHECK_IN":
+      return 10;
+    case "WATCH_AD":
+      return 10;
+    case "CONNECT_TON":
+      return 100;
+    case "PLAY_DAILY_RACE":
+      return 15;
+    case "PLAY_CHALLENGE":
+      return 30;
+    case "BONUS":
+      return 50;
+    case "REFERRAL":
+      return 10015;
+  }
+};
+
+const rewardInGameTokens = async (
+  userId: string,
+  rewardType:
+    | "DAILY_CHECK_IN"
+    | "WATCH_AD"
+    | "CONNECT_TON"
+    | "PLAY_DAILY_RACE"
+    | "PLAY_CHALLENGE"
+    | "BONUS"
+    | "REFERRAL"
+) => {
+  const d = doc(db, DB_NAME, userId);
+  const reward = getRewardTokensAmount(rewardType);
+  await updateDoc(d, { inGameTokensCount: increment(reward) });
+};
+
+const updateUserDocTimestamps = async (
+  userId: string,
+  props:
+    | "lastAdWatchedTimestamp"
+    | "lastDailyRacePlayedTimestamp"
+    | "dailyVoiceRequestTimestamp"
+) => {
+  const d = doc(db, DB_NAME, userId);
+  await updateDoc(d, { [props]: serverTimestamp() });
+};
+
 export {
   createUserDoc,
   getUserDocById,
   updatePurchasedVoice,
   updateGameResult,
+  rewardInGameTokens,
+  updateUserDocTimestamps,
 };

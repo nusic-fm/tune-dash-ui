@@ -1,6 +1,9 @@
-import { Box, Chip, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { Stack } from "@mui/system";
 import { motion } from "framer-motion";
+import { useState } from "react";
+import TaskListDialog from "./TaskListDialog";
+import { UserDoc } from "../services/db/user.service";
 
 type Props = {
   showBackButton: boolean;
@@ -8,6 +11,8 @@ type Props = {
   onBackButtonClick?: () => void;
   coverTitle: string;
   xp: number;
+  inGameTokensCount: number;
+  userDoc: UserDoc | null;
 };
 
 const Header = ({
@@ -15,8 +20,10 @@ const Header = ({
   showCoverTitle,
   onBackButtonClick,
   coverTitle,
-  xp,
+  userDoc,
 }: Props) => {
+  const [showTaskListDialog, setShowTaskListDialog] = useState(false);
+
   return (
     <Stack
       direction="row"
@@ -54,7 +61,7 @@ const Header = ({
           sx={{
             overflow: "hidden",
             height: "30px",
-            background: `url("/assets/tunedash/player-topbar.png") center center / contain no-repeat`,
+            background: `url("/assets/tunedash/player-topbar.png") center center / cover no-repeat`,
           }}
         >
           {/* <img src="/assets/tunedash/player-topbar.png" alt="logo" /> */}
@@ -83,23 +90,31 @@ const Header = ({
         </Box>
       )}
 
-      {/* <motion.button
-        // whileHover={{ scale: 1.1 }}
-        // whileTap={{ scale: 0.9 }}
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
         style={{
           background: `url("/assets/tunedash/hamburger-menu.png") center center / contain no-repeat`,
           border: "none",
           cursor: "pointer",
           width: 60,
           height: 60,
-          opacity: 0,
         }}
-        onClick={() => {}}
-      /> */}
-      <Chip
-        sx={{ mx: 0.5, color: "white", fontSize: "12px", fontWeight: 900 }}
-        label={xp + " XP"}
+        onClick={() => {
+          setShowTaskListDialog(true);
+        }}
       />
+      {/* <Chip
+        sx={{ mx: 0.5, color: "white", fontSize: "12px", fontWeight: 900 }}
+        label={inGameTokensCount}
+      /> */}
+      {userDoc && (
+        <TaskListDialog
+          userDoc={userDoc}
+          open={showTaskListDialog}
+          onClose={() => setShowTaskListDialog(false)}
+        />
+      )}
     </Stack>
   );
 };

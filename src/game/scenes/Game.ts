@@ -104,8 +104,8 @@ export default class Game extends Phaser.Scene {
   tapScore: number = 0;
   isBoosted = false;
   isOpponentBoosted = false;
+  boostedOpponentMarbleIdx = -1;
   opponentBoostMultipler = 0;
-  opponentMarbleIdx = 1;
   finishTap: Phaser.GameObjects.Image | undefined;
   boostMultipler: number = 0;
   tapResultLabel: Phaser.GameObjects.Text | undefined;
@@ -455,10 +455,13 @@ export default class Game extends Phaser.Scene {
       this.powerups.map((powerup) => {
         powerup.setOnCollideWith(this.marbles, (e: any) => {
           if (this.showRhythmPads) return;
-          if (e.label === this.marbles[this.opponentMarbleIdx].label) {
+          const marbleLabels = this.marbles.map((m) => m.label);
+          const opponentMarbleLabels = marbleLabels.slice(1);
+          if (opponentMarbleLabels.includes(e.label)) {
             this.isOpponentBoosted = true;
-            const currentSpeed =
-              this.marbles[this.opponentMarbleIdx].velocity.y;
+            const opponentMarbleIdx = marbleLabels.indexOf(e.label);
+            this.boostedOpponentMarbleIdx = opponentMarbleIdx;
+            const currentSpeed = this.marbles[opponentMarbleIdx].velocity.y;
             // console.log("Opponent Current Speed: ", currentSpeed);
             this.opponentMarbleMaxSpeed =
               currentSpeed + createRandomNumber(10, 20);
@@ -467,8 +470,8 @@ export default class Game extends Phaser.Scene {
             //   this.opponentMarbleMaxSpeed
             // );
             this.opponentBoostMultipler =
-              this.marbles[this.opponentMarbleIdx].velocity.y;
-            this.marbleTrailParticles[this.opponentMarbleIdx].setParticleTint(
+              this.marbles[opponentMarbleIdx].velocity.y;
+            this.marbleTrailParticles[opponentMarbleIdx].setParticleTint(
               0xf83600
             );
             powerup.destroy();
@@ -635,22 +638,37 @@ export default class Game extends Phaser.Scene {
         .setScrollFactor(0);
       tile.once("pointerdown", () => {
         const tileY = tile.y;
+        const perfectYRange = 10 * this.dpr;
+        const greatYRange = 31 * this.dpr;
+        const goodYRange = 62 * this.dpr;
+        const okYRange = 83 * this.dpr;
         let resultText = "";
+        let points = 0;
         if (
-          tileY >= targetY - 10 * this.dpr &&
-          tileY <= targetY + 10 * this.dpr
+          tileY >= targetY - perfectYRange &&
+          tileY <= targetY + perfectYRange
         ) {
+          points = 10;
           resultText = "Perfect";
         } else if (
-          tileY >= targetY - tile.height * this.dpr &&
-          tileY <= targetY + tile.height * this.dpr
+          tileY >= targetY - greatYRange &&
+          tileY <= targetY + greatYRange
         ) {
+          points = 8;
           resultText = "Great";
+        } else if (
+          tileY >= targetY - goodYRange &&
+          tileY <= targetY + goodYRange
+        ) {
+          points = 5;
+          resultText = "Good";
+        } else if (tileY >= targetY - okYRange && tileY <= targetY + okYRange) {
+          points = 2;
+          resultText = "OK";
         } else {
           resultText = "Too Early";
         }
-        this.tapScore +=
-          resultText === "Perfect" ? 10 : resultText === "Great" ? 5 : 0;
+        this.tapScore += points;
         tile.destroy();
         tileTrail.destroy();
         if (this.tapResultLabelTimer) {
@@ -663,7 +681,9 @@ export default class Game extends Phaser.Scene {
             color:
               resultText === "Perfect"
                 ? "green"
-                : resultText === "Great"
+                : resultText === "Great" ||
+                  resultText === "Good" ||
+                  resultText === "OK"
                 ? "yellow"
                 : "red",
             stroke: "rgba(0,0,0,1)",
@@ -956,17 +976,18 @@ export default class Game extends Phaser.Scene {
       this.isOpponentBoosted &&
       this.opponentBoostMultipler < this.opponentMarbleMaxSpeed
     ) {
-      const opponentMarble = this.marbles[this.opponentMarbleIdx];
+      const opponentMarble = this.marbles[this.boostedOpponentMarbleIdx];
       this.matter.body.setVelocity(opponentMarble, {
         x: opponentMarble.velocity.x,
         y: opponentMarble.velocity.y + 1,
       });
       this.opponentBoostMultipler += 0.1;
       if (this.opponentBoostMultipler >= this.opponentMarbleMaxSpeed) {
-        this.marbleTrailParticles[this.opponentMarbleIdx].setParticleTint(
-          this.particleIntialTint
-        ); // white
+        this.marbleTrailParticles[
+          this.boostedOpponentMarbleIdx
+        ].setParticleTint(this.particleIntialTint); // white
         this.isOpponentBoosted = false;
+        this.boostedOpponentMarbleIdx = -1;
       }
     }
 
