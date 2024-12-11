@@ -43,18 +43,23 @@ const ChoosePrimaryVoice = ({
       alignItems={"center"}
       position={"relative"}
     >
-      <Stack justifyContent={"center"} alignItems={"center"} gap={0.5}>
-        <Box width={200}>
+      <Stack
+        direction={"row"}
+        justifyContent={"center"}
+        alignItems={"center"}
+        gap={0.5}
+      >
+        <Box height={100}>
           <Slider
             value={noOfVoices}
             onChange={(_, value) => {
               setNoOfVoices(value as number);
             }}
             color="secondary"
-            size="small"
             min={1}
             max={5}
             marks
+            orientation="vertical"
           />
         </Box>
         <Stack
