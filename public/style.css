@@ -4,6 +4,9 @@ body {
   background-color: #000000;
   /* overflow-y: hidden; */
 }
+* {
+  box-sizing: border-box;
+}
 #scroll-text {
   /* animation properties */
   -moz-transform: translateX(100%);
