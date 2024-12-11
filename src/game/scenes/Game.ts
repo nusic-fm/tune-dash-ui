@@ -403,14 +403,7 @@ export default class Game extends Phaser.Scene {
         }
       );
       if (this.userMarbleIndexes.includes(i)) {
-        // Green circle particle thats bigger and has a never ending lifespan
-        this.add.particles(0, 0, "trail", {
-          follow: circleBody.position,
-          tint: 0x00ff00,
-          scaleX: 4,
-          scaleY: 4,
-          lifespan: 0,
-        });
+        //TODO Green circle particle thats bigger and has a never ending lifespan
       }
       this.marbles.push(circleBody);
       this.marbleTrailParticles.push(
