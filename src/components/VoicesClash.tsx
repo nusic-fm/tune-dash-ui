@@ -12,8 +12,8 @@ import WebApp from "@twa-dev/sdk";
 import { logFirebaseEvent } from "../services/firebase.service";
 
 type Props = {
-  primaryVoiceInfo: VoiceV1Cover;
-  secondaryVoiceInfo: VoiceV1Cover | null;
+  primaryVoiceInfo: VoiceV1Cover[];
+  secondaryVoiceInfo: VoiceV1Cover[] | null;
   onChooseOpponent: (voiceInfo: VoiceV1Cover[]) => void;
   onStartRaceClick: () => void;
   voices: VoiceV1Cover[];
@@ -22,6 +22,7 @@ type Props = {
   selectedCoverDocId: string;
   showOpponentVoiceSelection: boolean;
   setShowOpponentVoiceSelection: (show: boolean) => void;
+  noOfVoices: number;
 };
 
 const voiceWidth = 140;
@@ -36,19 +37,20 @@ const VoicesClash = ({
   selectedCoverDocId,
   showOpponentVoiceSelection,
   setShowOpponentVoiceSelection,
+  noOfVoices,
 }: Props) => {
   const [readyToStartRace, setReadyToStartRace] = useState(false);
   const [cost, setCost] = useState(0);
   const [isWaitingForPayment, setIsWaitingForPayment] = useState("");
 
-  const primaryVoiceId = primaryVoiceInfo.id;
-  const secondaryVoiceId = secondaryVoiceInfo?.id;
+  const primaryVoiceIds = primaryVoiceInfo.map((v) => v.id);
+  const secondaryVoiceIds = secondaryVoiceInfo?.map((v) => v.id);
 
   useEffect(() => {
-    if (secondaryVoiceId && readyToStartRace) {
+    if (secondaryVoiceIds && readyToStartRace) {
       onStartRaceClick();
     }
-  }, [secondaryVoiceId, readyToStartRace]);
+  }, [secondaryVoiceIds, readyToStartRace]);
 
   return (
     <Stack
@@ -63,20 +65,31 @@ const VoicesClash = ({
         <img src="/assets/tunedash/tune-dash.png" />
       )}
 
-      <Stack height={220} gap={2} justifyContent={"center"}>
+      <Stack height={320} gap={2} justifyContent={"center"}>
         <Box display={"flex"} alignItems={"center"} position={"relative"}>
-          <Box width={voiceWidth} height={voiceWidth} position={"relative"}>
-            <img
-              src={getVoiceAvatarPath(primaryVoiceId)}
-              style={{
-                borderRadius: "50%",
-                outline: "8px solid #04344d",
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                objectPosition: "center",
-              }}
-            />
+          <Box
+            width={160}
+            height={160}
+            position={"relative"}
+            display={"flex"}
+            alignItems={"center"}
+            justifyContent={"center"}
+            flexWrap={"wrap"}
+          >
+            {primaryVoiceIds.map((voiceId) => (
+              <img
+                key={voiceId}
+                src={getVoiceAvatarPath(voiceId)}
+                style={{
+                  borderRadius: "50%",
+                  outline: "8px solid #04344d",
+                  width: "80px",
+                  height: "80px",
+                  objectFit: "cover",
+                  objectPosition: "center",
+                }}
+              />
+            ))}
           </Box>
           <Box
             position={"absolute"}
@@ -90,19 +103,29 @@ const VoicesClash = ({
           >
             <img src="/assets/tunedash/vs.png" width={90} height={91} />
           </Box>
-          {secondaryVoiceId ? (
-            <Box width={voiceWidth} height={voiceWidth}>
-              <img
-                src={getVoiceAvatarPath(secondaryVoiceId)}
-                style={{
-                  borderRadius: "50%",
-                  outline: "8px solid #04344d",
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  objectPosition: "center",
-                }}
-              />
+          {secondaryVoiceIds?.length ? (
+            <Box
+              width={160}
+              height={160}
+              display={"flex"}
+              alignItems={"center"}
+              justifyContent={"center"}
+              flexWrap={"wrap"}
+            >
+              {secondaryVoiceIds.map((voiceId) => (
+                <img
+                  key={voiceId}
+                  src={getVoiceAvatarPath(voiceId)}
+                  style={{
+                    borderRadius: "50%",
+                    outline: "8px solid #04344d",
+                    width: "80px",
+                    height: "80px",
+                    objectFit: "cover",
+                    objectPosition: "center",
+                  }}
+                />
+              ))}
             </Box>
           ) : (
             <Box
@@ -121,7 +144,7 @@ const VoicesClash = ({
             </Box>
           )}
         </Box>
-        <Box display={"flex"} justifyContent={"center"} alignItems={"center"}>
+        {/* <Box display={"flex"} justifyContent={"center"} alignItems={"center"}>
           <Typography
             color={"#f0f0f0"}
             fontSize={12}
@@ -133,9 +156,9 @@ const VoicesClash = ({
               overflow: "hidden",
             }}
           >
-            {primaryVoiceInfo.name}
+            {primaryVoiceInfo?.[0].name}
           </Typography>
-          {secondaryVoiceId ? (
+          {secondaryVoiceIds?.length ? (
             <Typography
               color={"#f0f0f0"}
               fontSize={12}
@@ -147,19 +170,19 @@ const VoicesClash = ({
                 overflow: "hidden",
               }}
             >
-              {secondaryVoiceInfo?.name}
+              {secondaryVoiceInfo?.[0].name}
             </Typography>
           ) : (
             <Box width={140}></Box>
           )}
-        </Box>
+        </Box> */}
       </Stack>
       {showOpponentVoiceSelection && (
         <ChooseVoice
           voices={voices}
-          filterOutVoiceIds={[primaryVoiceId]}
+          filterOutVoiceIds={primaryVoiceIds}
           selectedCoverDocId={selectedCoverDocId}
-          selectedVoiceId={secondaryVoiceId || ""}
+          selectedVoiceId={secondaryVoiceIds?.[0] || ""}
           onChooseOpponent={(voiceInfo, cost) => {
             setCost(cost);
             onChooseOpponent([voiceInfo]);
@@ -168,7 +191,7 @@ const VoicesClash = ({
         />
       )}
       {!showOpponentVoiceSelection &&
-        (secondaryVoiceId && readyToStartRace ? (
+        (secondaryVoiceIds && readyToStartRace ? (
           <Stack mt={2} alignItems={"center"}>
             <Typography color={"#fff"} align="center">
               Downloading audio...
@@ -181,16 +204,25 @@ const VoicesClash = ({
         ) : (
           <LongImageMotionButton
             onClick={() => {
-              const randomVoiceIdxFromFirstHalf = createRandomNumber(
-                0,
-                voices.length,
-                voices.map((v) => v.id).indexOf(primaryVoiceId)
-              );
-              onChooseOpponent([voices[randomVoiceIdxFromFirstHalf]]);
+              const usedIndexes: number[] = [];
+              primaryVoiceIds.map((id) => {
+                usedIndexes.push(voices.map((v) => v.id).indexOf(id));
+              });
+              const selectedVoices = [];
+              for (let i = 0; i < noOfVoices; i++) {
+                const randomIdx = createRandomNumber(
+                  0,
+                  voices.length - 1,
+                  usedIndexes
+                );
+                selectedVoices.push(voices[randomIdx]);
+                usedIndexes.push(randomIdx);
+              }
+              onChooseOpponent(selectedVoices);
               logFirebaseEvent("race_start", {
                 track_id: selectedCoverDocId,
-                primary_voice_id: primaryVoiceInfo.id,
-                random_secondary_voice_id: secondaryVoiceInfo?.id,
+                primary_voice_id: primaryVoiceIds[0],
+                random_secondary_voice_id: secondaryVoiceIds?.[0],
               });
               setReadyToStartRace(true);
             }}
@@ -227,7 +259,7 @@ const VoicesClash = ({
             onClick={() => {
               logFirebaseEvent("choose_opponent", {
                 track_id: selectedCoverDocId,
-                primary_voice_id: primaryVoiceInfo.id,
+                primary_voice_id: primaryVoiceIds[0],
               });
               setShowOpponentVoiceSelection(true);
             }}
@@ -237,7 +269,7 @@ const VoicesClash = ({
           />
         </Badge>
       )}
-      {showOpponentVoiceSelection && secondaryVoiceId && (
+      {showOpponentVoiceSelection && secondaryVoiceIds?.[0] && (
         <Box
           position={"absolute"}
           bottom={0}
@@ -252,20 +284,20 @@ const VoicesClash = ({
               if (!cost) return alert("This voice is not available yet");
               if (
                 (userDoc?.purchasedVoices || []).includes(
-                  `${selectedCoverDocId}_${secondaryVoiceId}`
+                  `${selectedCoverDocId}_${secondaryVoiceIds?.[0]}`
                 ) ||
                 userDoc?.isVip
               ) {
                 logFirebaseEvent("race_start", {
                   track_id: selectedCoverDocId,
-                  primary_voice_id: primaryVoiceInfo.id,
-                  secondary_voice_id: secondaryVoiceId,
+                  primary_voice_id: primaryVoiceIds[0],
+                  secondary_voice_id: secondaryVoiceIds?.[0],
                   is_unlocked_race: true,
                 });
                 setShowOpponentVoiceSelection(false);
                 setReadyToStartRace(true);
               } else if (
-                secondaryVoiceId &&
+                secondaryVoiceIds?.[0] &&
                 showOpponentVoiceSelection &&
                 !readyToStartRace &&
                 userDoc
@@ -273,7 +305,9 @@ const VoicesClash = ({
                 try {
                   const orderId = await createOrder(
                     userDoc.id,
-                    voices[voices.map((v) => v.id).indexOf(secondaryVoiceId)],
+                    voices[
+                      voices.map((v) => v.id).indexOf(secondaryVoiceIds?.[0])
+                    ],
                     cost
                   );
                   const paylod = {
@@ -302,14 +336,14 @@ const VoicesClash = ({
                       ) {
                         logFirebaseEvent("voice_purchase_success", {
                           track_id: selectedCoverDocId,
-                          primary_voice_id: primaryVoiceInfo.id,
-                          voice_id: secondaryVoiceId,
+                          primary_voice_id: primaryVoiceIds[0],
+                          voice_id: secondaryVoiceIds?.[0],
                           amount: cost,
                           order_number: orderId,
                         });
                         await updatePurchasedVoice(
                           userDoc.id,
-                          `${selectedCoverDocId}_${secondaryVoiceId}`
+                          `${selectedCoverDocId}_${secondaryVoiceIds?.[0]}`
                         );
                         setIsWaitingForPayment("");
                         setShowOpponentVoiceSelection(false);
@@ -322,7 +356,7 @@ const VoicesClash = ({
                       ) {
                         logFirebaseEvent("voice_purchase_failure", {
                           track_id: selectedCoverDocId,
-                          voice_id: secondaryVoiceId,
+                          voice_id: secondaryVoiceIds?.[0],
                           amount: cost,
                           order_number: orderId,
                           status: orderStatus.data?.model?.orderStatus,
@@ -334,7 +368,7 @@ const VoicesClash = ({
                   }
                   logFirebaseEvent("voice_purchase_attempt", {
                     track_id: selectedCoverDocId,
-                    voice_id: secondaryVoiceId,
+                    voice_id: secondaryVoiceIds?.[0],
                     amount: cost,
                     order_number: orderId,
                   });
@@ -349,7 +383,7 @@ const VoicesClash = ({
             name={
               readyToStartRace ||
               (userDoc?.purchasedVoices || []).includes(
-                `${selectedCoverDocId}_${secondaryVoiceId}`
+                `${selectedCoverDocId}_${secondaryVoiceIds?.[0]}`
               ) ||
               userDoc?.isVip
                 ? "Start Race"

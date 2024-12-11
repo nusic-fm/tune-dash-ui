@@ -96,6 +96,7 @@ export default class Game extends Phaser.Scene {
   showObstacles: boolean = false;
   initialGravity: number = 0;
   userMarbleIdx: number = 0;
+  userMarbleIndexes: number[] = [];
   tapTimings: number[] = [];
   allTapTimings: number[] = [];
   circleShouldFillInMs = 1500;
@@ -148,6 +149,8 @@ export default class Game extends Phaser.Scene {
     this.centerY = this.cameras.main.height / 2;
     this.showObstacles = data.showObstacles || false;
     this.initialGravity = data.gravityY || 0;
+    this.userMarbleIndexes = data.userMarbleIndexes || [0, 1];
+    console.log("User Marbles ", this.userMarbleIndexes);
   }
 
   throttledUpdate(index: number, switchOld: boolean = true) {
@@ -374,20 +377,20 @@ export default class Game extends Phaser.Scene {
     this.largeCircle.setScale(
       (this.canvasWidth / this.largeCircle.width) * this.dpr
     );
-    const xOffsetValues = [
-      this.centerX - 46,
-      this.centerX + 23,
-      this.centerX,
-      this.centerX + 23,
-      this.centerX + 46,
-    ];
+    // const xOffsetValues = [
+    //   this.centerX - 46,
+    //   this.centerX + 23,
+    //   this.centerX,
+    //   this.centerX + 23,
+    //   this.centerX + 46,
+    // ];
     this.voices.map((v, i) => {
       this.currentMarblesSizeIndices[i.toString()] = 0;
       // const angle = i * this.angleIncrement;
       // const x = this.centerX + this.radius * Math.cos(angle);
       // const y = this.centerY + this.radius * Math.sin(angle);
       const circleBody = this.matter.add.circle(
-        xOffsetValues[i],
+        this.centerX,
         this.centerY,
         marbleRadius,
         {
@@ -399,6 +402,16 @@ export default class Game extends Phaser.Scene {
           label: v.id,
         }
       );
+      if (this.userMarbleIndexes.includes(i)) {
+        // Green circle particle thats bigger and has a never ending lifespan
+        this.add.particles(0, 0, "trail", {
+          follow: circleBody.position,
+          tint: 0x00ff00,
+          scaleX: 4,
+          scaleY: 4,
+          lifespan: 0,
+        });
+      }
       this.marbles.push(circleBody);
       this.marbleTrailParticles.push(
         this.add.particles(0, 0, "trail", {
@@ -456,7 +469,9 @@ export default class Game extends Phaser.Scene {
         powerup.setOnCollideWith(this.marbles, (e: any) => {
           if (this.showRhythmPads) return;
           const marbleLabels = this.marbles.map((m) => m.label);
-          const opponentMarbleLabels = marbleLabels.slice(1);
+          const opponentMarbleLabels = marbleLabels.filter(
+            (_, i) => this.userMarbleIndexes.indexOf(i) === -1
+          );
           if (opponentMarbleLabels.includes(e.label)) {
             this.isOpponentBoosted = true;
             const opponentMarbleIdx = marbleLabels.indexOf(e.label);
@@ -568,9 +583,9 @@ export default class Game extends Phaser.Scene {
     // );
     EventBus.emit(
       "game-over",
-      this.winnerIdx === this.userMarbleIdx,
+      this.userMarbleIndexes.includes(this.winnerIdx),
       this.voices,
-      this.voices[this.userMarbleIdx].id
+      this.voices[this.winnerIdx].id
     );
     this.isResultShown = true;
   }
@@ -750,9 +765,6 @@ export default class Game extends Phaser.Scene {
           this.userMarbleMaxSpeed = currentSpeed + addedSpeed;
           // console.log("User Marble Max Speed: ", this.userMarbleMaxSpeed);
           this.isBoosted = true;
-          this.marbleTrailParticles[this.userMarbleIdx].setParticleTint(
-            0xf83600
-          );
           this.tapResultLabel?.destroy();
           this.tapResultLabel = this.add
             .text(
@@ -959,16 +971,22 @@ export default class Game extends Phaser.Scene {
     //   }, 2000);
     // }
     if (this.isBoosted && this.boostMultipler < this.userMarbleMaxSpeed) {
-      const userMarble = this.marbles[this.userMarbleIdx]; // TODO: User chosen marble
-      this.matter.body.setVelocity(userMarble, {
-        x: userMarble.velocity.x,
-        y: userMarble.velocity.y + 1,
+      // const userMarble = this.marbles[this.userMarbleIdx]; // TODO: User chosen marble
+      this.userMarbleIndexes.forEach((idx) => {
+        const userMarble = this.marbles[idx];
+        this.matter.body.setVelocity(userMarble, {
+          x: userMarble.velocity.x,
+          y: userMarble.velocity.y + 1,
+        });
+        this.marbleTrailParticles[idx].setParticleTint(0xf83600);
       });
       this.boostMultipler += 0.1;
       if (this.boostMultipler >= this.userMarbleMaxSpeed) {
-        this.marbleTrailParticles[this.userMarbleIdx].setParticleTint(
-          this.particleIntialTint
-        ); // white
+        this.userMarbleIndexes.forEach((idx) => {
+          this.marbleTrailParticles[idx].setParticleTint(
+            this.particleIntialTint
+          ); // white
+        });
         this.isBoosted = false;
       }
     }
@@ -1134,7 +1152,7 @@ export default class Game extends Phaser.Scene {
         if (this.winnerIdx === -1 && finishedPositions.length) {
           this.winnerIdx = voicesPositions.indexOf(finishedPositions[0]);
         }
-        if (this.winnerIdx === this.userMarbleIdx) {
+        if (this.userMarbleIndexes.includes(this.winnerIdx)) {
           this.isGameOver = true;
           return;
         }
@@ -1150,8 +1168,18 @@ export default class Game extends Phaser.Scene {
         if (
           this.prevVoiceIdx !== largestIndex &&
           largest > secondLargest + this.marbleRadius
-        )
+        ) {
+          if (this.userMarbleIndexes.includes(largestIndex)) {
+            // this.cameras.main.scrollY = largest - 300 * this.dpr;
+            this.cameras.main.stopFollow();
+            this.cameras.main.startFollow(
+              this.marblesImages[largestIndex],
+              true
+            );
+            this.userMarbleIdx = largestIndex;
+          }
           this.throttledUpdate(largestIndex);
+        }
         // else if (secondLargest >= largest - this.marbleRadius * 2)
         //   this.throttledUpdate(secondLargestIndex, false);
         if (this.autoScroll) {

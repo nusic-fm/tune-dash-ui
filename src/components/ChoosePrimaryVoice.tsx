@@ -1,6 +1,6 @@
-import { Stack, Box, Typography, Chip } from "@mui/material";
+import { Stack, Box, Typography, Chip, Slider } from "@mui/material";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
-import { getVoiceAvatarPath } from "../helpers";
+import { createRandomNumber, getVoiceAvatarPath } from "../helpers";
 import { useState } from "react";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
 import { switchVocalsByDownloading } from "../hooks/useTonejs";
@@ -9,12 +9,14 @@ import { UserDoc } from "../services/db/user.service";
 import { motion } from "framer-motion";
 
 type Props = {
-  onPrimaryVoiceSelected: (voiceInfo: VoiceV1Cover) => void;
+  onPrimaryVoiceSelected: (voiceInfo: VoiceV1Cover[]) => void;
   voices: VoiceV1Cover[];
   primaryVoiceInfo: VoiceV1Cover | null;
   selectedCoverId: string;
   coverTitle: string;
   userDoc: UserDoc | null;
+  noOfVoices: number;
+  setNoOfVoices: (noOfVoices: number) => void;
 };
 
 const ChoosePrimaryVoice = ({
@@ -24,6 +26,8 @@ const ChoosePrimaryVoice = ({
   selectedCoverId,
   coverTitle,
   userDoc,
+  noOfVoices,
+  setNoOfVoices,
 }: Props) => {
   const [selectedVoiceInfo, setSelectedVoiceInfo] = useState<VoiceV1Cover>(
     primaryVoiceInfo || voices[0]
@@ -39,41 +43,86 @@ const ChoosePrimaryVoice = ({
       alignItems={"center"}
       position={"relative"}
     >
-      <Stack alignItems={"center"} gap={0.5}>
-        <img
-          src={getVoiceAvatarPath(selectedVoiceInfo.id)}
-          width={105}
-          height={105}
-          style={{
-            borderRadius: "12px",
-            cursor: "pointer",
-          }}
-        />
-        <Box
-          px={2}
-          // width={100}
-          height={20}
-          sx={{
-            background: `url(/assets/tunedash/track-rect.png)`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-          display={"flex"}
+      <Stack justifyContent={"center"} alignItems={"center"} gap={0.5}>
+        <Box width={200}>
+          <Slider
+            value={noOfVoices}
+            onChange={(_, value) => {
+              setNoOfVoices(value as number);
+            }}
+            color="secondary"
+            size="small"
+            min={1}
+            max={5}
+            marks
+          />
+        </Box>
+        <Stack
+          direction={"row"}
           justifyContent={"center"}
           alignItems={"center"}
+          width={"100%"}
         >
-          <Typography
-            variant="caption"
-            fontWeight={600}
-            sx={{
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {selectedVoiceInfo.name}
-          </Typography>
-        </Box>
+          <Stack>
+            <img
+              src={getVoiceAvatarPath(selectedVoiceInfo.id)}
+              width={105}
+              height={105}
+              style={{
+                borderRadius: "12px",
+                cursor: "pointer",
+              }}
+            />
+            <Box
+              px={2}
+              // width={100}
+              height={20}
+              sx={{
+                background: `url(/assets/tunedash/track-rect.png)`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+              display={"flex"}
+              justifyContent={"center"}
+              alignItems={"center"}
+            >
+              <Typography
+                variant="caption"
+                fontWeight={600}
+                sx={{
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {selectedVoiceInfo.name}
+              </Typography>
+            </Box>
+          </Stack>
+          {noOfVoices > 1 && (
+            <Stack
+              direction={"row"}
+              alignItems={"center"}
+              flexWrap={"wrap"}
+              width={105}
+              height={105}
+            >
+              {new Array(noOfVoices - 1).fill(0).map((_, idx) => (
+                <img
+                  key={idx}
+                  src="/assets/tunedash/question-mark.png"
+                  width={50}
+                  height={50}
+                  style={{
+                    objectFit: "contain",
+                    borderRadius: "12px",
+                    cursor: "pointer",
+                  }}
+                />
+              ))}
+            </Stack>
+          )}
+        </Stack>
       </Stack>
       <Box
         width={window.innerWidth > 350 ? 350 : window.innerWidth}
@@ -212,7 +261,22 @@ const ChoosePrimaryVoice = ({
       <Box position={"absolute"} bottom={20} zIndex={100}>
         <LongImageMotionButton
           onClick={() => {
-            onPrimaryVoiceSelected(selectedVoiceInfo);
+            const selectedVoices = [selectedVoiceInfo];
+            const currentIdx = voices.findIndex(
+              (voice) => voice.id === selectedVoiceInfo.id
+            );
+            const usedIndexes = [currentIdx];
+            for (let i = 1; i < noOfVoices; i++) {
+              let randomIdx = createRandomNumber(
+                0,
+                voices.length - 1,
+                usedIndexes
+              );
+              const randomNextVoice = voices[randomIdx];
+              selectedVoices.push(randomNextVoice);
+              usedIndexes.push(randomIdx);
+            }
+            onPrimaryVoiceSelected(selectedVoices);
           }}
           name="Proceed"
           width={230}
