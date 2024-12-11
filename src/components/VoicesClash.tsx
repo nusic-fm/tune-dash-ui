@@ -181,21 +181,12 @@ const VoicesClash = ({
         ) : (
           <LongImageMotionButton
             onClick={() => {
-              const halfVoiceIdx = voices.length / 2;
               const randomVoiceIdxFromFirstHalf = createRandomNumber(
                 0,
-                halfVoiceIdx - 1,
+                voices.length,
                 voices.map((v) => v.id).indexOf(primaryVoiceId)
               );
-              const randomSecondaryVoiceIdxFromSecondHalf = createRandomNumber(
-                halfVoiceIdx,
-                voices.length - 1,
-                voices.map((v) => v.id).indexOf(primaryVoiceId)
-              );
-              onChooseOpponent([
-                voices[randomVoiceIdxFromFirstHalf],
-                voices[randomSecondaryVoiceIdxFromSecondHalf],
-              ]);
+              onChooseOpponent([voices[randomVoiceIdxFromFirstHalf]]);
               logFirebaseEvent("race_start", {
                 track_id: selectedCoverDocId,
                 primary_voice_id: primaryVoiceInfo.id,

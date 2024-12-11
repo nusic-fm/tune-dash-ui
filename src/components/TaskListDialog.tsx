@@ -91,7 +91,6 @@ const TaskListDialog = ({ userDoc, open, onClose }: Props) => {
     //   !lastAdWatchedTimestamp ||
     //     hasTimestampCrossedOneDay(lastAdWatchedTimestamp)
     // );
-    debugger;
     setShowDailyRace(
       !lastDailyRacePlayedTimestamp ||
         hasTimestampCrossedOneDay(lastDailyRacePlayedTimestamp)
