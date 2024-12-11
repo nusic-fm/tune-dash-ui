@@ -389,6 +389,11 @@ function App() {
                   }}
                   coverTitle={coverDoc?.title || ""}
                   userDoc={userDoc}
+                  onTaskButtonClick={(task: string) => {
+                    if (task === "PLAY_DAILY_RACE") {
+                      setScreenName("select-track");
+                    }
+                  }}
                 />
               )}
               {screenName === "start" && (

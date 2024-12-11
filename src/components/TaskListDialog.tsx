@@ -23,6 +23,7 @@ type Props = {
   userDoc: UserDoc;
   open: boolean;
   onClose: () => void;
+  onTaskButtonClick: (task: string) => void;
 };
 
 export const DialogTransition = React.forwardRef(function Transition(
@@ -34,7 +35,12 @@ export const DialogTransition = React.forwardRef(function Transition(
   return <Slide direction="down" ref={ref} {...props} />;
 });
 
-const TaskListDialog = ({ userDoc, open, onClose }: Props) => {
+const TaskListDialog = ({
+  userDoc,
+  open,
+  onClose,
+  onTaskButtonClick,
+}: Props) => {
   const onReward = useCallback(() => {
     updateUserDocTimestamps(userDoc.id, "lastAdWatchedTimestamp");
     rewardInGameTokens(userDoc.id, "WATCH_AD");
@@ -171,6 +177,8 @@ const TaskListDialog = ({ userDoc, open, onClose }: Props) => {
                       setShowCheckIn(false);
                     } else if (task.id === "PLAY_DAILY_RACE") {
                       setShowDailyRace(false);
+                      onTaskButtonClick(task.id);
+                      onClose();
                     }
                   }}
                   disabled={

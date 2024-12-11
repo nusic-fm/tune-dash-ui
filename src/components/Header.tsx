@@ -13,6 +13,7 @@ type Props = {
   xp: number;
   inGameTokensCount: number;
   userDoc: UserDoc | null;
+  onTaskButtonClick: (task: string) => void;
 };
 
 const Header = ({
@@ -21,6 +22,7 @@ const Header = ({
   onBackButtonClick,
   coverTitle,
   userDoc,
+  onTaskButtonClick,
 }: Props) => {
   const [showTaskListDialog, setShowTaskListDialog] = useState(false);
 
@@ -112,6 +114,7 @@ const Header = ({
         <TaskListDialog
           userDoc={userDoc}
           open={showTaskListDialog}
+          onTaskButtonClick={onTaskButtonClick}
           onClose={() => setShowTaskListDialog(false)}
         />
       )}
