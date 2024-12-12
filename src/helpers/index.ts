@@ -110,9 +110,13 @@ export const sortArrBasedOnLikesObj = (
 //     minute: "numeric",
 //   });
 // };
-export const createRandomNumber = (min: number, max: number, not?: number) => {
+export const createRandomNumber = (
+  min: number,
+  max: number,
+  not?: number | number[]
+) => {
   let random = Math.floor(Math.random() * (max - min + 1) + min);
-  while (random === not) {
+  while (Array.isArray(not) ? not.includes(random) : random === not) {
     random = Math.floor(Math.random() * (max - min + 1) + min);
   }
   return random;
