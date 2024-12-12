@@ -497,7 +497,7 @@ export default class Game extends Phaser.Scene {
     this.tapResultLabel?.destroy();
     this.showRhythmPads = false;
     this.tiles.map((t) => t.destroy());
-    const isWin = this.winnerIdx === 0;
+    const isWin = this.userMarbleIndexes.includes(this.winnerIdx);
     let resultImage;
     let xpText: Phaser.GameObjects.Text | undefined;
     if (isWin) {
@@ -1122,6 +1122,7 @@ export default class Game extends Phaser.Scene {
         }
         */
         const unFinishedPositions = [];
+        const unFinishedUserPositions = [];
         const finishedPositions = [];
         const voicesPositions = [];
         for (let i = 0; i < this.marbles.length; i++) {
@@ -1129,6 +1130,9 @@ export default class Game extends Phaser.Scene {
           voicesPositions.push(y);
           if (y < this.finishLineOffset) {
             unFinishedPositions.push(y);
+            if (this.userMarbleIndexes.includes(i)) {
+              unFinishedUserPositions.push(y);
+            }
           } else if (y > this.finishLineOffset) {
             finishedPositions.push(y);
           }
@@ -1149,7 +1153,7 @@ export default class Game extends Phaser.Scene {
           this.isGameOver = true;
           return;
         }
-        const largest = Math.max(...unFinishedPositions);
+        const largest = Math.max(...unFinishedUserPositions);
         const largestIndex = voicesPositions.findIndex((v) => v === largest);
         const secondLargest = Math.max(
           ...unFinishedPositions.filter((p) => p !== largest)
@@ -1158,19 +1162,26 @@ export default class Game extends Phaser.Scene {
           this.isGameOver = true;
           return;
         }
+
+        const largestUserMarblePosition = Math.max(...unFinishedUserPositions);
+        const largestUserMarbleIdx = voicesPositions.findIndex(
+          (v) => v === largestUserMarblePosition
+        );
+        if (
+          largestUserMarbleIdx >= 0 &&
+          this.userMarbleIdx !== largestUserMarbleIdx
+        ) {
+          this.cameras.main.stopFollow();
+          this.cameras.main.startFollow(
+            this.marblesImages[largestUserMarbleIdx],
+            true
+          );
+          this.userMarbleIdx = largestUserMarbleIdx;
+        }
         if (
           this.prevVoiceIdx !== largestIndex &&
           largest > secondLargest + this.marbleRadius
         ) {
-          if (this.userMarbleIndexes.includes(largestIndex)) {
-            // this.cameras.main.scrollY = largest - 300 * this.dpr;
-            this.cameras.main.stopFollow();
-            this.cameras.main.startFollow(
-              this.marblesImages[largestIndex],
-              true
-            );
-            this.userMarbleIdx = largestIndex;
-          }
           this.throttledUpdate(largestIndex);
         }
         // else if (secondLargest >= largest - this.marbleRadius * 2)
