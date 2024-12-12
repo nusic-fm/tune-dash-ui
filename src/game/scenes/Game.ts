@@ -20,45 +20,43 @@ export default class Game extends Phaser.Scene {
     super("game");
     this.throttledUpdate = _.throttle(this.throttledUpdate.bind(this), 10); // Throttle interval in milliseconds
   }
-  public sky: Phaser.Physics.Matter.Image | undefined;
   public marbles: MatterJS.BodyType[] = [];
   public marblesImages: Phaser.GameObjects.Image[] = [];
   public marblesMasks: Phaser.GameObjects.Graphics[] = [];
   public isInstrumentPlaying: boolean = false;
-  public autoScroll = true;
+  // public autoScroll = true;
   public prevVoiceIdx = -1;
-  public leftRotatableStars: Phaser.Physics.Matter.Sprite[] = [];
-  public rightRotatableStars: Phaser.Physics.Matter.Sprite[] = [];
+  // public leftRotatableStars: Phaser.Physics.Matter.Sprite[] = [];
+  // public rightRotatableStars: Phaser.Physics.Matter.Sprite[] = [];
   public reduceSizeScreenOffset: number[] = [];
   public increaseSizeScreenOffset: number[] = [];
   public currentMarblesSizeIndices: { [key: string]: number } = {};
   public heightReducedIndices: number[] = [];
-  public upDownMotionElems: {
-    matter: Phaser.Physics.Matter.Image;
-    startX: number;
-    startY: number;
-    maxTop: number;
-    maxBottom: number;
-    moveSpeed: number;
-    direction: "left" | "right";
-  }[] = [];
+  // public upDownMotionElems: {
+  //   matter: Phaser.Physics.Matter.Image;
+  //   startX: number;
+  //   startY: number;
+  //   maxTop: number;
+  //   maxBottom: number;
+  //   moveSpeed: number;
+  //   direction: "left" | "right";
+  // }[] = [];
   public labels: Phaser.GameObjects.Text[] = [];
-  public motionTimeForUpDownWard = 0;
-  public crossRightRotation: Phaser.Physics.Matter.Sprite[] = [];
-  public crossLeftRotation: Phaser.Physics.Matter.Sprite[] = [];
-  public horizontalCrossRightRotation: Phaser.Physics.Matter.Sprite[] = [];
-  public horizontalCrossLeftRotation: Phaser.Physics.Matter.Sprite[] = [];
+  // public motionTimeForUpDownWard = 0;
+  // public crossRightRotation: Phaser.Physics.Matter.Sprite[] = [];
+  // public crossLeftRotation: Phaser.Physics.Matter.Sprite[] = [];
+  // public horizontalCrossRightRotation: Phaser.Physics.Matter.Sprite[] = [];
+  // public horizontalCrossLeftRotation: Phaser.Physics.Matter.Sprite[] = [];
   // public trails: { x: number; y: number }[][] = [];
   // public trailGraphics: Phaser.GameObjects.Graphics[] = [];
   // public trailsGroup: Phaser.GameObjects.Group[] = [];
   public trailLength: number = 0;
-  public trailPoints: {
-    x: number;
-    y: number;
-    angle: number;
-    // size: number;
-  }[][] = [];
-  // public shape: any;
+  // public trailPoints: {
+  //   x: number;
+  //   y: number;
+  //   angle: number;
+  //   // size: number;
+  // }[][] = [];
   public voices: GameVoiceInfo[] = [];
   public coverDocId: string = "";
   public musicStartOffset: number = 0;
@@ -69,13 +67,12 @@ export default class Game extends Phaser.Scene {
   baseAngle = 0;
   centerX = 0;
   centerY = 0;
-  radius = 100;
-  angleIncrement = (2 * Math.PI) / 5;
+  // radius = 100;
+  // angleIncrement = (2 * Math.PI) / 5;
   countdownText: Phaser.GameObjects.Text | undefined;
   finishLineOffset: number = 0;
   marbleRadius = 23;
   background: Phaser.GameObjects.TileSprite | undefined;
-  enableMotion: boolean = false;
   marbleTrailParticles: Phaser.GameObjects.Particles.ParticleEmitter[] = [];
   isGameOver: boolean = false;
   winnerIdx: number = -1;
@@ -403,7 +400,14 @@ export default class Game extends Phaser.Scene {
         }
       );
       if (this.userMarbleIndexes.includes(i)) {
-        //TODO Green circle particle thats bigger and has a never ending lifespan
+        //TODO : Add glow effect to the user marble
+        // this.add.particles(0, 0, "user_border", {
+        //   follow: circleBody.position,
+        //   tint: 0x00ff00,
+        //   scaleX: 4,
+        //   scaleY: 4,
+        //   lifespan: 0,
+        // });
       }
       this.marbles.push(circleBody);
       this.marbleTrailParticles.push(
@@ -872,22 +876,22 @@ export default class Game extends Phaser.Scene {
     );
 
     this.createMarbles(this.marbleRadius, miniShapes);
-    this.crossLeftRotation.map((baseSprite) =>
-      this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
-    );
-    this.crossRightRotation.map((baseSprite) =>
-      this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
-    );
-    [...this.leftRotatableStars, ...this.rightRotatableStars].map(
-      (baseSprite) =>
-        this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
-    );
-    [
-      ...this.horizontalCrossLeftRotation,
-      ...this.horizontalCrossRightRotation,
-    ].map((baseSprite) =>
-      this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
-    );
+    // this.crossLeftRotation.map((baseSprite) =>
+    //   this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+    // );
+    // this.crossRightRotation.map((baseSprite) =>
+    //   this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+    // );
+    // [...this.leftRotatableStars, ...this.rightRotatableStars].map(
+    //   (baseSprite) =>
+    //     this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+    // );
+    // [
+    //   ...this.horizontalCrossLeftRotation,
+    //   ...this.horizontalCrossRightRotation,
+    // ].map((baseSprite) =>
+    //   this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+    // );
 
     let coundownValue = 3;
     // Start Countdown:
@@ -1186,10 +1190,10 @@ export default class Game extends Phaser.Scene {
         }
         // else if (secondLargest >= largest - this.marbleRadius * 2)
         //   this.throttledUpdate(secondLargestIndex, false);
-        if (this.autoScroll) {
-          // this.cameras.main.startFollow(this.marblesImages[0]);
-          // this.cameras.main.scrollY = largest - 300 * this.dpr;
-        }
+        // if (this.autoScroll) {
+        // this.cameras.main.startFollow(this.marblesImages[0]);
+        // this.cameras.main.scrollY = largest - 300 * this.dpr;
+        // }
       }
 
       // Optimised Code
