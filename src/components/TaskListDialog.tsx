@@ -89,18 +89,12 @@ const TaskListDialog = ({
 
   useEffect(() => {
     const { lastDailyRacePlayedTimestamp, lastDailyCheckInTimestamp } = userDoc;
-    setShowCheckIn(
-      !lastDailyCheckInTimestamp ||
-        hasTimestampCrossedOneDay(lastDailyCheckInTimestamp)
-    );
+    setShowCheckIn(hasTimestampCrossedOneDay(lastDailyCheckInTimestamp));
     // setShowWatchAd(
     //   !lastAdWatchedTimestamp ||
     //     hasTimestampCrossedOneDay(lastAdWatchedTimestamp)
     // );
-    setShowDailyRace(
-      !lastDailyRacePlayedTimestamp ||
-        hasTimestampCrossedOneDay(lastDailyRacePlayedTimestamp)
-    );
+    setShowDailyRace(hasTimestampCrossedOneDay(lastDailyRacePlayedTimestamp));
   }, [userDoc, open]);
 
   return (

@@ -104,6 +104,7 @@ function App() {
   const [isPlayingGame, setIsPlayingGame] = useState(false);
   const [showIosNotice, setShowIosNotice] = useState(false);
   const [noOfVoices, setNoOfVoices] = useState(1);
+  const [selectedLevel, setSelectedLevel] = useState(1);
   const [coversSnapshot, cssLoading, cssError] = useCollection(
     query(
       collection(db, "tunedash_covers"),
@@ -130,7 +131,7 @@ function App() {
         ),
       ];
       await downloadAudioFiles(urls, (progress: number) => {
-        console.log("progress", progress);
+        // console.log("progress", progress);
         setDownloadProgress(progress);
       });
       await prepareVocalPlayers(urls);
@@ -152,6 +153,14 @@ function App() {
       utmContent,
     });
   }, []);
+
+  useEffect(() => {
+    const newNoOfVoices = (selectedLevel * 2) / 2;
+    setNoOfVoices(newNoOfVoices);
+    if (primaryVoiceInfo) {
+      setPrimaryVoiceInfo(primaryVoiceInfo.slice(0, newNoOfVoices));
+    }
+  }, [selectedLevel]);
 
   useEffect(() => {
     if (coversSnapshot?.docs.length) {
@@ -359,6 +368,9 @@ function App() {
                 <></>
               ) : (
                 <Header
+                  showLevelsBar={screenName === "choose-primary-voice"}
+                  selectedLevel={selectedLevel}
+                  setSelectedLevel={setSelectedLevel}
                   xp={userDoc?.xp || 0}
                   inGameTokensCount={userDoc?.inGameTokensCount || 0}
                   showBackButton={screenName !== "start"}
@@ -461,23 +473,21 @@ function App() {
                   <ChoosePrimaryVoice
                     selectedCoverId={selectedCoverDocId}
                     voices={coverDoc.voices}
-                    primaryVoiceInfo={primaryVoiceInfo[0]}
-                    onPrimaryVoiceSelected={(voiceInfo) => {
-                      setPrimaryVoiceInfo(voiceInfo);
+                    primaryVoiceInfo={primaryVoiceInfo}
+                    onProceedToNextScreen={() => {
+                      // setPrimaryVoiceInfo(voiceInfo);
                       // setScreenName("voices-clash");
                       setScreenName("game-ready");
                       // TODO:
                       logFirebaseEvent("voice_selection", {
                         track_id: selectedCoverDocId,
                         track_title: coverDoc?.title,
-                        voice_id: voiceInfo[0].id,
-                        voice_name: voiceInfo[0].name,
                       });
                     }}
+                    setPrimaryVoiceInfo={setPrimaryVoiceInfo}
                     coverTitle={coverDoc.title}
                     userDoc={userDoc}
                     noOfVoices={noOfVoices}
-                    setNoOfVoices={setNoOfVoices}
                   />
                 )}
               {primaryVoiceInfo?.length &&

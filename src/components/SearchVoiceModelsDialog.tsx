@@ -219,9 +219,8 @@ const SearchVoiceModelsDialog = ({
                 onClick={async () => {
                   // TODO: check if user can create voice request
                   if (
-                    userDoc?.dailyVoiceRequestTimestamp &&
-                    hasTimestampCrossedOneDay(
-                      userDoc.dailyVoiceRequestTimestamp
+                    !hasTimestampCrossedOneDay(
+                      userDoc?.dailyVoiceRequestTimestamp
                     )
                   ) {
                     return alert("You have already requested a voice today");

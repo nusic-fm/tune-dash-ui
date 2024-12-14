@@ -1068,8 +1068,11 @@ export const tireList = [
 
 export const tireCost = [3, 2, 0.99];
 
-export const hasTimestampCrossedOneDay = (timestamp: Timestamp) => {
+export const hasTimestampCrossedOneDay = (timestamp: Timestamp | undefined) => {
+  if (!timestamp) return true;
   const now = new Date();
   const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
   return timestamp.toDate() < oneDayAgo;
 };
+
+export const winningsByLevels = [1000, 2000, 4000, 8000, 16000];
