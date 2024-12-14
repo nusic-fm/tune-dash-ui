@@ -1,34 +1,40 @@
-import { Stack, Box, Typography, Chip } from "@mui/material";
+import { Stack, Box, Typography, Chip, Slider } from "@mui/material";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
-import { getVoiceAvatarPath } from "../helpers";
+import { createRandomNumber, getVoiceAvatarPath } from "../helpers";
 import { useState } from "react";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
 import { switchVocalsByDownloading } from "../hooks/useTonejs";
 import SearchVoiceModelsDialog from "./SearchVoiceModelsDialog";
 import { UserDoc } from "../services/db/user.service";
 import { motion } from "framer-motion";
+import DisplayMultiVoiceSelection from "./DisplayMultiVoiceSelection";
 
 type Props = {
-  onPrimaryVoiceSelected: (voiceInfo: VoiceV1Cover) => void;
+  onProceedToNextScreen: () => void;
   voices: VoiceV1Cover[];
-  primaryVoiceInfo: VoiceV1Cover | null;
+  primaryVoiceInfo: VoiceV1Cover[];
   selectedCoverId: string;
   coverTitle: string;
   userDoc: UserDoc | null;
+  noOfVoices: number;
+  setPrimaryVoiceInfo: (voiceInfo: VoiceV1Cover[]) => void;
 };
 
 const ChoosePrimaryVoice = ({
-  onPrimaryVoiceSelected,
+  onProceedToNextScreen,
   voices,
   primaryVoiceInfo,
   selectedCoverId,
   coverTitle,
   userDoc,
+  noOfVoices,
+  setPrimaryVoiceInfo,
 }: Props) => {
   const [selectedVoiceInfo, setSelectedVoiceInfo] = useState<VoiceV1Cover>(
-    primaryVoiceInfo || voices[0]
+    primaryVoiceInfo[0] || voices[0]
   );
   const [showAddVoiceDialog, setShowAddVoiceDialog] = useState(false);
+  const [currentIdx, setCurrentIdx] = useState(0);
 
   return (
     <Stack
@@ -39,42 +45,164 @@ const ChoosePrimaryVoice = ({
       alignItems={"center"}
       position={"relative"}
     >
-      <Stack alignItems={"center"} gap={0.5}>
-        <img
-          src={getVoiceAvatarPath(selectedVoiceInfo.id)}
-          width={105}
-          height={105}
-          style={{
-            borderRadius: "12px",
-            cursor: "pointer",
-          }}
-        />
-        <Box
-          px={2}
-          // width={100}
-          height={20}
-          sx={{
-            background: `url(/assets/tunedash/track-rect.png)`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-          display={"flex"}
-          justifyContent={"center"}
+      <DisplayMultiVoiceSelection
+        noOfVoices={noOfVoices}
+        primaryVoiceInfo={primaryVoiceInfo}
+        currentIdx={currentIdx}
+      />
+      {/* <Stack
+        justifyContent={"center"}
+        alignItems={"center"}
+        gap={0.5}
+        maxWidth={"95%"}
+      >
+        <Stack
+          direction={"row"}
+          justifyContent={"start"}
           alignItems={"center"}
+          width={"100%"}
+          sx={{ overflowX: "auto", overflowY: "hidden" }}
+          gap={2}
+          p={1}
         >
-          <Typography
-            variant="caption"
-            fontWeight={600}
-            sx={{
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {selectedVoiceInfo.name}
-          </Typography>
-        </Box>
-      </Stack>
+          <Stack position={"relative"}>
+            <img
+              src={getVoiceAvatarPath(primaryVoiceInfo[0].id)}
+              width={105}
+              height={105}
+              style={{
+                borderRadius: "12px",
+                cursor: "pointer",
+              }}
+            />
+            <Box
+              px={2}
+              width={105}
+              height={20}
+              sx={{
+                background: `url(/assets/tunedash/track-rect.png)`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+              display={"flex"}
+              justifyContent={"center"}
+              alignItems={"center"}
+            >
+              <Typography
+                variant="caption"
+                fontWeight={600}
+                sx={{
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {primaryVoiceInfo[0].name}
+              </Typography>
+            </Box>
+            {currentIdx === 0 && (
+              <img
+                src={"/assets/tunedash/focus.png"}
+                width={"100%"}
+                height={"100%"}
+                style={{
+                  zIndex: 0,
+                  cursor: "pointer",
+                  // zoom: 1.1,
+                  transform: "scale(1.2)",
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                }}
+              />
+            )}
+          </Stack>
+          {primaryVoiceInfo &&
+            noOfVoices > 1 &&
+            new Array(noOfVoices - 1).fill(0).map((_, idx) => (
+              <Stack
+                key={idx}
+                width={105}
+                height={125}
+                justifyContent={"space-between"}
+                alignItems={"center"}
+                position={"relative"}
+              >
+                {currentIdx === idx + 1 && (
+                  <img
+                    src={"/assets/tunedash/focus.png"}
+                    width={"100%"}
+                    height={"100%"}
+                    style={{
+                      zIndex: 0,
+                      cursor: "pointer",
+                      // zoom: 1.1,
+                      transform: "scale(1.2)",
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                    }}
+                  />
+                )}
+                <Box
+                  width={"100%"}
+                  height={"100%"}
+                  display={"flex"}
+                  justifyContent={"center"}
+                  alignItems={"center"}
+                >
+                  {primaryVoiceInfo[idx + 1] ? (
+                    <img
+                      src={getVoiceAvatarPath(primaryVoiceInfo[idx + 1].id)}
+                      width={105}
+                      height={105}
+                      style={{
+                        borderRadius: "12px",
+                        cursor: "pointer",
+                      }}
+                    />
+                  ) : (
+                    <img
+                      src="/assets/tunedash/question-mark.png"
+                      width={50}
+                      height={50}
+                      style={{
+                        objectFit: "contain",
+                        borderRadius: "12px",
+                        cursor: "pointer",
+                      }}
+                    />
+                  )}
+                </Box>
+                <Box
+                  px={2}
+                  width={105}
+                  height={20}
+                  sx={{
+                    background: `url(/assets/tunedash/track-rect.png)`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                  display={"flex"}
+                  justifyContent={"center"}
+                  alignItems={"center"}
+                >
+                  <Typography
+                    variant="caption"
+                    fontWeight={600}
+                    sx={{
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {primaryVoiceInfo[idx + 1]?.name || "Random"}
+                  </Typography>
+                </Box>
+              </Stack>
+            ))}
+        </Stack>
+      </Stack> */}
       <Box
         width={window.innerWidth > 350 ? 350 : window.innerWidth}
         height={430}
@@ -153,6 +281,10 @@ const ChoosePrimaryVoice = ({
             <Stack key={idx}>
               <Box
                 onClick={() => {
+                  setCurrentIdx((prevIdx) => (prevIdx + 1) % noOfVoices);
+                  const newVoices = [...primaryVoiceInfo];
+                  newVoices[currentIdx] = voice;
+                  setPrimaryVoiceInfo(newVoices);
                   setSelectedVoiceInfo(voice);
                   switchVocalsByDownloading(
                     selectedCoverId,
@@ -209,10 +341,44 @@ const ChoosePrimaryVoice = ({
           ))}
         </Box>
       </Box>
-      <Box position={"absolute"} bottom={20} zIndex={100}>
+      <Box pt={2} position={"sticky"} bottom={0} zIndex={10}>
         <LongImageMotionButton
           onClick={() => {
-            onPrimaryVoiceSelected(selectedVoiceInfo);
+            if (primaryVoiceInfo.length < noOfVoices) {
+              const newPrimaryVoiceInfo = [...primaryVoiceInfo];
+              // Generate random voices
+              const neededNoOfVoices = noOfVoices - primaryVoiceInfo.length;
+              const usedIndexes = primaryVoiceInfo.map((voice) =>
+                voices.indexOf(voice)
+              );
+              for (let i = 0; i < neededNoOfVoices; i++) {
+                const randomIdx = createRandomNumber(
+                  0,
+                  voices.length - 1,
+                  usedIndexes
+                );
+                const randomVoice = voices[randomIdx];
+                newPrimaryVoiceInfo.push(randomVoice);
+                usedIndexes.push(randomIdx);
+              }
+              setPrimaryVoiceInfo(newPrimaryVoiceInfo);
+            }
+            // const selectedVoices = [selectedVoiceInfo];
+            // const currentIdx = voices.findIndex(
+            //   (voice) => voice.id === selectedVoiceInfo.id
+            // );
+            // const usedIndexes = [currentIdx];
+            // for (let i = 1; i < noOfVoices; i++) {
+            //   let randomIdx = createRandomNumber(
+            //     0,
+            //     voices.length - 1,
+            //     usedIndexes
+            //   );
+            //   const randomNextVoice = voices[randomIdx];
+            //   selectedVoices.push(randomNextVoice);
+            //   usedIndexes.push(randomIdx);
+            // }
+            onProceedToNextScreen();
           }}
           name="Proceed"
           width={230}

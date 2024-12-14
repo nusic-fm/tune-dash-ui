@@ -89,9 +89,9 @@ function App() {
   //         ? 414
   //         : window.innerWidth
   //     : 414;
-  const [primaryVoiceInfo, setPrimaryVoiceInfo] = useState<VoiceV1Cover | null>(
-    null
-  );
+  const [primaryVoiceInfo, setPrimaryVoiceInfo] = useState<
+    VoiceV1Cover[] | null
+  >(null);
   const [secondaryVoiceInfo, setSecondaryVoiceInfo] = useState<
     VoiceV1Cover[] | null
   >(null);
@@ -103,6 +103,8 @@ function App() {
   const [showGameOverButtons, setShowGameOverButtons] = useState(false);
   const [isPlayingGame, setIsPlayingGame] = useState(false);
   const [showIosNotice, setShowIosNotice] = useState(false);
+  const [noOfVoices, setNoOfVoices] = useState(1);
+  const [selectedLevel, setSelectedLevel] = useState(1);
   const [coversSnapshot, cssLoading, cssError] = useCollection(
     query(
       collection(db, "tunedash_covers"),
@@ -119,14 +121,17 @@ function App() {
     if (primaryVoiceInfo && secondaryVoiceInfo) {
       const urls = [
         `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/instrumental.mp3`,
-        `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/${primaryVoiceInfo.id}.mp3`,
+        ...primaryVoiceInfo.map(
+          (info) =>
+            `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/${info.id}.mp3`
+        ),
         ...secondaryVoiceInfo.map(
           (info) =>
             `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/${info.id}.mp3`
         ),
       ];
       await downloadAudioFiles(urls, (progress: number) => {
-        console.log("progress", progress);
+        // console.log("progress", progress);
         setDownloadProgress(progress);
       });
       await prepareVocalPlayers(urls);
@@ -148,6 +153,14 @@ function App() {
       utmContent,
     });
   }, []);
+
+  useEffect(() => {
+    const newNoOfVoices = (selectedLevel * 2) / 2;
+    setNoOfVoices(newNoOfVoices);
+    if (primaryVoiceInfo) {
+      setPrimaryVoiceInfo(primaryVoiceInfo.slice(0, newNoOfVoices));
+    }
+  }, [selectedLevel]);
 
   useEffect(() => {
     if (coversSnapshot?.docs.length) {
@@ -209,9 +222,10 @@ function App() {
       isWinner ? 2500 : 1800
     );
     if (userDoc?.id) {
+      // TODO
       logFirebaseEvent("race_result", {
         track_id: selectedCoverDocId,
-        primary_voice_id: primaryVoiceInfo?.id,
+        // primary_voice_id: primaryVoiceInfo?.id,
         // secondary_voice_id: secondaryVoiceInfo?.[0]?.id,
         winning_voice_id: winningVoiceId,
         is_user_win: isWinner,
@@ -300,7 +314,7 @@ function App() {
                       !!primaryVoiceInfo &&
                         marbleRacePlayVocals(
                           selectedCoverDocId,
-                          primaryVoiceInfo.id
+                          primaryVoiceInfo[0].id
                         );
                       setSecondaryVoiceInfo(null);
                       setScreenName("voices-clash");
@@ -328,7 +342,7 @@ function App() {
                       logFirebaseEvent("race_again", {
                         track_id: selectedCoverDocId,
                         track_title: coverDoc?.title,
-                        primary_voice_id: primaryVoiceInfo?.id,
+                        primary_voice_id: primaryVoiceInfo?.[0]?.id,
                       });
                       setScreenName("voices-clash");
                       setShowGameOverButtons(false);
@@ -341,7 +355,7 @@ function App() {
                       logFirebaseEvent("new_race", {
                         track_id: selectedCoverDocId,
                         track_title: coverDoc?.title,
-                        primary_voice_id: primaryVoiceInfo?.id,
+                        primary_voice_id: primaryVoiceInfo?.[0]?.id,
                       });
                       setScreenName("select-track");
                       setShowGameOverButtons(false);
@@ -354,6 +368,9 @@ function App() {
                 <></>
               ) : (
                 <Header
+                  showLevelsBar={screenName === "choose-primary-voice"}
+                  selectedLevel={selectedLevel}
+                  setSelectedLevel={setSelectedLevel}
                   xp={userDoc?.xp || 0}
                   inGameTokensCount={userDoc?.inGameTokensCount || 0}
                   showBackButton={screenName !== "start"}
@@ -427,48 +444,53 @@ function App() {
                   onTrackSelected={(
                     coverDoc: CoverV1,
                     coverId: string,
-                    voiceInfo: VoiceV1Cover | null
+                    voiceInfo: VoiceV1Cover[] | null
                   ) => {
                     setCoverDoc(coverDoc);
                     setSelectedCoverDocId(coverId);
                     setPrimaryVoiceInfo(voiceInfo);
+                    // TODO:
                     logFirebaseEvent("track_playback", {
                       track_id: coverId,
                       track_title: coverDoc?.title,
-                      voice_id: voiceInfo?.id,
+                      voice_id: voiceInfo?.[0]?.id,
                     });
                   }}
                   onNextPageClick={() => {
                     setScreenName("choose-primary-voice");
+                    // TODO:
                     logFirebaseEvent("track_selection", {
                       track_id: selectedCoverDocId,
                       track_title: coverDoc?.title,
-                      voice_id: primaryVoiceInfo?.id,
+                      voice_id: primaryVoiceInfo?.[0]?.id,
                     });
                   }}
                 />
               )}
-              {coverDoc && screenName === "choose-primary-voice" && (
-                <ChoosePrimaryVoice
-                  selectedCoverId={selectedCoverDocId}
-                  voices={coverDoc.voices}
-                  primaryVoiceInfo={primaryVoiceInfo}
-                  onPrimaryVoiceSelected={(voiceInfo) => {
-                    setPrimaryVoiceInfo(voiceInfo);
-                    // setScreenName("voices-clash");
-                    setScreenName("game-ready");
-                    logFirebaseEvent("voice_selection", {
-                      track_id: selectedCoverDocId,
-                      track_title: coverDoc?.title,
-                      voice_id: voiceInfo.id,
-                      voice_name: voiceInfo.name,
-                    });
-                  }}
-                  coverTitle={coverDoc.title}
-                  userDoc={userDoc}
-                />
-              )}
-              {primaryVoiceInfo &&
+              {coverDoc &&
+                screenName === "choose-primary-voice" &&
+                primaryVoiceInfo?.length && (
+                  <ChoosePrimaryVoice
+                    selectedCoverId={selectedCoverDocId}
+                    voices={coverDoc.voices}
+                    primaryVoiceInfo={primaryVoiceInfo}
+                    onProceedToNextScreen={() => {
+                      // setPrimaryVoiceInfo(voiceInfo);
+                      // setScreenName("voices-clash");
+                      setScreenName("game-ready");
+                      // TODO:
+                      logFirebaseEvent("voice_selection", {
+                        track_id: selectedCoverDocId,
+                        track_title: coverDoc?.title,
+                      });
+                    }}
+                    setPrimaryVoiceInfo={setPrimaryVoiceInfo}
+                    coverTitle={coverDoc.title}
+                    userDoc={userDoc}
+                    noOfVoices={noOfVoices}
+                  />
+                )}
+              {primaryVoiceInfo?.length &&
                 coverDoc &&
                 (screenName === "voices-clash" ||
                   screenName === "game-ready") && (
@@ -476,7 +498,7 @@ function App() {
                     voices={coverDoc.voices}
                     selectedCoverDocId={selectedCoverDocId}
                     primaryVoiceInfo={primaryVoiceInfo}
-                    secondaryVoiceInfo={secondaryVoiceInfo?.at(0) || null}
+                    secondaryVoiceInfo={secondaryVoiceInfo}
                     onChooseOpponent={(voiceInfo) => {
                       setSecondaryVoiceInfo(voiceInfo);
                     }}
@@ -491,6 +513,7 @@ function App() {
                     setShowOpponentVoiceSelection={
                       setShowOpponentVoiceSelection
                     }
+                    noOfVoices={noOfVoices}
                   />
                 )}
               {primaryVoiceInfo &&
@@ -499,7 +522,7 @@ function App() {
                 coverDoc && (
                   <PhaserGame
                     ref={phaserRef}
-                    voices={[primaryVoiceInfo, ...secondaryVoiceInfo].map(
+                    voices={[...primaryVoiceInfo, ...secondaryVoiceInfo].map(
                       (v) => ({
                         id: v.id,
                         name: v.name,
@@ -521,6 +544,9 @@ function App() {
                     width={canvasElemWidth}
                     trailPath={getTrailPath(selectedTrailPath)}
                     dpr={window.devicePixelRatio || 2}
+                    userMarbleIndexes={new Array(noOfVoices)
+                      .fill(0)
+                      .map((_, i) => i)}
                   />
                 )}
             </Stack>

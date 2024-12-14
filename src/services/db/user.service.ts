@@ -16,6 +16,7 @@ import {
   FieldValue,
 } from "firebase/firestore";
 import { VoiceV1Cover } from "./coversV1.service";
+import { hasTimestampCrossedOneDay } from "../../helpers";
 
 const DB_NAME = "tune_dash_users";
 
@@ -117,11 +118,16 @@ const updateGameResult = async (
     // TODO: Log User not found
     return;
   }
-  await updateDoc(d, {
+  const userDoc = existingUser.data() as UserDoc;
+  const updateObj: any = {
     wins: increment(isWinner ? 1 : 0),
     playedTimes: increment(1),
     xp: increment(isWinner ? 500 : 0),
-  });
+  };
+  if (hasTimestampCrossedOneDay(userDoc.lastDailyRacePlayedTimestamp)) {
+    updateObj["lastDailyRacePlayedTimestamp"] = serverTimestamp();
+  }
+  await updateDoc(d, updateObj);
   // Save game in subcollection
   const gameDoc = doc(
     collection(db, DB_NAME, userId, "races"),

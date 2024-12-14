@@ -110,9 +110,13 @@ export const sortArrBasedOnLikesObj = (
 //     minute: "numeric",
 //   });
 // };
-export const createRandomNumber = (min: number, max: number, not?: number) => {
+export const createRandomNumber = (
+  min: number,
+  max: number,
+  not?: number | number[]
+) => {
   let random = Math.floor(Math.random() * (max - min + 1) + min);
-  while (random === not) {
+  while (Array.isArray(not) ? not.includes(random) : random === not) {
     random = Math.floor(Math.random() * (max - min + 1) + min);
   }
   return random;
@@ -1064,8 +1068,11 @@ export const tireList = [
 
 export const tireCost = [3, 2, 0.99];
 
-export const hasTimestampCrossedOneDay = (timestamp: Timestamp) => {
+export const hasTimestampCrossedOneDay = (timestamp: Timestamp | undefined) => {
+  if (!timestamp) return true;
   const now = new Date();
   const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
   return timestamp.toDate() < oneDayAgo;
 };
+
+export const winningsByLevels = [1000, 2000, 4000, 8000, 16000];
