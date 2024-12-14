@@ -11,6 +11,7 @@ import {
   duplicateArrayElemToN,
   getBeatsArray,
   createRandomNumber,
+  winningsByLevels,
 } from "../../helpers";
 import { EventBus } from "../EventBus";
 import { IGameDataParams } from "../PhaserGame";
@@ -114,6 +115,7 @@ export default class Game extends Phaser.Scene {
   userMarbleMaxSpeed = 0;
   opponentMarbleMaxSpeed = 0;
   tiles: Phaser.GameObjects.Image[] = [];
+  voicesWinPositions: number[] = [];
 
   init(data: IGameDataParams) {
     // Sort the voices randomly
@@ -497,14 +499,28 @@ export default class Game extends Phaser.Scene {
     }
   };
   showResult() {
+    console.log("result voicesWinPositions: ", this.voicesWinPositions);
     this.finishTap?.destroy();
     this.tapResultLabel?.destroy();
     this.showRhythmPads = false;
     this.tiles.map((t) => t.destroy());
-    const isWin = this.userMarbleIndexes.includes(this.winnerIdx);
+    const userPositions = this.voicesWinPositions
+      .filter((_, idx) => this.userMarbleIndexes.includes(idx))
+      .sort((a, b) => b - a);
+    const finalPosition = userPositions[0];
+    // const opponentPositions = this.voicesWinPositions.filter(
+    //   (_, idx) => !this.userMarbleIndexes.includes(idx)
+    // );
+    // userPositions.sort((a,b) => b - a);
+
+    // console.log("userPositions: ", userPositions);
+    // console.log("opponentPositions: ", opponentPositions);
+
+    // const isWin = this.userMarbleIndexes.includes(this.winnerIdx);
     let resultImage;
     let xpText: Phaser.GameObjects.Text | undefined;
-    if (isWin) {
+    if (finalPosition <= this.userMarbleIndexes.length) {
+      // Winnings
       resultImage = this.add
         .image(this.centerX, this.centerY, "win_result")
         .setDisplaySize(
@@ -514,8 +530,10 @@ export default class Game extends Phaser.Scene {
         .setDepth(100000)
         // .setScale(this.dpr)
         .setScrollFactor(0);
+      const maxWinnings = winningsByLevels[this.userMarbleIndexes.length - 1];
+      const xp = maxWinnings / finalPosition;
       xpText = this.add
-        .text(this.centerX, 60 * this.dpr, "+500XP", {
+        .text(this.centerX, 60 * this.dpr, `+${xp}XP`, {
           fontSize: `${52 * this.dpr}px`,
           color: "#573FC8",
           stroke: "#fff",
@@ -1128,7 +1146,7 @@ export default class Game extends Phaser.Scene {
         const unFinishedPositions = [];
         const unFinishedUserPositions = [];
         const finishedPositions = [];
-        const voicesPositions = [];
+        const voicesPositions: number[] = [];
         for (let i = 0; i < this.marbles.length; i++) {
           const y = this.marbles[i].position.y;
           voicesPositions.push(y);
@@ -1141,6 +1159,15 @@ export default class Game extends Phaser.Scene {
             finishedPositions.push(y);
           }
         }
+        // Sort voicesPositions from largest to smallest
+        const sortedVoicesPositions = [...voicesPositions].sort(
+          (a, b) => b - a
+        );
+        this.voicesWinPositions = voicesPositions.map((p) => {
+          const racePosition = sortedVoicesPositions.findIndex((v) => v === p);
+          return racePosition + 1;
+        });
+
         // Above is the refactored code
         // const voicesPositions = this.marbles.map((m) => m.position.y);
         // const unFinishedPositions = voicesPositions.filter(
