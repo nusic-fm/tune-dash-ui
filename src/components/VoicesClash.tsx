@@ -248,13 +248,14 @@ const VoicesClash = ({
         >
           <LongImageMotionButton
             onClick={async () => {
-              if (!userDoc) return alert("Support only on Telegram Mini App");
+              if (!userDoc || !WebApp)
+                return alert("Supported only on Telegram Mini App");
               if (!cost) return alert("This voice is not available yet");
               if (
-                (userDoc?.purchasedVoices || []).includes(
+                (userDoc.purchasedVoices || []).includes(
                   `${selectedCoverDocId}_${secondaryVoiceId}`
                 ) ||
-                userDoc?.isVip
+                userDoc.isVip
               ) {
                 logFirebaseEvent("race_start", {
                   track_id: selectedCoverDocId,
@@ -267,8 +268,7 @@ const VoicesClash = ({
               } else if (
                 secondaryVoiceId &&
                 showOpponentVoiceSelection &&
-                !readyToStartRace &&
-                userDoc
+                !readyToStartRace
               ) {
                 try {
                   const orderId = await createOrder(
@@ -276,69 +276,50 @@ const VoicesClash = ({
                     voices[voices.map((v) => v.id).indexOf(secondaryVoiceId)],
                     cost
                   );
-                  const paylod = {
-                    merchantOrderNo: orderId,
-                    userId: userDoc.id,
-                    orderAmount: cost,
-                  };
-                  const webUrlRes = await axios.post(
-                    `${import.meta.env.VITE_VOX_COVER_SERVER}/aeon-signature`,
-                    paylod
-                  );
-                  const webUrl = webUrlRes.data.webUrl;
-                  if (WebApp) {
-                    // WebApp.openLink(webUrl);
-                    const interval = setInterval(async () => {
-                      const orderStatus = await axios.post(
-                        `https://crypto-payment.alchemytech.cc/open/api/payment/query`,
+                  const starsLink = await axios.post(
+                    `${
+                      import.meta.env.VITE_TG_BOT_SERVER
+                    }/create-stars-invoice-link`,
+                    {
+                      // TODO: Support for multiple voices
+                      title: `Unlock Race: ${primaryVoiceInfo.name} vs ${secondaryVoiceInfo.name}`,
+                      description: `${primaryVoiceInfo.name} vs ${secondaryVoiceInfo.name}`,
+                      prices: [
                         {
-                          merchantOrderNo: orderId,
-                          appId: import.meta.env.VITE_AEON_APP_ID,
-                          sign: webUrlRes.data.sign,
-                        }
+                          label: secondaryVoiceInfo.name,
+                          amount: cost === 0.99 ? 50 : cost * 50,
+                        },
+                      ],
+                      payload: { orderId, userId: userDoc.id },
+                    }
+                  );
+                  WebApp.openInvoice(starsLink.data, async (status) => {
+                    if (status === "paid") {
+                      logFirebaseEvent("voice_purchase_success", {
+                        track_id: selectedCoverDocId,
+                        primary_voice_id: primaryVoiceInfo.id,
+                        voice_id: secondaryVoiceId,
+                        amount: cost,
+                        order_number: orderId,
+                      });
+                      await updatePurchasedVoice(
+                        userDoc.id,
+                        `${selectedCoverDocId}_${secondaryVoiceId}`
                       );
-                      if (
-                        orderStatus.data?.model?.orderStatus === "COMPLETED"
-                      ) {
-                        logFirebaseEvent("voice_purchase_success", {
-                          track_id: selectedCoverDocId,
-                          primary_voice_id: primaryVoiceInfo.id,
-                          voice_id: secondaryVoiceId,
-                          amount: cost,
-                          order_number: orderId,
-                        });
-                        await updatePurchasedVoice(
-                          userDoc.id,
-                          `${selectedCoverDocId}_${secondaryVoiceId}`
-                        );
-                        setIsWaitingForPayment("");
-                        setShowOpponentVoiceSelection(false);
-                        setReadyToStartRace(true);
-                        clearInterval(interval);
-                      } else if (
-                        ["CLOSE", "TIMEOUT", "FAILED", "DELAY_FAILED"].includes(
-                          orderStatus.data?.model?.orderStatus
-                        )
-                      ) {
-                        logFirebaseEvent("voice_purchase_failure", {
-                          track_id: selectedCoverDocId,
-                          voice_id: secondaryVoiceId,
-                          amount: cost,
-                          order_number: orderId,
-                          status: orderStatus.data?.model?.orderStatus,
-                        });
-                        WebApp.showAlert("Payment Failed");
-                        clearInterval(interval);
-                      }
-                    }, 3000);
-                  }
+                      setShowOpponentVoiceSelection(false);
+                      setReadyToStartRace(true);
+                    } else if (status === "pending") {
+                      // TODO: payment pending
+                    } else {
+                      alert("Payment Failed");
+                    }
+                  });
                   logFirebaseEvent("voice_purchase_attempt", {
                     track_id: selectedCoverDocId,
                     voice_id: secondaryVoiceId,
                     amount: cost,
                     order_number: orderId,
                   });
-                  setIsWaitingForPayment(webUrl);
                 } catch (e) {
                   alert("Error Occured, try again later");
                 }
