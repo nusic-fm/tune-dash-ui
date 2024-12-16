@@ -52,7 +52,7 @@ const ChoosePrimaryVoice = ({
       />
       <Box
         width={window.innerWidth > 350 ? 350 : window.innerWidth}
-        height={430}
+        height={window.innerWidth > 350 ? 430 : 385}
         sx={{
           background: "url(/assets/tunedash/menu-voice-rect.png)",
           backgroundSize: "contain",
