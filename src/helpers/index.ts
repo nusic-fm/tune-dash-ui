@@ -1075,4 +1075,40 @@ export const hasTimestampCrossedOneDay = (timestamp: Timestamp | undefined) => {
   return timestamp.toDate() < oneDayAgo;
 };
 
-export const winningsByLevels = [1000, 2000, 4000, 8000, 16000];
+const xpWinningsByLevels = [
+  [1000, 50],
+  [1000, 500, 50, 40],
+  [1000, 500, 250, 50, 40, 30],
+  [1000, 500, 250, 125, 50, 40, 30, 20],
+  [1000, 500, 250, 125, 62, 50, 40, 30, 20, 10],
+];
+const dashWinningsByLevels = [
+  [80, 0],
+  [120, 60, 0, 0],
+  [180, 90, 45, 0, 0, 0],
+  [270, 135, 67, 34, 0, 0, 0, 0],
+  [405, 202, 101, 50, 25, 0, 0, 0, 0, 0],
+];
+
+export const getWinningRewardsByPosition = (
+  position: number,
+  level: number
+) => {
+  const xpWinnings = xpWinningsByLevels[level - 1];
+  const dashWinnings = dashWinningsByLevels[level - 1];
+  return {
+    xp: xpWinnings[position - 1],
+    dash: dashWinnings[position - 1],
+  };
+};
+
+export const getTotalWinningRewards = (level: number, positions: number[]) => {
+  let totalXp = 0;
+  let totalDash = 0;
+  for (const position of positions) {
+    const rewards = getWinningRewardsByPosition(position, level);
+    totalXp += rewards.xp;
+    totalDash += rewards.dash;
+  }
+  return { totalXp, totalDash };
+};

@@ -11,7 +11,8 @@ import {
   duplicateArrayElemToN,
   getBeatsArray,
   createRandomNumber,
-  winningsByLevels,
+  getWinningRewardsByPosition,
+  getTotalWinningRewards,
 } from "../../helpers";
 import { EventBus } from "../EventBus";
 import { IGameDataParams } from "../PhaserGame";
@@ -116,6 +117,7 @@ export default class Game extends Phaser.Scene {
   opponentMarbleMaxSpeed = 0;
   tiles: Phaser.GameObjects.Image[] = [];
   voicesWinPositions: number[] = [];
+  winnerIndexes: number[] = [];
 
   init(data: IGameDataParams) {
     // Sort the voices randomly
@@ -149,7 +151,7 @@ export default class Game extends Phaser.Scene {
     this.showObstacles = data.showObstacles || false;
     this.initialGravity = data.gravityY || 0;
     this.userMarbleIndexes = data.userMarbleIndexes || [0, 1];
-    console.log("User Marbles ", this.userMarbleIndexes);
+    // console.log("User Marbles ", this.userMarbleIndexes);
   }
 
   throttledUpdate(index: number, switchOld: boolean = true) {
@@ -498,28 +500,40 @@ export default class Game extends Phaser.Scene {
       });
     }
   };
+  showXp(position: number, level: number) {
+    const { xp, dash } = getWinningRewardsByPosition(position, level);
+    console.log("xp: ", xp);
+    console.log("dash: ", dash);
+    const xpText = this.add
+      .text(this.centerX, 60 * this.dpr, `+${xp}XP`, {
+        fontSize: `${52 * this.dpr}px`,
+        color: "#573FC8",
+        stroke: "#fff",
+        strokeThickness: 4,
+      })
+      .setVisible(false)
+      .setDepth(1000001)
+      .setScrollFactor(0);
+    xpText.setPosition(
+      xpText.x - xpText.width / 2,
+      xpText.y - xpText.height / 2
+    );
+  }
   showResult() {
-    console.log("result voicesWinPositions: ", this.voicesWinPositions);
+    // console.log("result voicesWinPositions: ", this.voicesWinPositions);
+    const _voicesWinPositions = [...this.voicesWinPositions]; // Just to make sure the original array is not modified
     this.finishTap?.destroy();
     this.tapResultLabel?.destroy();
     this.showRhythmPads = false;
     this.tiles.map((t) => t.destroy());
-    const userPositions = this.voicesWinPositions
-      .filter((_, idx) => this.userMarbleIndexes.includes(idx))
-      .sort((a, b) => b - a);
-    const finalPosition = userPositions[0];
-    // const opponentPositions = this.voicesWinPositions.filter(
-    //   (_, idx) => !this.userMarbleIndexes.includes(idx)
-    // );
-    // userPositions.sort((a,b) => b - a);
+    const winnersLength = this.marbles.length / 2;
 
-    // console.log("userPositions: ", userPositions);
-    // console.log("opponentPositions: ", opponentPositions);
-
-    // const isWin = this.userMarbleIndexes.includes(this.winnerIdx);
+    const winnerMarbles = this.winnerIndexes.slice(0, winnersLength);
+    const userWinners = winnerMarbles.filter((w) =>
+      this.userMarbleIndexes.includes(w)
+    );
     let resultImage;
-    let xpText: Phaser.GameObjects.Text | undefined;
-    if (finalPosition <= this.userMarbleIndexes.length) {
+    if (userWinners.length) {
       // Winnings
       resultImage = this.add
         .image(this.centerX, this.centerY, "win_result")
@@ -530,22 +544,11 @@ export default class Game extends Phaser.Scene {
         .setDepth(100000)
         // .setScale(this.dpr)
         .setScrollFactor(0);
-      const maxWinnings = winningsByLevels[this.userMarbleIndexes.length - 1];
-      const xp = maxWinnings / finalPosition;
-      xpText = this.add
-        .text(this.centerX, 60 * this.dpr, `+${xp}XP`, {
-          fontSize: `${52 * this.dpr}px`,
-          color: "#573FC8",
-          stroke: "#fff",
-          strokeThickness: 4,
-        })
-        .setVisible(false)
-        .setDepth(1000001)
-        .setScrollFactor(0);
-      xpText.setPosition(
-        xpText.x - xpText.width / 2,
-        xpText.y - xpText.height / 2
-      );
+      // const userWinPositions = userWinners.map(
+      //   (w) => this.winnerIndexes.indexOf(w) + 1
+      // );
+      // console.log(userWinPositions);
+
       this.sound.play("win_sound");
     } else {
       resultImage = this.add
@@ -559,6 +562,49 @@ export default class Game extends Phaser.Scene {
         .setScrollFactor(0);
       this.sound.play("lose_sound");
     }
+    const userMarblePositions = _voicesWinPositions.slice(
+      0,
+      this.marbles.length / 2
+    );
+    const userWinningRewards = getTotalWinningRewards(
+      this.userMarbleIndexes.length,
+      userMarblePositions
+    );
+    const eDash = this.add
+      .text(
+        this.centerX,
+        60 * this.dpr,
+        `+${userWinningRewards.totalDash} eDASH`,
+        {
+          fontSize: `${26 * this.dpr}px`,
+          color: "#ffb101",
+          stroke: "#fff",
+          strokeThickness: 4,
+        }
+      )
+      .setVisible(false)
+      .setDepth(1000001)
+      .setScrollFactor(0);
+    eDash.setPosition(eDash.x - eDash.width / 2, eDash.y - eDash.height / 2);
+    const xpText = this.add
+      .text(
+        this.centerX,
+        60 * this.dpr + eDash.height,
+        `+${userWinningRewards.totalXp} XP`,
+        {
+          fontSize: `${26 * this.dpr}px`,
+          color: "#573FC8",
+          stroke: "#fff",
+          strokeThickness: 4,
+        }
+      )
+      .setVisible(false)
+      .setDepth(1000001)
+      .setScrollFactor(0);
+    xpText.setPosition(
+      xpText.x - xpText.width / 2,
+      xpText.y - xpText.height / 2
+    );
     // Add tween to scale the result image from 0 to 1
     this.tweens.add({
       targets: resultImage,
@@ -566,41 +612,17 @@ export default class Game extends Phaser.Scene {
       duration: 500,
       ease: "Bounce.out",
       onStart: () => {
-        xpText?.setVisible(true);
+        xpText.setVisible(true);
+        eDash.setVisible(true);
       },
     });
-    // const labelContent = isWin ? "You Win!" : "You Lose";
-    // // const xpContent = this.winnerIdx === 1 ? "+500 XP" : "+0 XP";
-
-    // const label = this.add
-    //   .text(this.centerX, this.centerY - 180, labelContent, {
-    //     fontSize: `${64 * this.dpr}px`,
-    //     color: "#ffffff",
-    //     stroke: "#000",
-    //     strokeThickness: 4,
-    //   })
-    //   .setScrollFactor(0);
-    // label.setDepth(1);
-    // label.setPosition(label.x - label.width / 2, label.y - label.height / 2);
-    // const labelXp = this.add
-    //   .text(this.centerX, this.centerY + 250, xpContent, {
-    //     fontSize: `${52 * this.dpr}px`,
-    //     color: "#573FC8",
-    //     stroke: "#fff",
-    //     strokeThickness: 4,
-    //   })
-    //   .setScrollFactor(0);
-    // // .setScale(this.dpr);
-    // labelXp.setDepth(1);
-    // labelXp.setPosition(
-    //   labelXp.x - labelXp.width / 2,
-    //   labelXp.y - labelXp.height / 2
-    // );
     EventBus.emit(
       "game-over",
       this.userMarbleIndexes.includes(this.winnerIdx),
       this.voices,
-      this.voices[this.winnerIdx].id
+      this.voicesWinPositions,
+      userWinningRewards.totalXp,
+      userWinningRewards.totalDash
     );
     this.isResultShown = true;
   }
@@ -1156,6 +1178,9 @@ export default class Game extends Phaser.Scene {
               unFinishedUserPositions.push(y);
             }
           } else if (y > this.finishLineOffset) {
+            if (!this.winnerIndexes.includes(i)) {
+              this.winnerIndexes.push(i);
+            }
             finishedPositions.push(y);
           }
         }
@@ -1180,16 +1205,17 @@ export default class Game extends Phaser.Scene {
         if (this.winnerIdx === -1 && finishedPositions.length) {
           this.winnerIdx = voicesPositions.indexOf(finishedPositions[0]);
         }
-        if (this.userMarbleIndexes.includes(this.winnerIdx)) {
-          this.isGameOver = true;
-          return;
-        }
+        // if (this.userMarbleIndexes.includes(this.winnerIdx)) {
+        //   this.isGameOver = true;
+        //   return;
+        // }
         const largest = Math.max(...unFinishedUserPositions);
         const largestIndex = voicesPositions.findIndex((v) => v === largest);
         const secondLargest = Math.max(
           ...unFinishedPositions.filter((p) => p !== largest)
         );
-        if (largestIndex === -1) {
+        // if (largestIndex === -1) {
+        if (finishedPositions.length === this.userMarbleIndexes.length) {
           this.isGameOver = true;
           return;
         }

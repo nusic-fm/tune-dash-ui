@@ -152,6 +152,9 @@ function App() {
       utmTerm,
       utmContent,
     });
+    if (utmSource) {
+      alert(utmSource);
+    }
   }, []);
 
   useEffect(() => {
@@ -167,6 +170,7 @@ function App() {
       (async () => {
         await downloadAndPlayIntro();
         if (WebApp.initDataUnsafe.user) {
+          console.log(WebApp.initDataUnsafe.user);
           try {
             await createUserDoc(
               {
@@ -212,7 +216,9 @@ function App() {
   const onGameOver = async (
     isWinner: boolean,
     voices: VoiceV1Cover[],
-    winningVoiceId: string
+    winningPositions: number[],
+    xp: number,
+    dash: number
   ) => {
     setIsPlayingGame(false);
     setTimeout(
@@ -225,9 +231,6 @@ function App() {
       // TODO
       logFirebaseEvent("race_result", {
         track_id: selectedCoverDocId,
-        // primary_voice_id: primaryVoiceInfo?.id,
-        // secondary_voice_id: secondaryVoiceInfo?.[0]?.id,
-        winning_voice_id: winningVoiceId,
         is_user_win: isWinner,
       });
       await updateGameResult(
@@ -235,7 +238,9 @@ function App() {
         selectedCoverDocId,
         isWinner,
         voices,
-        winningVoiceId
+        winningPositions,
+        xp,
+        dash
       );
     }
   };
@@ -359,7 +364,8 @@ function App() {
                       });
                       setScreenName("select-track");
                       setShowGameOverButtons(false);
-                      setPrimaryVoiceInfo(null);
+                      primaryVoiceInfo?.length &&
+                        setPrimaryVoiceInfo([primaryVoiceInfo[0]]);
                       setSecondaryVoiceInfo(null);
                     }}
                   />

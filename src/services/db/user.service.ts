@@ -110,7 +110,9 @@ const updateGameResult = async (
   coverDocId: string,
   isWinner: boolean,
   voices: VoiceV1Cover[],
-  winningVoiceId: string
+  winningPositions: number[],
+  xp: number,
+  dash: number
 ) => {
   const d = doc(db, DB_NAME, userId);
   const existingUser = await getDoc(d);
@@ -122,7 +124,8 @@ const updateGameResult = async (
   const updateObj: any = {
     wins: increment(isWinner ? 1 : 0),
     playedTimes: increment(1),
-    xp: increment(isWinner ? 500 : 0),
+    xp: increment(xp),
+    dash: increment(dash),
   };
   if (hasTimestampCrossedOneDay(userDoc.lastDailyRacePlayedTimestamp)) {
     updateObj["lastDailyRacePlayedTimestamp"] = serverTimestamp();
@@ -136,7 +139,9 @@ const updateGameResult = async (
   await setDoc(gameDoc, {
     voices,
     isWinner,
-    winningVoiceId,
+    winningPositions,
+    xp,
+    dash,
     timestamp: serverTimestamp(),
     coverDocId,
   });
