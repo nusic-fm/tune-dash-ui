@@ -1,14 +1,14 @@
-import { Stack, Box, Badge, Typography } from "@mui/material";
+import { Stack, Box, Typography } from "@mui/material";
 import { createRandomNumber, getVoiceAvatarPath } from "../helpers";
 import { useEffect, useState } from "react";
 import ChooseVoice from "./ChooseVoice";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
 import BouncingBallsLoading from "./BouncingBallsLoading";
-import axios from "axios";
-import { createOrder } from "../services/db/order.service";
-import { updatePurchasedVoice, UserDoc } from "../services/db/user.service";
-import WebApp from "@twa-dev/sdk";
+// import axios from "axios";
+// import { createOrder } from "../services/db/order.service";
+import { UserDoc } from "../services/db/user.service";
+// import WebApp from "@twa-dev/sdk";
 import { logFirebaseEvent } from "../services/firebase.service";
 
 type Props = {
@@ -129,18 +129,30 @@ const VoicesClash = ({
             </Box>
           ) : (
             <Box
-              sx={{
-                bgcolor: "white",
-                borderRadius: "50%",
-                outline: "8px solid #04344d",
-              }}
-              width={voiceWidth}
-              height={voiceWidth}
+              width={160}
+              height={160}
               display={"flex"}
               alignItems={"center"}
               justifyContent={"center"}
+              flexWrap={"wrap"}
             >
-              <img src="/assets/tunedash/question-mark.png" />
+              {new Array(noOfVoices).fill(0).map((_, idx) => (
+                <Box
+                  key={idx}
+                  width={80}
+                  height={80}
+                  display={"flex"}
+                  alignItems={"center"}
+                  justifyContent={"center"}
+                  sx={{
+                    bgcolor: "white",
+                    borderRadius: "50%",
+                    outline: "8px solid #04344d",
+                  }}
+                >
+                  <img src="/assets/tunedash/question-mark.png" width={35} />
+                </Box>
+              ))}
             </Box>
           )}
         </Box>
@@ -231,7 +243,7 @@ const VoicesClash = ({
             height={93}
           />
         ))}
-      {!readyToStartRace && !showOpponentVoiceSelection && (
+      {/* {!readyToStartRace && !showOpponentVoiceSelection && (
         <Badge
           badgeContent={
             <Box
@@ -268,8 +280,8 @@ const VoicesClash = ({
             height={93}
           />
         </Badge>
-      )}
-      {showOpponentVoiceSelection && secondaryVoiceIds?.[0] && (
+      )} */}
+      {/* {showOpponentVoiceSelection && secondaryVoiceIds?.[0] && (
         <Box
           position={"absolute"}
           bottom={0}
@@ -374,7 +386,7 @@ const VoicesClash = ({
             height={93}
           />
         </Box>
-      )}
+      )} */}
       {/* <Dialog open={isWaitingForPayment}>
         <DialogContent>
           <Stack alignItems={"center"} justifyContent={"center"} my={4}>
