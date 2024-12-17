@@ -12,8 +12,6 @@ type Props = {
   showLevelsBar: boolean;
   onBackButtonClick?: () => void;
   coverTitle: string;
-  xp: number;
-  inGameTokensCount: number;
   userDoc: UserDoc | null;
   selectedLevel: number;
   setSelectedLevel: (level: number) => void;

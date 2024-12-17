@@ -15,6 +15,7 @@ import { CoverV1, VoiceV1Cover } from "./services/db/coversV1.service";
 import {
   createUserDoc,
   getUserDocById,
+  rewardCoins,
   updateGameResult,
   UserDoc,
 } from "./services/db/user.service";
@@ -100,7 +101,11 @@ function App() {
   const [userDoc, setUserDoc] = useState<UserDoc | null>(null);
   const [showOpponentVoiceSelection, setShowOpponentVoiceSelection] =
     useState(false);
-  const [showGameOverButtons, setShowGameOverButtons] = useState(false);
+  const [showGameOverButtons, setShowGameOverButtons] = useState<{
+    xp: number;
+    dash: number;
+    show: boolean;
+  }>({ xp: 0, dash: 0, show: false });
   const [isPlayingGame, setIsPlayingGame] = useState(false);
   const [showIosNotice, setShowIosNotice] = useState(false);
   const [noOfVoices, setNoOfVoices] = useState(1);
@@ -221,13 +226,11 @@ function App() {
     dash: number
   ) => {
     setIsPlayingGame(false);
-    setShowGameOverButtons(true);
-    // setTimeout(
-    //   () => {
-    //     setShowGameOverButtons(true);
-    //   },
-    //   isWinner ? 2500 : 1800
-    // );
+    setShowGameOverButtons({
+      xp,
+      dash,
+      show: true,
+    });
     if (userDoc?.id) {
       // TODO
       logFirebaseEvent("race_result", {
@@ -327,8 +330,10 @@ function App() {
                     }}
                   />
                 </Box>
-              ) : showGameOverButtons ? (
+              ) : showGameOverButtons.show ? (
                 <GameOverDialog
+                  xpEarnings={showGameOverButtons.xp}
+                  dashEarnings={showGameOverButtons.dash}
                   onPlayAgain={() => {
                     logFirebaseEvent("race_again", {
                       track_id: selectedCoverDocId,
@@ -336,7 +341,11 @@ function App() {
                       primary_voice_id: primaryVoiceInfo?.[0]?.id,
                     });
                     setScreenName("voices-clash");
-                    setShowGameOverButtons(false);
+                    setShowGameOverButtons({
+                      xp: 0,
+                      dash: 0,
+                      show: false,
+                    });
                     setSecondaryVoiceInfo(null);
                   }}
                   onNewRace={() => {
@@ -346,16 +355,18 @@ function App() {
                       primary_voice_id: primaryVoiceInfo?.[0]?.id,
                     });
                     setScreenName("select-track");
-                    setShowGameOverButtons(false);
+                    setShowGameOverButtons({
+                      xp: 0,
+                      dash: 0,
+                      show: false,
+                    });
                     primaryVoiceInfo?.length &&
                       setPrimaryVoiceInfo([primaryVoiceInfo[0]]);
                     setSecondaryVoiceInfo(null);
                   }}
-                  onWatchRewardVideo={() => {
-                    // TODO
+                  onWatchRewardVideo={(newReward: number) => {
+                    userDoc && rewardCoins(userDoc.id, "BONUS", newReward);
                   }}
-                  dashEarnings={100}
-                  xpEarnings={100}
                 />
               ) : screenName === "game" ? (
                 <></>
@@ -364,8 +375,6 @@ function App() {
                   showLevelsBar={screenName === "choose-primary-voice"}
                   selectedLevel={selectedLevel}
                   setSelectedLevel={setSelectedLevel}
-                  xp={userDoc?.xp || 0}
-                  inGameTokensCount={userDoc?.inGameTokensCount || 0}
                   showBackButton={screenName !== "start"}
                   showCoverTitle={
                     !!selectedCoverDocId && screenName !== "select-track"

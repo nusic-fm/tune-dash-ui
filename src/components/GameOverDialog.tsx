@@ -2,11 +2,12 @@ import { Box, Button, Stack, Typography } from "@mui/material";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
 // import LiveTvIcon from "@mui/icons-material/LiveTv";
 import SlideshowIcon from "@mui/icons-material/Slideshow";
+import { useAdsgram } from "../hooks/useAdsgram";
 
 type Props = {
   onPlayAgain: () => void;
   onNewRace: () => void;
-  onWatchRewardVideo: () => void;
+  onWatchRewardVideo: (newReward: number) => void;
   dashEarnings: number;
   xpEarnings: number;
 };
@@ -18,6 +19,15 @@ const GameOverDialog = ({
   dashEarnings,
   xpEarnings,
 }: Props) => {
+  const showAd = useAdsgram({
+    blockId: import.meta.env.VITE_WINNING_REWARD_MULTIPLIER_BLOCK_ID,
+    onReward: () => {
+      onWatchRewardVideo(dashEarnings);
+    },
+    onError: () => {
+      //
+    },
+  });
   return (
     <Box
       position={"absolute"}
@@ -48,6 +58,7 @@ const GameOverDialog = ({
             color="warning"
             variant="contained"
             size="small"
+            onClick={showAd}
           >
             x2
           </Button>

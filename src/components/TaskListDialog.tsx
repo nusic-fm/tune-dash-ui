@@ -12,7 +12,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useAdsgram } from "../hooks/useAdsgram";
 import {
   getRewardTokensAmount,
-  rewardInGameTokens,
+  rewardCoins,
   updateUserDocTimestamps,
   UserDoc,
 } from "../services/db/user.service";
@@ -43,7 +43,7 @@ const TaskListDialog = ({
 }: Props) => {
   const onReward = useCallback(() => {
     updateUserDocTimestamps(userDoc.id, "lastAdWatchedTimestamp");
-    rewardInGameTokens(userDoc.id, "WATCH_AD");
+    rewardCoins(userDoc.id, "WATCH_AD");
   }, []);
   const onError = useCallback((result: any) => {
     setShowWatchAd(true);
@@ -210,7 +210,7 @@ const TaskListDialog = ({
               pl={2}
             >
               <Typography variant="caption" align="center">
-                {userDoc.inGameTokensCount}
+                {userDoc.coins}
               </Typography>
             </Box>
           </Stack>

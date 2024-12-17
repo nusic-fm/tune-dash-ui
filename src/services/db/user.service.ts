@@ -42,7 +42,7 @@ export type UserDoc = User & {
   lastSeen: Timestamp;
   lastDailyRacePlayedTimestamp?: Timestamp;
   lastDailyCheckInTimestamp?: Timestamp;
-  inGameTokensCount?: number;
+  coins?: number;
   dailyVoiceRequestTimestamp?: Timestamp;
 };
 
@@ -125,7 +125,7 @@ const updateGameResult = async (
     wins: increment(isWinner ? 1 : 0),
     playedTimes: increment(1),
     xp: increment(xp),
-    dash: increment(dash),
+    coins: increment(dash),
   };
   if (hasTimestampCrossedOneDay(userDoc.lastDailyRacePlayedTimestamp)) {
     updateObj["lastDailyRacePlayedTimestamp"] = serverTimestamp();
@@ -171,11 +171,11 @@ export const getRewardTokensAmount = (rewardType: RewardType) => {
     case "BONUS":
       return 50;
     case "REFERRAL":
-      return 10015;
+      return 100;
   }
 };
 
-const rewardInGameTokens = async (
+const rewardCoins = async (
   userId: string,
   rewardType:
     | "DAILY_CHECK_IN"
@@ -184,11 +184,12 @@ const rewardInGameTokens = async (
     | "PLAY_DAILY_RACE"
     | "PLAY_CHALLENGE"
     | "BONUS"
-    | "REFERRAL"
+    | "REFERRAL",
+  rewardAmount?: number
 ) => {
   const d = doc(db, DB_NAME, userId);
-  const reward = getRewardTokensAmount(rewardType);
-  await updateDoc(d, { inGameTokensCount: increment(reward) });
+  const reward = rewardAmount ?? getRewardTokensAmount(rewardType);
+  await updateDoc(d, { coins: increment(reward) });
 };
 
 const updateUserDocTimestamps = async (
@@ -207,6 +208,6 @@ export {
   getUserDocById,
   updatePurchasedVoice,
   updateGameResult,
-  rewardInGameTokens,
+  rewardCoins,
   updateUserDocTimestamps,
 };
