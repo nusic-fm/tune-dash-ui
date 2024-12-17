@@ -1,13 +1,14 @@
-import { Stack, Box, Typography, Chip, Slider } from "@mui/material";
+import { Stack, Box, Typography, Chip } from "@mui/material";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
 import { createRandomNumber, getVoiceAvatarPath } from "../helpers";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
 import { switchVocalsByDownloading } from "../hooks/useTonejs";
 import SearchVoiceModelsDialog from "./SearchVoiceModelsDialog";
 import { UserDoc } from "../services/db/user.service";
 import { motion } from "framer-motion";
 import DisplayMultiVoiceSelection from "./DisplayMultiVoiceSelection";
+import DoneRoundedIcon from "@mui/icons-material/DoneRounded";
 
 type Props = {
   onProceedToNextScreen: () => void;
@@ -35,6 +36,23 @@ const ChoosePrimaryVoice = ({
   );
   const [showAddVoiceDialog, setShowAddVoiceDialog] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(0);
+
+  useEffect(() => {
+    if (noOfVoices === 1) {
+      setCurrentIdx(0);
+    } else {
+      const findNextEmptyIdx = (idx: number) => {
+        if (primaryVoiceInfo[idx]) {
+          if (idx === noOfVoices - 1) {
+            return idx;
+          }
+          return findNextEmptyIdx(idx + 1);
+        }
+        return idx;
+      };
+      setCurrentIdx(findNextEmptyIdx(0));
+    }
+  }, [noOfVoices]);
 
   return (
     <Stack
@@ -128,6 +146,9 @@ const ChoosePrimaryVoice = ({
             <Stack key={idx}>
               <Box
                 onClick={() => {
+                  if (primaryVoiceInfo.map((v) => v.id).includes(voice.id)) {
+                    return;
+                  }
                   setCurrentIdx((prevIdx) => (prevIdx + 1) % noOfVoices);
                   const newVoices = [...primaryVoiceInfo];
                   newVoices[currentIdx] = voice;
@@ -148,6 +169,26 @@ const ChoosePrimaryVoice = ({
                 borderRadius={"50%"}
                 border={"4px solid #AABBCC"}
               >
+                {primaryVoiceInfo.map((v) => v.id).includes(voice.id) && (
+                  <Box
+                    position={"absolute"}
+                    top={0}
+                    left={0}
+                    zIndex={10}
+                    width={"100%"}
+                    height={"100%"}
+                    display={"flex"}
+                    alignItems={"center"}
+                    justifyContent={"center"}
+                    borderRadius={"50%"}
+                    sx={{ background: "rgba(0, 0, 0, 0.5)" }}
+                  >
+                    <DoneRoundedIcon
+                      sx={{ color: "#00e547" }}
+                      fontSize="large"
+                    />
+                  </Box>
+                )}
                 {voice.id === selectedVoiceInfo.id && (
                   <img
                     src={"/assets/tunedash/focus.png"}
