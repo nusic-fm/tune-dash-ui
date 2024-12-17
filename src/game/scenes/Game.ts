@@ -570,60 +570,60 @@ export default class Game extends Phaser.Scene {
       this.userMarbleIndexes.length,
       userMarblePositions
     );
-    const eDash = this.add
-      .text(
-        this.centerX,
-        60 * this.dpr,
-        `+${userWinningRewards.totalDash} eDASH`,
-        {
-          fontSize: `${26 * this.dpr}px`,
-          color: "#ffb101",
-          stroke: "#fff",
-          strokeThickness: 4,
-        }
-      )
-      .setVisible(false)
-      .setDepth(1000001)
-      .setScrollFactor(0);
-    eDash.setPosition(eDash.x - eDash.width / 2, eDash.y - eDash.height / 2);
-    const xpText = this.add
-      .text(
-        this.centerX,
-        60 * this.dpr + eDash.height,
-        `+${userWinningRewards.totalXp} XP`,
-        {
-          fontSize: `${26 * this.dpr}px`,
-          color: "#573FC8",
-          stroke: "#fff",
-          strokeThickness: 4,
-        }
-      )
-      .setVisible(false)
-      .setDepth(1000001)
-      .setScrollFactor(0);
-    xpText.setPosition(
-      xpText.x - xpText.width / 2,
-      xpText.y - xpText.height / 2
-    );
+    // const eDash = this.add
+    //   .text(
+    //     this.centerX,
+    //     60 * this.dpr,
+    //     `+${userWinningRewards.totalDash} eDASH`,
+    //     {
+    //       fontSize: `${26 * this.dpr}px`,
+    //       color: "#ffb101",
+    //       stroke: "#fff",
+    //       strokeThickness: 4,
+    //     }
+    //   )
+    //   .setVisible(false)
+    //   .setDepth(1000001)
+    //   .setScrollFactor(0);
+    // eDash.setPosition(eDash.x - eDash.width / 2, eDash.y - eDash.height / 2);
+    // const xpText = this.add
+    //   .text(
+    //     this.centerX,
+    //     60 * this.dpr + eDash.height,
+    //     `+${userWinningRewards.totalXp} XP`,
+    //     {
+    //       fontSize: `${26 * this.dpr}px`,
+    //       color: "#573FC8",
+    //       stroke: "#fff",
+    //       strokeThickness: 4,
+    //     }
+    //   )
+    //   .setVisible(false)
+    //   .setDepth(1000001)
+    //   .setScrollFactor(0);
+    // xpText.setPosition(
+    //   xpText.x - xpText.width / 2,
+    //   xpText.y - xpText.height / 2
+    // );
     // Add tween to scale the result image from 0 to 1
     this.tweens.add({
       targets: resultImage,
       scale: this.dpr * 0.9,
       duration: 500,
       ease: "Bounce.out",
-      onStart: () => {
-        xpText.setVisible(true);
-        eDash.setVisible(true);
+      onComplete: () => {
+        // xpText.setVisible(true);
+        // eDash.setVisible(true);
+        EventBus.emit(
+          "game-over",
+          this.userMarbleIndexes.includes(this.winnerIdx),
+          this.voices,
+          this.voicesWinPositions,
+          userWinningRewards.totalXp,
+          userWinningRewards.totalDash
+        );
       },
     });
-    EventBus.emit(
-      "game-over",
-      this.userMarbleIndexes.includes(this.winnerIdx),
-      this.voices,
-      this.voicesWinPositions,
-      userWinningRewards.totalXp,
-      userWinningRewards.totalDash
-    );
     this.isResultShown = true;
   }
 

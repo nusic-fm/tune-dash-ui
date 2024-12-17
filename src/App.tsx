@@ -35,7 +35,7 @@ import SelectTrack from "./components/SelectTrack";
 import SlideUp from "./components/SlideUp";
 import WebApp from "@twa-dev/sdk";
 import { EventBus } from "./game/EventBus";
-import LongImageMotionButton from "./components/Buttons/LongImageMotionButton";
+import GameOverDialog from "./components/GameOverDialog";
 
 export const tracks = ["01", "03", "06", "07", "16"];
 
@@ -221,12 +221,13 @@ function App() {
     dash: number
   ) => {
     setIsPlayingGame(false);
-    setTimeout(
-      () => {
-        setShowGameOverButtons(true);
-      },
-      isWinner ? 2500 : 1800
-    );
+    setShowGameOverButtons(true);
+    // setTimeout(
+    //   () => {
+    //     setShowGameOverButtons(true);
+    //   },
+    //   isWinner ? 2500 : 1800
+    // );
     if (userDoc?.id) {
       // TODO
       logFirebaseEvent("race_result", {
@@ -327,49 +328,35 @@ function App() {
                   />
                 </Box>
               ) : showGameOverButtons ? (
-                <Box
-                  position={"absolute"}
-                  top={0}
-                  left={0}
-                  width={"100%"}
-                  height={"95%"}
-                  display={"flex"}
-                  justifyContent={"end"}
-                  alignItems={"center"}
-                  flexDirection={"column"}
-                  pt={1}
-                  zIndex={999}
-                  gap={2}
-                >
-                  <LongImageMotionButton
-                    name="Play again"
-                    onClick={() => {
-                      logFirebaseEvent("race_again", {
-                        track_id: selectedCoverDocId,
-                        track_title: coverDoc?.title,
-                        primary_voice_id: primaryVoiceInfo?.[0]?.id,
-                      });
-                      setScreenName("voices-clash");
-                      setShowGameOverButtons(false);
-                      setSecondaryVoiceInfo(null);
-                    }}
-                  />
-                  <LongImageMotionButton
-                    name="New Race"
-                    onClick={() => {
-                      logFirebaseEvent("new_race", {
-                        track_id: selectedCoverDocId,
-                        track_title: coverDoc?.title,
-                        primary_voice_id: primaryVoiceInfo?.[0]?.id,
-                      });
-                      setScreenName("select-track");
-                      setShowGameOverButtons(false);
-                      primaryVoiceInfo?.length &&
-                        setPrimaryVoiceInfo([primaryVoiceInfo[0]]);
-                      setSecondaryVoiceInfo(null);
-                    }}
-                  />
-                </Box>
+                <GameOverDialog
+                  onPlayAgain={() => {
+                    logFirebaseEvent("race_again", {
+                      track_id: selectedCoverDocId,
+                      track_title: coverDoc?.title,
+                      primary_voice_id: primaryVoiceInfo?.[0]?.id,
+                    });
+                    setScreenName("voices-clash");
+                    setShowGameOverButtons(false);
+                    setSecondaryVoiceInfo(null);
+                  }}
+                  onNewRace={() => {
+                    logFirebaseEvent("new_race", {
+                      track_id: selectedCoverDocId,
+                      track_title: coverDoc?.title,
+                      primary_voice_id: primaryVoiceInfo?.[0]?.id,
+                    });
+                    setScreenName("select-track");
+                    setShowGameOverButtons(false);
+                    primaryVoiceInfo?.length &&
+                      setPrimaryVoiceInfo([primaryVoiceInfo[0]]);
+                    setSecondaryVoiceInfo(null);
+                  }}
+                  onWatchRewardVideo={() => {
+                    // TODO
+                  }}
+                  dashEarnings={100}
+                  xpEarnings={100}
+                />
               ) : screenName === "game" ? (
                 <></>
               ) : (
