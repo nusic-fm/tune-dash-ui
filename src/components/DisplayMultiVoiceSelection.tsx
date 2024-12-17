@@ -32,6 +32,32 @@ const DisplayMultiVoiceSelection = ({
         width={105}
         height={125}
       >
+        <Box
+          position={"absolute"}
+          top={-10}
+          left={"50%"}
+          sx={{
+            transform: "translate(-50%, -50%)",
+            width: 22,
+            height: 18,
+            background: "#00e547",
+            borderRadius: 1,
+          }}
+          width={"100%"}
+          height={"100%"}
+          display={"flex"}
+          justifyContent={"center"}
+          alignItems={"center"}
+        >
+          <Typography
+            variant="caption"
+            fontWeight={600}
+            color={"#000"}
+            fontSize={12}
+          >
+            {currentIdx + 1}
+          </Typography>
+        </Box>
         {primaryVoiceInfo[currentIdx] ? (
           <img
             src={getVoiceAvatarPath(primaryVoiceInfo[currentIdx].id)}
@@ -54,7 +80,7 @@ const DisplayMultiVoiceSelection = ({
           />
         )}
         <Box
-          px={2}
+          px={1}
           width={105}
           height={20}
           sx={{
