@@ -154,7 +154,8 @@ type RewardType =
   | "PLAY_DAILY_RACE"
   | "PLAY_CHALLENGE"
   | "BONUS"
-  | "REFERRAL";
+  | "REFERRAL"
+  | "PURCHASE_DASH";
 
 export const getRewardTokensAmount = (rewardType: RewardType) => {
   switch (rewardType) {
@@ -172,23 +173,19 @@ export const getRewardTokensAmount = (rewardType: RewardType) => {
       return 50;
     case "REFERRAL":
       return 100;
+    default:
+      return 0;
   }
 };
 
 const rewardCoins = async (
   userId: string,
-  rewardType:
-    | "DAILY_CHECK_IN"
-    | "WATCH_AD"
-    | "CONNECT_TON"
-    | "PLAY_DAILY_RACE"
-    | "PLAY_CHALLENGE"
-    | "BONUS"
-    | "REFERRAL",
+  rewardType: RewardType,
   rewardAmount?: number
 ) => {
   const d = doc(db, DB_NAME, userId);
   const reward = rewardAmount ?? getRewardTokensAmount(rewardType);
+  if (!reward) return;
   await updateDoc(d, { coins: increment(reward) });
 };
 
