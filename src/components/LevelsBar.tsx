@@ -8,6 +8,24 @@ type Props = {
 
 const size = 35;
 
+const ArrowDown = () => {
+  return (
+    <Box
+      sx={{
+        width: 0,
+        height: 0,
+        borderLeft: "10px solid transparent",
+        borderRight: "10px solid transparent",
+        borderTop: "10px solid red",
+        position: "absolute",
+        top: -5,
+        left: "50%",
+        transform: "translateX(-50%)",
+      }}
+    ></Box>
+  );
+};
+
 const LevelsBar = ({
   currentLevel,
   selectedLevel,
@@ -41,13 +59,14 @@ const LevelsBar = ({
         display={"flex"}
         alignItems={"center"}
         justifyContent={"center"}
-        border={selectedLevel === 1 ? "2px solid red" : "2px solid transparent"}
+        position={"relative"}
         onClick={() => {
           if (currentLevel >= 1) {
             setSelectedLevel(1);
           }
         }}
       >
+        {selectedLevel === 1 && <ArrowDown />}
         <Typography>1</Typography>
       </Box>
       <Box
@@ -59,13 +78,14 @@ const LevelsBar = ({
         display={"flex"}
         alignItems={"center"}
         justifyContent={"center"}
-        border={selectedLevel === 2 ? "2px solid red" : "2px solid transparent"}
+        position={"relative"}
         onClick={() => {
           if (currentLevel >= 2) {
             setSelectedLevel(2);
           }
         }}
       >
+        {selectedLevel === 2 && <ArrowDown />}
         <Typography>2</Typography>
       </Box>
       <Box
@@ -77,13 +97,14 @@ const LevelsBar = ({
         display={"flex"}
         alignItems={"center"}
         justifyContent={"center"}
-        border={selectedLevel === 3 ? "2px solid red" : "2px solid transparent"}
+        position={"relative"}
         onClick={() => {
           if (currentLevel >= 3) {
             setSelectedLevel(3);
           }
         }}
       >
+        {selectedLevel === 3 && <ArrowDown />}
         <Typography>3</Typography>
       </Box>
       <Box
@@ -95,13 +116,14 @@ const LevelsBar = ({
         display={"flex"}
         alignItems={"center"}
         justifyContent={"center"}
-        border={selectedLevel === 4 ? "2px solid red" : "2px solid transparent"}
+        position={"relative"}
         onClick={() => {
           if (currentLevel >= 4) {
             setSelectedLevel(4);
           }
         }}
       >
+        {selectedLevel === 4 && <ArrowDown />}
         <Typography>4</Typography>
       </Box>
       <Box
@@ -113,13 +135,14 @@ const LevelsBar = ({
         display={"flex"}
         alignItems={"center"}
         justifyContent={"center"}
-        border={selectedLevel === 5 ? "2px solid red" : "2px solid transparent"}
+        position={"relative"}
         onClick={() => {
           if (currentLevel >= 5) {
             setSelectedLevel(5);
           }
         }}
       >
+        {selectedLevel === 5 && <ArrowDown />}
         <Typography>5</Typography>
       </Box>
     </Stack>

@@ -123,7 +123,7 @@ const Header = ({
       {showLevelsBar && (
         <Box display={"flex"} justifyContent={"center"}>
           <LevelsBar
-            currentLevel={5}
+            currentLevel={userDoc?.level || 1}
             selectedLevel={selectedLevel}
             setSelectedLevel={setSelectedLevel}
           />

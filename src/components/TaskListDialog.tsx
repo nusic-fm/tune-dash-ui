@@ -432,20 +432,20 @@ const TaskListDialog = ({
                 backgroundRepeat: "no-repeat",
               }}
               display={"flex"}
-              justifyContent={"center"}
+              justifyContent={"start"}
               alignItems={"center"}
-              pl={2}
+              gap={0.8}
               position={"relative"}
             >
               <img
                 src="/assets/tunedash/tasks-modal/xp.png"
                 style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: 0,
-                  width: 25,
-                  // height: 25,
-                  transform: "translateY(-50%)",
+                  // position: "absolute",
+                  // top: "50%",
+                  // left: 0,
+                  // width: 25,
+                  height: 22,
+                  // transform: "translateY(-50%)",
                 }}
               />
               <Typography variant="caption" align="center">
