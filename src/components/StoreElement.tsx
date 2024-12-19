@@ -24,15 +24,18 @@ const StoreElement = ({ onClick, disabled, storeItem, onBuyCoins }: Props) => {
         boxShadow: "0px 3.02px 7.249px 0px rgba(0, 0, 0, 0.25)",
         border: "2px solid #D79F72",
       }}
-      px={2}
+      px={1}
       py={1}
+      width={130}
     >
       <Stack direction={"row"} gap={2} alignItems={"space-between"}>
         <Stack>
-          <Typography variant="caption">{storeItem.title}</Typography>
+          <Typography variant="caption" align="center">
+            {storeItem.title}
+          </Typography>
         </Stack>
       </Stack>
-      <Stack alignItems={"center"} gap={0.5}>
+      <Stack alignItems={"center"} gap={0.5} px={4}>
         <Box
           width={50}
           height={50}
@@ -46,19 +49,26 @@ const StoreElement = ({ onClick, disabled, storeItem, onBuyCoins }: Props) => {
           }}
         ></Box>
         <Stack direction={"row"} alignItems={"center"}>
-          <Typography
-            variant="caption"
-            sx={{
-              textDecoration: "line-through",
-              textDecorationColor: "red",
-            }}
-          >
-            {storeItem.oldPrice}
-          </Typography>
+          {storeItem.payType === "coins" ? (
+            <Box display={"flex"} alignItems={"center"}>
+              <Typography variant="caption">{storeItem.coins}</Typography>
+              <img src="/assets/tunedash/coins.png" alt="coins" />
+            </Box>
+          ) : (
+            <Typography
+              variant="caption"
+              sx={{
+                textDecoration: "line-through",
+                textDecorationColor: "red",
+              }}
+            >
+              {storeItem.oldPrice}
+            </Typography>
+          )}
         </Stack>
       </Stack>
       <Badge
-        badgeContent={storeItem.discount}
+        badgeContent={storeItem.discount ? storeItem.discount : null}
         color="success"
         sx={{
           ".MuiBadge-badge": {
@@ -73,8 +83,8 @@ const StoreElement = ({ onClick, disabled, storeItem, onBuyCoins }: Props) => {
           onClick={onBuyCoins}
           disabled={disabled}
           style={{
-            width: 80,
-            height: 30,
+            width: 90,
+            height: 26,
             borderRadius: "8.5px",
             boxShadow:
               "0px 1.968px 1.918px 1.476px rgba(255, 255, 255, 0.42) inset, 0px 0.984px 3.984px 1.968px rgba(47, 47, 47, 0.30)",

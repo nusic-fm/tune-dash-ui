@@ -57,7 +57,13 @@ export type StoreItem = {
   coins: number;
   buyButtonText: string;
   oldPrice: string;
-  discount: string;
+  discount?: string;
+};
+
+type StoreItemGroup = {
+  title: string;
+  items: StoreItem[];
+  id: string;
 };
 
 const TaskListDialog = ({
@@ -107,42 +113,85 @@ const TaskListDialog = ({
       icon: "race.png",
     },
   ]);
-  const [storeItems, setStoreItems] = useState<StoreItem[][]>([
-    [
-      {
-        title: "1k Coins",
-        icon: "pack-1.png",
-        payType: "stars",
-        id: "1k_coins",
-        stars: 990,
-        coins: 1000,
-        buyButtonText: "$19.99",
-        oldPrice: "$39.99",
-        discount: "-50%",
-      },
-      {
-        title: "10k Coins",
-        icon: "pack-2.png",
-        payType: "stars",
-        id: "10k_coins",
-        stars: 9000,
-        coins: 10000,
-        buyButtonText: "$199.99",
-        oldPrice: "$399.99",
-        discount: "-50%",
-      },
-      {
-        title: "100k Coins",
-        icon: "pack-3.png",
-        payType: "stars",
-        id: "100k_coins",
-        stars: 8000,
-        coins: 100000,
-        buyButtonText: "$1999.99",
-        oldPrice: "$3999.99",
-        discount: "-50%",
-      },
-    ],
+  const [storeItems, setStoreItems] = useState<StoreItemGroup[]>([
+    {
+      title: "Dash Packs",
+      items: [
+        {
+          title: "1k Coins",
+          icon: "pack-1.png",
+          payType: "stars",
+          id: "1k_coins",
+          stars: 990,
+          coins: 1000,
+          buyButtonText: "$19.99",
+          oldPrice: "$39.99",
+          discount: "-50%",
+        },
+        {
+          title: "10k Coins",
+          icon: "pack-2.png",
+          payType: "stars",
+          id: "10k_coins",
+          stars: 9000,
+          coins: 10000,
+          buyButtonText: "$199.99",
+          oldPrice: "$399.99",
+          discount: "-50%",
+        },
+        {
+          title: "100k Coins",
+          icon: "pack-3.png",
+          payType: "stars",
+          id: "100k_coins",
+          stars: 8000,
+          coins: 100000,
+          buyButtonText: "$1999.99",
+          oldPrice: "$3999.99",
+          discount: "-50%",
+        },
+      ],
+      id: "dash_packs",
+    },
+    {
+      title: "Power-ups",
+      items: [
+        {
+          buyButtonText: "Unlock",
+          discount: "",
+          id: "super_speed",
+          icon: "lightening.png",
+          oldPrice: "",
+          payType: "coins",
+          stars: 0,
+          title: "Super Speed",
+          coins: 15,
+        },
+        {
+          buyButtonText: "Unlock",
+          discount: "",
+          id: "double_coins",
+          icon: "x2.png",
+          oldPrice: "",
+          payType: "coins",
+          stars: 0,
+          title: "Double Coins",
+          coins: 15,
+        },
+        {
+          buyButtonText: "Unlock",
+          discount: "",
+          id: "marble_bomb",
+          icon: "bomb.png",
+          oldPrice: "",
+          payType: "coins",
+          stars: 0,
+          title: "Marble Bomb",
+          coins: 15,
+        },
+      ],
+      id: "power_ups",
+    },
   ]);
 
   useEffect(() => {
@@ -206,14 +255,19 @@ const TaskListDialog = ({
       </Box>
       <DialogContent>
         <Box height={"400px"} mt={8}>
-          <Stack height={"90%"} width={"100%"} gap={2}>
+          <Stack
+            height={"90%"}
+            width={"100%"}
+            gap={2}
+            sx={{ overflowY: "auto" }}
+          >
             {showStore ? (
-              <Stack width={"100%"}>
-                {storeItems.map((storeItem, index) => {
+              <Stack width={"100%"} gap={1}>
+                {storeItems.map((storeItemGroup, index) => {
                   return (
                     <Stack key={index} width={"100%"} gap={1}>
                       <Typography variant="h6" color={"#A54A19"} pl={1}>
-                        Dash Packs
+                        {storeItemGroup.title}
                       </Typography>
                       <Stack
                         direction={"row"}
@@ -221,18 +275,28 @@ const TaskListDialog = ({
                         // justifyContent={"center"}
                         sx={{ overflowX: "auto", width: "100%" }}
                       >
-                        {storeItem.map((item) => (
+                        {storeItemGroup.items.map((storeItem) => (
                           <StoreElement
-                            key={item.id}
-                            storeItem={item}
+                            key={storeItem.id}
+                            storeItem={storeItem}
                             onClick={() => {}}
                             onBuyCoins={async () => {
+                              if (storeItem.payType === "coins") {
+                                logFirebaseEvent("powerup_purchase_attempt", {
+                                  track_id: storeItem.id,
+                                  amount: storeItem.coins,
+                                  user_id: userDoc.id,
+                                });
+                                WebApp.showAlert("Coming Soon...");
+                                return;
+                              }
                               try {
                                 const orderId = await createOrder(
                                   userDoc.id,
-                                  item.stars,
+                                  userDoc.username,
+                                  storeItem.stars,
                                   null,
-                                  item
+                                  storeItem
                                 );
                                 const starsLink = await axios.post(
                                   `${
@@ -240,12 +304,12 @@ const TaskListDialog = ({
                                   }/create-stars-invoice-link`,
                                   {
                                     // TODO: Support for multiple voices
-                                    title: `Buy ${item.coins} eDash`,
-                                    description: `Buy ${item.coins} eDash for ${item.stars} stars`,
+                                    title: `Buy ${storeItem.coins} eDash`,
+                                    description: `Buy ${storeItem.coins} eDash for ${storeItem.stars} stars`,
                                     prices: [
                                       {
-                                        label: `${item.coins} eDash`,
-                                        amount: item.stars,
+                                        label: `${storeItem.coins} eDash`,
+                                        amount: storeItem.stars,
                                       },
                                     ],
                                     payload: { orderId, userId: userDoc.id },
@@ -258,20 +322,20 @@ const TaskListDialog = ({
                                       await rewardCoins(
                                         userDoc.id,
                                         "PURCHASE_DASH",
-                                        item.coins
+                                        storeItem.coins
                                       );
                                       logFirebaseEvent(
                                         "voice_purchase_success",
                                         {
-                                          track_id: item.id,
-                                          amount: item.stars,
-                                          coins: item.coins,
+                                          track_id: storeItem.id,
+                                          amount: storeItem.stars,
+                                          coins: storeItem.coins,
                                           order_number: orderId,
                                         }
                                       );
                                       await updateOrder(orderId, "success");
                                       alert(
-                                        `Payment Success, ${item.coins} coins are added to your account`
+                                        `Payment Success, ${storeItem.coins} coins are added to your account`
                                       );
                                     } else if (status === "pending") {
                                       // TODO: payment pending
@@ -280,8 +344,8 @@ const TaskListDialog = ({
                                       logFirebaseEvent(
                                         "dash_purchase_failure",
                                         {
-                                          track_id: item.id,
-                                          amount: item.stars,
+                                          track_id: storeItem.id,
+                                          amount: storeItem.stars,
                                           order_number: orderId,
                                           user_id: userDoc.id,
                                         }
@@ -291,8 +355,8 @@ const TaskListDialog = ({
                                   }
                                 );
                                 logFirebaseEvent("dash_purchase_attempt", {
-                                  track_id: item.id,
-                                  amount: item.stars,
+                                  track_id: storeItem.id,
+                                  amount: storeItem.stars,
                                   order_number: orderId,
                                   user_id: userDoc.id,
                                 });

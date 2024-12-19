@@ -53,7 +53,8 @@ const logFirebaseEvent = (
     | "login"
     | "dash_purchase_attempt"
     | "dash_purchase_success"
-    | "dash_purchase_failure",
+    | "dash_purchase_failure"
+    | "powerup_purchase_attempt",
   additionalParams: any
 ) => {
   logEvent(analytics, type as any, additionalParams);

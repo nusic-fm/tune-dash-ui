@@ -140,10 +140,10 @@ const ChoosePrimaryVoice = ({
           sx={{
             overflowY: "auto",
           }}
-          gap={3}
+          gap={2}
         >
           {voices.map((voice, idx) => (
-            <Stack key={idx}>
+            <Stack key={idx} width={"25%"} alignItems={"center"}>
               <Box
                 onClick={() => {
                   if (primaryVoiceInfo.map((v) => v.id).includes(voice.id)) {
@@ -221,9 +221,14 @@ const ChoosePrimaryVoice = ({
                 fontSize={12}
                 fontWeight={900}
                 textAlign={"center"}
+                sx={{
+                  width: "100%",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
               >
-                {voice.name.slice(0, 10)}
-                {voice.name.length > 10 ? "..." : ""}
+                {voice.name}
               </Typography>
             </Stack>
           ))}

@@ -13,6 +13,7 @@ const DB_NAME = "tune_dash_orders";
 
 const createOrder = async (
   userId: string,
+  username: string | undefined,
   cost: number,
   voiceInfo: VoiceV1Cover | null = null,
   storeItem: StoreItem | null = null
@@ -20,6 +21,7 @@ const createOrder = async (
   const col = collection(db, DB_NAME);
   const docRef = await addDoc(col, {
     userId,
+    username,
     voiceInfo,
     storeItem,
     cost,
