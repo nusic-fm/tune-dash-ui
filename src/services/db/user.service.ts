@@ -44,6 +44,7 @@ export type UserDoc = User & {
   lastDailyCheckInTimestamp?: Timestamp;
   coins?: number;
   dailyVoiceRequestTimestamp?: Timestamp;
+  level?: number;
 };
 
 const getUserDocById = async (docId: string) => {
@@ -66,16 +67,20 @@ const createUserDoc = async (
     const existingUserDoc = existingUser.data() as UserDoc;
     const visitObj: {
       lastSeen: FieldValue;
-      chatId?: number | null;
-      chatTitle?: string | null;
-      chatPhotoUrl?: string | null;
+      level?: number;
+      // chatId?: number | null;
+      // chatTitle?: string | null;
+      // chatPhotoUrl?: string | null;
     } = {
       lastSeen: serverTimestamp(),
     };
-    if (!existingUserDoc.chatId && userObj.chatId) {
-      visitObj["chatId"] = userObj.chatId;
-      visitObj["chatTitle"] = userObj.chatTitle;
-      visitObj["chatPhotoUrl"] = userObj.chatPhotoUrl;
+    // if (!existingUserDoc.chatId && userObj.chatId) {
+    //   visitObj["chatId"] = userObj.chatId;
+    //   visitObj["chatTitle"] = userObj.chatTitle;
+    //   visitObj["chatPhotoUrl"] = userObj.chatPhotoUrl;
+    // }
+    if (existingUserDoc.level === undefined) {
+      visitObj["level"] = 0;
     }
     await updateDoc(d, visitObj);
     logFirebaseEvent("login", {
@@ -88,6 +93,8 @@ const createUserDoc = async (
     xp: 0,
     wins: 0,
     playedTimes: 0,
+    level: 0,
+    coins: 0,
   };
   await setDoc(d, {
     ...newUserObj,
@@ -200,6 +207,11 @@ const updateUserDocTimestamps = async (
   await updateDoc(d, { [props]: serverTimestamp() });
 };
 
+const updateUserLevel = async (userId: string, level: number) => {
+  const d = doc(db, DB_NAME, userId);
+  await updateDoc(d, { level });
+};
+
 export {
   createUserDoc,
   getUserDocById,
@@ -207,4 +219,5 @@ export {
   updateGameResult,
   rewardCoins,
   updateUserDocTimestamps,
+  updateUserLevel,
 };

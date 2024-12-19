@@ -183,7 +183,6 @@ const SelectTrack = ({
         name="Choose Voice"
         width={230}
         height={75}
-        disabled={!selectedCoverDocId}
       />
     </Stack>
   );

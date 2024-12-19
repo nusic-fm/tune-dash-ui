@@ -1112,3 +1112,21 @@ export const getTotalWinningRewards = (level: number, positions: number[]) => {
   }
   return { totalXp, totalDash };
 };
+
+export const numberToK = (number: number) => {
+  return number > 1000 ? `${number / 1000}K` : number;
+};
+export const getLevelFromXp = (xp: number = 0) => {
+  switch (true) {
+    case xp < 10000:
+      return 1;
+    case xp < 25000:
+      return 2;
+    case xp < 62500:
+      return 3;
+    case xp < 156250:
+      return 4;
+    case xp < 390625:
+      return 5;
+  }
+};

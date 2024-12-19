@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Chip,
   Dialog,
   DialogContent,
   Slide,
@@ -14,9 +15,10 @@ import {
   getRewardTokensAmount,
   rewardCoins,
   updateUserDocTimestamps,
+  updateUserLevel,
   UserDoc,
 } from "../services/db/user.service";
-import { hasTimestampCrossedOneDay } from "../helpers/index.js";
+import { getLevelFromXp, hasTimestampCrossedOneDay } from "../helpers/index.js";
 import TaskElement from "./TaskElement";
 import StoreElement from "./StoreElement";
 import { createOrder, updateOrder } from "../services/db/order.service";
@@ -204,6 +206,8 @@ const TaskListDialog = ({
     setShowDailyRace(hasTimestampCrossedOneDay(lastDailyRacePlayedTimestamp));
   }, [userDoc, open]);
 
+  const pointsBasedLevel = getLevelFromXp(userDoc.xp);
+
   return (
     <Dialog
       open={open}
@@ -284,7 +288,7 @@ const TaskListDialog = ({
                               if (storeItem.payType === "coins") {
                                 logFirebaseEvent("powerup_purchase_attempt", {
                                   track_id: storeItem.id,
-                                  amount: storeItem.coins,
+                                  amount: storeItem.stars,
                                   user_id: userDoc.id,
                                 });
                                 WebApp.showAlert("Coming Soon...");
@@ -415,9 +419,62 @@ const TaskListDialog = ({
           <Stack
             height={"10%"}
             direction={"row"}
-            justifyContent={"center"}
+            justifyContent={"space-between"}
             alignItems={"center"}
           >
+            <Box
+              sx={{
+                width: 90,
+                height: 38,
+                background: `url(/assets/tunedash/tasks-modal/xp-holder.png)`,
+                backgroundSize: "contain",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+              }}
+              display={"flex"}
+              justifyContent={"center"}
+              alignItems={"center"}
+              pl={2}
+              position={"relative"}
+            >
+              <img
+                src="/assets/tunedash/tasks-modal/xp.png"
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: 0,
+                  width: 25,
+                  // height: 25,
+                  transform: "translateY(-50%)",
+                }}
+              />
+              <Typography variant="caption" align="center">
+                {userDoc.xp}
+              </Typography>
+            </Box>
+            {pointsBasedLevel === userDoc.level ? (
+              <Chip
+                label={`Level ${pointsBasedLevel}`}
+                size="small"
+                color="primary"
+              />
+            ) : (
+              <Chip
+                label="Level UP!!!"
+                size="small"
+                color="success"
+                clickable
+                onClick={async () => {
+                  if (
+                    pointsBasedLevel &&
+                    pointsBasedLevel > (userDoc.level || 0) &&
+                    userDoc.id
+                  ) {
+                    await updateUserLevel(userDoc.id, pointsBasedLevel);
+                  }
+                }}
+              />
+            )}
             <Box
               sx={{
                 width: 94,
