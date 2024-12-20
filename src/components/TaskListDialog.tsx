@@ -128,7 +128,7 @@ const TaskListDialog = ({
           icon: "pack-1.png",
           payType: "stars",
           id: "1k_coins",
-          stars: 10, // 990, TODO: remove
+          stars: 990,
           coins: 1000,
           buyButtonText: "$19.99",
           oldPrice: "$39.99",
@@ -139,7 +139,7 @@ const TaskListDialog = ({
           icon: "pack-2.png",
           payType: "stars",
           id: "10k_coins",
-          stars: 20, //9000,
+          stars: 9000,
           coins: 10000,
           buyButtonText: "$199.99",
           oldPrice: "$399.99",
@@ -150,7 +150,7 @@ const TaskListDialog = ({
           icon: "pack-3.png",
           payType: "stars",
           id: "100k_coins",
-          stars: 30, //8000,
+          stars: 8000,
           coins: 100000,
           buyButtonText: "$1999.99",
           oldPrice: "$3999.99",
@@ -311,7 +311,6 @@ const TaskListDialog = ({
                                     import.meta.env.VITE_TG_BOT_SERVER
                                   }/create-stars-invoice-link`,
                                   {
-                                    // TODO: Support for multiple voices
                                     title: `Buy ${storeItem.coins} eDash`,
                                     description: `Buy ${storeItem.coins} eDash for ${storeItem.stars} stars`,
                                     prices: [
