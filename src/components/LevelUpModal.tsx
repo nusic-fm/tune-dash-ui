@@ -1,7 +1,12 @@
 import { Modal, Stack, Typography, Box, Badge } from "@mui/material";
 import WebApp from "@twa-dev/sdk";
 import axios from "axios";
-import { numberToK, getXpForNextLevel, getDashForNextLevel } from "../helpers";
+import {
+  numberToK,
+  getXpForNextLevel,
+  getDashForNextLevel,
+  unlockAvailable,
+} from "../helpers";
 import { createOrder } from "../services/db/order.service";
 import {
   rewardCoins,
@@ -20,8 +25,8 @@ type Props = {
 
 function LevelUpModal({ setShowLevelUpModal, userDoc }: Props) {
   const nextLevel = userDoc.level + 1;
-  const xpNeededForNextLevel = getXpForNextLevel(nextLevel);
-  const dashNeededForNextLevel = getDashForNextLevel(nextLevel);
+  const xpNeededForNextLevel = getXpForNextLevel(userDoc.level);
+  const dashNeededForNextLevel = getDashForNextLevel(userDoc.level);
   const missingDash = dashNeededForNextLevel - userDoc.coins;
   const isMaxLevel = userDoc.level === 5;
   const [isLoading, setIsLoading] = useState(false);
@@ -135,7 +140,13 @@ function LevelUpModal({ setShowLevelUpModal, userDoc }: Props) {
               </Stack>
             </Badge>
             <Badge
-              badgeContent={<PriorityHighRoundedIcon fontSize="small" />}
+              badgeContent={
+                missingDash > 0 ? (
+                  <PriorityHighRoundedIcon fontSize="small" />
+                ) : (
+                  <DoneRoundedIcon fontSize="small" />
+                )
+              }
               color="error"
             >
               <Stack
@@ -154,7 +165,7 @@ function LevelUpModal({ setShowLevelUpModal, userDoc }: Props) {
                 <Stack direction={"row"} gap={2} alignItems={"space-between"}>
                   <Stack alignItems={"center"}>
                     <Typography variant="h6">
-                      {userDoc.coins}
+                      {numberToK(userDoc.coins)}
                       <Typography variant="caption" fontSize={"10px"}>
                         /{numberToK(dashNeededForNextLevel)}
                       </Typography>
@@ -189,7 +200,12 @@ function LevelUpModal({ setShowLevelUpModal, userDoc }: Props) {
               endIcon={<img src="/assets/tunedash/stars.png" />}
               onClick={async () => {
                 setIsLoading(true);
-                const stars = 10; // TODO: remove
+                // if missingDash is 800 then stars are 100: write the formula here
+                const stars = Math.round(missingDash / 8);
+                if (stars < 1)
+                  return WebApp.showAlert(
+                    "Invalid amount for eDash to stars conversion"
+                  );
                 const orderId = await createOrder(
                   userDoc.id,
                   userDoc.username,
@@ -239,11 +255,17 @@ function LevelUpModal({ setShowLevelUpModal, userDoc }: Props) {
             <LoadingButton
               loading={isLoading}
               variant="contained"
-              color="warning"
+              color="success"
               onClick={async () => {
-                setIsLoading(true);
-                await updateUserLevel(userDoc.id, nextLevel);
-                setIsLoading(false);
+                if (unlockAvailable(userDoc.xp, userDoc.coins, userDoc.level)) {
+                  setIsLoading(true);
+                  await updateUserLevel(userDoc.id, nextLevel);
+                  setIsLoading(false);
+                } else {
+                  WebApp.showAlert(
+                    "You don't have enough XP or eDash to unlock this level"
+                  );
+                }
               }}
             >
               Unlock
