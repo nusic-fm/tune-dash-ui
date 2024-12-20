@@ -8,7 +8,7 @@ type Props = {
   task: TaskItem;
 };
 
-const LIGHT_YELLOW_COLOR = "#f9c76f";
+export const LIGHT_YELLOW_COLOR = "#f9c76f";
 // const DARK_YELLOW_COLOR = "#f2ad31";
 
 // const DailyOrOnceChip = ({ isDaily }: { isDaily: boolean }) => {

@@ -1,6 +1,7 @@
 import { Stack, Typography, Box, Badge } from "@mui/material";
 import { motion } from "framer-motion";
 import { StoreItem } from "./TaskListDialog";
+import { useState } from "react";
 
 type Props = {
   onClick: () => void;
@@ -13,6 +14,7 @@ const LIGHT_YELLOW_COLOR = "#f9c76f";
 // const DARK_YELLOW_COLOR = "#f2ad31";
 
 const StoreElement = ({ onClick, disabled, storeItem, onBuyCoins }: Props) => {
+  const [isLoading, setIsLoading] = useState(false);
   return (
     <Stack
       gap={1}
@@ -80,8 +82,12 @@ const StoreElement = ({ onClick, disabled, storeItem, onBuyCoins }: Props) => {
         <motion.button
           whileHover={{ scale: disabled ? 1 : 1.1 }}
           whileTap={{ scale: disabled ? 1 : 0.9 }}
-          onClick={onBuyCoins}
-          disabled={disabled}
+          onClick={() => {
+            if (disabled || isLoading) return;
+            setIsLoading(true);
+            onBuyCoins();
+          }}
+          disabled={disabled || isLoading}
           style={{
             width: 90,
             height: 26,
@@ -96,7 +102,7 @@ const StoreElement = ({ onClick, disabled, storeItem, onBuyCoins }: Props) => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            opacity: disabled ? 0.4 : 1,
+            opacity: disabled || isLoading ? 0.4 : 1,
           }}
         >
           <Typography variant="body2">{storeItem.buyButtonText}</Typography>

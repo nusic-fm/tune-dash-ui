@@ -1083,11 +1083,11 @@ const xpWinningsByLevels = [
   [1000, 500, 250, 125, 62, 50, 40, 30, 20, 10],
 ];
 const dashWinningsByLevels = [
-  [80, 0],
-  [120, 60, 0, 0],
-  [180, 90, 45, 0, 0, 0],
-  [270, 135, 67, 34, 0, 0, 0, 0],
-  [405, 202, 101, 50, 25, 0, 0, 0, 0, 0],
+  [2000, 0],
+  [2000, 1000, 0, 0],
+  [4000, 2000, 1000, 0, 0, 0],
+  [8000, 4000, 2000, 1000, 0, 0, 0, 0],
+  [16000, 8000, 4000, 2000, 1000, 0, 0, 0, 0, 0],
 ];
 
 export const getWinningRewardsByPosition = (
@@ -1114,19 +1114,71 @@ export const getTotalWinningRewards = (level: number, positions: number[]) => {
 };
 
 export const numberToK = (number: number) => {
-  return number > 1000 ? `${number / 1000}K` : number;
+  return number > 1000 ? `${Math.floor(number / 1000)}K` : number;
 };
+const XP_FOR_LEVELS = [10000, 35000, 98000, 254000];
+const DASH_FOR_LEVELS = [25000, 125000, 625000, 3125000];
+
 export const getLevelFromXp = (xp: number = 0) => {
   switch (true) {
-    case xp < 10000:
+    case xp < XP_FOR_LEVELS[0]:
       return 1;
-    case xp < 25000:
+    case xp < XP_FOR_LEVELS[1]:
       return 2;
-    case xp < 62500:
+    case xp < XP_FOR_LEVELS[2]:
       return 3;
-    case xp < 156250:
+    case xp < XP_FOR_LEVELS[3]:
       return 4;
-    case xp < 390625:
+    case xp >= XP_FOR_LEVELS[3]:
       return 5;
+  }
+};
+
+export const getXpForNextLevel = (level: number) => {
+  return XP_FOR_LEVELS[level - 1];
+};
+export const getDashForNextLevel = (level: number) => {
+  return DASH_FOR_LEVELS[level - 1];
+};
+
+export const unlockAvailable = (
+  xp: number,
+  dash: number,
+  currentLevel: number
+) => {
+  return (
+    dash >= getDashForNextLevel(currentLevel) &&
+    xp >= getXpForNextLevel(currentLevel)
+  );
+};
+
+export type RewardType =
+  | "DAILY_CHECK_IN"
+  | "WATCH_AD"
+  | "CONNECT_TON"
+  | "PLAY_DAILY_RACE"
+  | "PLAY_CHALLENGE"
+  | "BONUS"
+  | "REFERRAL"
+  | "PURCHASE_DASH";
+
+export const getRewardTokensAmount = (rewardType: RewardType) => {
+  switch (rewardType) {
+    case "DAILY_CHECK_IN":
+      return 10;
+    case "WATCH_AD":
+      return 10;
+    case "CONNECT_TON":
+      return 100;
+    case "PLAY_DAILY_RACE":
+      return 15;
+    case "PLAY_CHALLENGE":
+      return 30;
+    case "BONUS":
+      return 50;
+    case "REFERRAL":
+      return 100;
+    default:
+      return 0;
   }
 };

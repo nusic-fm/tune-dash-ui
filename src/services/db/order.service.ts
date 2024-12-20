@@ -16,7 +16,7 @@ const createOrder = async (
   username: string | undefined,
   cost: number,
   voiceInfo: VoiceV1Cover | null = null,
-  storeItem: StoreItem | null = null
+  storeItem: Partial<StoreItem> | null = null
 ): Promise<string> => {
   const col = collection(db, DB_NAME);
   const docRef = await addDoc(col, {

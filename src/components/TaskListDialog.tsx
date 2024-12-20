@@ -31,6 +31,7 @@ type Props = {
   open: boolean;
   onClose: () => void;
   onTaskButtonClick: (task: string) => void;
+  onLevelUp: () => void;
 };
 
 export const DialogTransition = React.forwardRef(function Transition(
@@ -73,6 +74,7 @@ const TaskListDialog = ({
   open,
   onClose,
   onTaskButtonClick,
+  onLevelUp,
 }: Props) => {
   const onReward = useCallback(() => {
     updateUserDocTimestamps(userDoc.id, "lastAdWatchedTimestamp");
@@ -124,7 +126,7 @@ const TaskListDialog = ({
           icon: "pack-1.png",
           payType: "stars",
           id: "1k_coins",
-          stars: 990,
+          stars: 10, // 990, TODO: remove
           coins: 1000,
           buyButtonText: "$19.99",
           oldPrice: "$39.99",
@@ -135,7 +137,7 @@ const TaskListDialog = ({
           icon: "pack-2.png",
           payType: "stars",
           id: "10k_coins",
-          stars: 9000,
+          stars: 20, //9000,
           coins: 10000,
           buyButtonText: "$199.99",
           oldPrice: "$399.99",
@@ -146,7 +148,7 @@ const TaskListDialog = ({
           icon: "pack-3.png",
           payType: "stars",
           id: "100k_coins",
-          stars: 8000,
+          stars: 30, //8000,
           coins: 100000,
           buyButtonText: "$1999.99",
           oldPrice: "$3999.99",
@@ -206,7 +208,7 @@ const TaskListDialog = ({
     setShowDailyRace(hasTimestampCrossedOneDay(lastDailyRacePlayedTimestamp));
   }, [userDoc, open]);
 
-  const pointsBasedLevel = getLevelFromXp(userDoc.xp);
+  const xpBasedLevel = getLevelFromXp(userDoc.xp);
 
   return (
     <Dialog
@@ -329,7 +331,7 @@ const TaskListDialog = ({
                                         storeItem.coins
                                       );
                                       logFirebaseEvent(
-                                        "voice_purchase_success",
+                                        "dash_purchase_success",
                                         {
                                           track_id: storeItem.id,
                                           amount: storeItem.stars,
@@ -338,9 +340,10 @@ const TaskListDialog = ({
                                         }
                                       );
                                       await updateOrder(orderId, "success");
-                                      alert(
+                                      WebApp.showAlert(
                                         `Payment Success, ${storeItem.coins} coins are added to your account`
                                       );
+                                      onClose();
                                     } else if (status === "pending") {
                                       // TODO: payment pending
                                     } else {
@@ -354,7 +357,7 @@ const TaskListDialog = ({
                                           user_id: userDoc.id,
                                         }
                                       );
-                                      alert("Payment Failed");
+                                      WebApp.showAlert("Payment Failed");
                                     }
                                   }
                                 );
@@ -452,9 +455,9 @@ const TaskListDialog = ({
                 {userDoc.xp}
               </Typography>
             </Box>
-            {pointsBasedLevel === userDoc.level ? (
+            {xpBasedLevel === userDoc.level ? (
               <Chip
-                label={`Level ${pointsBasedLevel}`}
+                label={`Level ${userDoc.level}`}
                 size="small"
                 color="primary"
               />
@@ -466,11 +469,11 @@ const TaskListDialog = ({
                 clickable
                 onClick={async () => {
                   if (
-                    pointsBasedLevel &&
-                    pointsBasedLevel > (userDoc.level || 0) &&
+                    xpBasedLevel &&
+                    xpBasedLevel > userDoc.level &&
                     userDoc.id
                   ) {
-                    await updateUserLevel(userDoc.id, pointsBasedLevel);
+                    onLevelUp();
                   }
                 }}
               />
@@ -490,7 +493,7 @@ const TaskListDialog = ({
               pl={2}
             >
               <Typography variant="caption" align="center">
-                {userDoc.coins || 0}
+                {userDoc.coins}
               </Typography>
             </Box>
           </Stack>

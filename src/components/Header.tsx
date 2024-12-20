@@ -5,6 +5,7 @@ import { useState } from "react";
 import TaskListDialog from "./TaskListDialog";
 import { UserDoc } from "../services/db/user.service";
 import LevelsBar from "./LevelsBar";
+import LevelUpModal from "./LevelUpModal";
 
 type Props = {
   showBackButton: boolean;
@@ -30,6 +31,7 @@ const Header = ({
   onTaskButtonClick,
 }: Props) => {
   const [showTaskListDialog, setShowTaskListDialog] = useState(false);
+  const [showLevelUpModal, setShowLevelUpModal] = useState(false);
 
   return (
     <Stack width={"100%"}>
@@ -107,16 +109,13 @@ const Header = ({
             setShowTaskListDialog(true);
           }}
         />
-        {/* <Chip
-        sx={{ mx: 0.5, color: "white", fontSize: "12px", fontWeight: 900 }}
-        label={inGameTokensCount}
-      /> */}
         {userDoc && (
           <TaskListDialog
             userDoc={userDoc}
             open={showTaskListDialog}
             onTaskButtonClick={onTaskButtonClick}
             onClose={() => setShowTaskListDialog(false)}
+            onLevelUp={() => setShowLevelUpModal(true)}
           />
         )}
       </Stack>
@@ -128,6 +127,12 @@ const Header = ({
             setSelectedLevel={setSelectedLevel}
           />
         </Box>
+      )}
+      {showLevelUpModal && userDoc && (
+        <LevelUpModal
+          setShowLevelUpModal={setShowLevelUpModal}
+          userDoc={userDoc}
+        />
       )}
     </Stack>
   );

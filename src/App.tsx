@@ -190,22 +190,28 @@ function App() {
                 chatId: WebApp.initDataUnsafe.chat?.id || null,
                 chatTitle: WebApp.initDataUnsafe.chat?.title || null,
                 chatPhotoUrl: WebApp.initDataUnsafe.chat?.photo_url || null,
+                xp: 0,
+                level: 1,
+                coins: 0,
               },
               WebApp.initDataUnsafe.user.id.toString(),
               (user) => {
-                setUserDoc(user);
+                const newUser = { ...user };
+                if (!newUser.xp) newUser.xp = 0;
+                if (!newUser.coins) newUser.coins = 0;
+                if (!newUser.level) newUser.level = 1;
+                setUserDoc(newUser);
                 setUserIdForAnalytics(user.id);
-                setSelectedLevel(user.level || 1);
+                setSelectedLevel(newUser.level);
               }
             );
           } catch (e) {
             // TODO: Handle error
           }
+        } else {
+          const ud = await getUserDocById("839574155");
+          setUserDoc(ud);
         }
-        // else {
-        //   const ud = await getUserDocById("839574155");
-        //   setUserDoc(ud);
-        // }
         setIsDownloaded(true);
         // setScreenName("start");
       })();
