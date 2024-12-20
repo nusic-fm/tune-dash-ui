@@ -50,7 +50,11 @@ const logFirebaseEvent = (
     | "new_race"
     | "race_result"
     | "sign_up"
-    | "login",
+    | "login"
+    | "dash_purchase_attempt"
+    | "dash_purchase_success"
+    | "dash_purchase_failure"
+    | "powerup_purchase_attempt",
   additionalParams: any
 ) => {
   logEvent(analytics, type as any, additionalParams);

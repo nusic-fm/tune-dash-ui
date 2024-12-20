@@ -1,15 +1,14 @@
 import { Stack, Typography, Box } from "@mui/material";
 import { motion } from "framer-motion";
+import { TaskItem } from "./TaskListDialog";
 
 type Props = {
   onClick: () => void;
   disabled: boolean;
-  label: string;
-  rewardAmount: number;
-  isDaily: boolean;
+  task: TaskItem;
 };
 
-const LIGHT_YELLOW_COLOR = "#f9c76f";
+export const LIGHT_YELLOW_COLOR = "#f9c76f";
 // const DARK_YELLOW_COLOR = "#f2ad31";
 
 // const DailyOrOnceChip = ({ isDaily }: { isDaily: boolean }) => {
@@ -33,13 +32,7 @@ const LIGHT_YELLOW_COLOR = "#f9c76f";
 //   );
 // };
 
-const TaskElement = ({
-  onClick,
-  disabled,
-  label,
-  rewardAmount,
-  isDaily,
-}: Props) => {
+const TaskElement = ({ onClick, disabled, task }: Props) => {
   return (
     <Stack
       gap={1}
@@ -57,7 +50,7 @@ const TaskElement = ({
       <Stack direction={"row"} gap={2} alignItems={"space-between"}>
         {/* <DailyOrOnceChip isDaily={isDaily} /> */}
         <Stack>
-          <Typography variant="caption">{label}</Typography>
+          <Typography variant="caption">{task.title}</Typography>
         </Stack>
         {/* <Box width={37}></Box> */}
       </Stack>
@@ -67,10 +60,15 @@ const TaskElement = ({
           height={50}
           borderRadius={"50%"}
           border={"1px solid #fff"}
-          sx={{ bgcolor: LIGHT_YELLOW_COLOR }}
+          sx={{
+            bgcolor: LIGHT_YELLOW_COLOR,
+            backgroundImage: `url(/assets/tunedash/tasks/${task.icon})`,
+            backgroundSize: "cover",
+            backgroundRepeat: "no-repeat",
+          }}
         ></Box>
         <Stack direction={"row"} gap={2} alignItems={"center"}>
-          <Typography variant="caption">+{rewardAmount} Dash</Typography>
+          <Typography variant="caption">+{task.rewardAmount} Dash</Typography>
         </Stack>
       </Stack>
       <motion.button

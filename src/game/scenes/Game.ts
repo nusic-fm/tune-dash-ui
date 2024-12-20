@@ -11,6 +11,8 @@ import {
   duplicateArrayElemToN,
   getBeatsArray,
   createRandomNumber,
+  getWinningRewardsByPosition,
+  getTotalWinningRewards,
 } from "../../helpers";
 import { EventBus } from "../EventBus";
 import { IGameDataParams } from "../PhaserGame";
@@ -20,45 +22,43 @@ export default class Game extends Phaser.Scene {
     super("game");
     this.throttledUpdate = _.throttle(this.throttledUpdate.bind(this), 10); // Throttle interval in milliseconds
   }
-  public sky: Phaser.Physics.Matter.Image | undefined;
   public marbles: MatterJS.BodyType[] = [];
   public marblesImages: Phaser.GameObjects.Image[] = [];
   public marblesMasks: Phaser.GameObjects.Graphics[] = [];
   public isInstrumentPlaying: boolean = false;
-  public autoScroll = true;
+  // public autoScroll = true;
   public prevVoiceIdx = -1;
-  public leftRotatableStars: Phaser.Physics.Matter.Sprite[] = [];
-  public rightRotatableStars: Phaser.Physics.Matter.Sprite[] = [];
+  // public leftRotatableStars: Phaser.Physics.Matter.Sprite[] = [];
+  // public rightRotatableStars: Phaser.Physics.Matter.Sprite[] = [];
   public reduceSizeScreenOffset: number[] = [];
   public increaseSizeScreenOffset: number[] = [];
   public currentMarblesSizeIndices: { [key: string]: number } = {};
   public heightReducedIndices: number[] = [];
-  public upDownMotionElems: {
-    matter: Phaser.Physics.Matter.Image;
-    startX: number;
-    startY: number;
-    maxTop: number;
-    maxBottom: number;
-    moveSpeed: number;
-    direction: "left" | "right";
-  }[] = [];
+  // public upDownMotionElems: {
+  //   matter: Phaser.Physics.Matter.Image;
+  //   startX: number;
+  //   startY: number;
+  //   maxTop: number;
+  //   maxBottom: number;
+  //   moveSpeed: number;
+  //   direction: "left" | "right";
+  // }[] = [];
   public labels: Phaser.GameObjects.Text[] = [];
-  public motionTimeForUpDownWard = 0;
-  public crossRightRotation: Phaser.Physics.Matter.Sprite[] = [];
-  public crossLeftRotation: Phaser.Physics.Matter.Sprite[] = [];
-  public horizontalCrossRightRotation: Phaser.Physics.Matter.Sprite[] = [];
-  public horizontalCrossLeftRotation: Phaser.Physics.Matter.Sprite[] = [];
+  // public motionTimeForUpDownWard = 0;
+  // public crossRightRotation: Phaser.Physics.Matter.Sprite[] = [];
+  // public crossLeftRotation: Phaser.Physics.Matter.Sprite[] = [];
+  // public horizontalCrossRightRotation: Phaser.Physics.Matter.Sprite[] = [];
+  // public horizontalCrossLeftRotation: Phaser.Physics.Matter.Sprite[] = [];
   // public trails: { x: number; y: number }[][] = [];
   // public trailGraphics: Phaser.GameObjects.Graphics[] = [];
   // public trailsGroup: Phaser.GameObjects.Group[] = [];
   public trailLength: number = 0;
-  public trailPoints: {
-    x: number;
-    y: number;
-    angle: number;
-    // size: number;
-  }[][] = [];
-  // public shape: any;
+  // public trailPoints: {
+  //   x: number;
+  //   y: number;
+  //   angle: number;
+  //   // size: number;
+  // }[][] = [];
   public voices: GameVoiceInfo[] = [];
   public coverDocId: string = "";
   public musicStartOffset: number = 0;
@@ -69,13 +69,12 @@ export default class Game extends Phaser.Scene {
   baseAngle = 0;
   centerX = 0;
   centerY = 0;
-  radius = 100;
-  angleIncrement = (2 * Math.PI) / 5;
+  // radius = 100;
+  // angleIncrement = (2 * Math.PI) / 5;
   countdownText: Phaser.GameObjects.Text | undefined;
   finishLineOffset: number = 0;
   marbleRadius = 23;
   background: Phaser.GameObjects.TileSprite | undefined;
-  enableMotion: boolean = false;
   marbleTrailParticles: Phaser.GameObjects.Particles.ParticleEmitter[] = [];
   isGameOver: boolean = false;
   winnerIdx: number = -1;
@@ -96,6 +95,7 @@ export default class Game extends Phaser.Scene {
   showObstacles: boolean = false;
   initialGravity: number = 0;
   userMarbleIdx: number = 0;
+  userMarbleIndexes: number[] = [];
   tapTimings: number[] = [];
   allTapTimings: number[] = [];
   circleShouldFillInMs = 1500;
@@ -116,6 +116,8 @@ export default class Game extends Phaser.Scene {
   userMarbleMaxSpeed = 0;
   opponentMarbleMaxSpeed = 0;
   tiles: Phaser.GameObjects.Image[] = [];
+  voicesWinPositions: number[] = [];
+  winnerIndexes: number[] = [];
 
   init(data: IGameDataParams) {
     // Sort the voices randomly
@@ -148,6 +150,8 @@ export default class Game extends Phaser.Scene {
     this.centerY = this.cameras.main.height / 2;
     this.showObstacles = data.showObstacles || false;
     this.initialGravity = data.gravityY || 0;
+    this.userMarbleIndexes = data.userMarbleIndexes || [0, 1];
+    // console.log("User Marbles ", this.userMarbleIndexes);
   }
 
   throttledUpdate(index: number, switchOld: boolean = true) {
@@ -374,20 +378,20 @@ export default class Game extends Phaser.Scene {
     this.largeCircle.setScale(
       (this.canvasWidth / this.largeCircle.width) * this.dpr
     );
-    const xOffsetValues = [
-      this.centerX - 46,
-      this.centerX + 23,
-      this.centerX,
-      this.centerX + 23,
-      this.centerX + 46,
-    ];
+    // const xOffsetValues = [
+    //   this.centerX - 46,
+    //   this.centerX + 23,
+    //   this.centerX,
+    //   this.centerX + 23,
+    //   this.centerX + 46,
+    // ];
     this.voices.map((v, i) => {
       this.currentMarblesSizeIndices[i.toString()] = 0;
       // const angle = i * this.angleIncrement;
       // const x = this.centerX + this.radius * Math.cos(angle);
       // const y = this.centerY + this.radius * Math.sin(angle);
       const circleBody = this.matter.add.circle(
-        xOffsetValues[i],
+        this.centerX,
         this.centerY,
         marbleRadius,
         {
@@ -399,6 +403,16 @@ export default class Game extends Phaser.Scene {
           label: v.id,
         }
       );
+      if (this.userMarbleIndexes.includes(i)) {
+        //TODO : Add glow effect to the user marble
+        // this.add.particles(0, 0, "user_border", {
+        //   follow: circleBody.position,
+        //   tint: 0x00ff00,
+        //   scaleX: 4,
+        //   scaleY: 4,
+        //   lifespan: 0,
+        // });
+      }
       this.marbles.push(circleBody);
       this.marbleTrailParticles.push(
         this.add.particles(0, 0, "trail", {
@@ -456,7 +470,9 @@ export default class Game extends Phaser.Scene {
         powerup.setOnCollideWith(this.marbles, (e: any) => {
           if (this.showRhythmPads) return;
           const marbleLabels = this.marbles.map((m) => m.label);
-          const opponentMarbleLabels = marbleLabels.slice(1);
+          const opponentMarbleLabels = marbleLabels.filter(
+            (_, i) => this.userMarbleIndexes.indexOf(i) === -1
+          );
           if (opponentMarbleLabels.includes(e.label)) {
             this.isOpponentBoosted = true;
             const opponentMarbleIdx = marbleLabels.indexOf(e.label);
@@ -484,15 +500,41 @@ export default class Game extends Phaser.Scene {
       });
     }
   };
+  showXp(position: number, level: number) {
+    const { xp, dash } = getWinningRewardsByPosition(position, level);
+    console.log("xp: ", xp);
+    console.log("dash: ", dash);
+    const xpText = this.add
+      .text(this.centerX, 60 * this.dpr, `+${xp}XP`, {
+        fontSize: `${52 * this.dpr}px`,
+        color: "#573FC8",
+        stroke: "#fff",
+        strokeThickness: 4,
+      })
+      .setVisible(false)
+      .setDepth(1000001)
+      .setScrollFactor(0);
+    xpText.setPosition(
+      xpText.x - xpText.width / 2,
+      xpText.y - xpText.height / 2
+    );
+  }
   showResult() {
+    // console.log("result voicesWinPositions: ", this.voicesWinPositions);
+    const _voicesWinPositions = [...this.voicesWinPositions]; // Just to make sure the original array is not modified
     this.finishTap?.destroy();
     this.tapResultLabel?.destroy();
     this.showRhythmPads = false;
     this.tiles.map((t) => t.destroy());
-    const isWin = this.winnerIdx === 0;
+    const winnersLength = this.marbles.length / 2;
+
+    const winnerMarbles = this.winnerIndexes.slice(0, winnersLength);
+    const userWinners = winnerMarbles.filter((w) =>
+      this.userMarbleIndexes.includes(w)
+    );
     let resultImage;
-    let xpText: Phaser.GameObjects.Text | undefined;
-    if (isWin) {
+    if (userWinners.length) {
+      // Winnings
       resultImage = this.add
         .image(this.centerX, this.centerY, "win_result")
         .setDisplaySize(
@@ -502,20 +544,11 @@ export default class Game extends Phaser.Scene {
         .setDepth(100000)
         // .setScale(this.dpr)
         .setScrollFactor(0);
-      xpText = this.add
-        .text(this.centerX, 60 * this.dpr, "+500XP", {
-          fontSize: `${52 * this.dpr}px`,
-          color: "#573FC8",
-          stroke: "#fff",
-          strokeThickness: 4,
-        })
-        .setVisible(false)
-        .setDepth(1000001)
-        .setScrollFactor(0);
-      xpText.setPosition(
-        xpText.x - xpText.width / 2,
-        xpText.y - xpText.height / 2
-      );
+      // const userWinPositions = userWinners.map(
+      //   (w) => this.winnerIndexes.indexOf(w) + 1
+      // );
+      // console.log(userWinPositions);
+
       this.sound.play("win_sound");
     } else {
       resultImage = this.add
@@ -529,49 +562,68 @@ export default class Game extends Phaser.Scene {
         .setScrollFactor(0);
       this.sound.play("lose_sound");
     }
+    const userMarblePositions = _voicesWinPositions.slice(
+      0,
+      this.marbles.length / 2
+    );
+    const userWinningRewards = getTotalWinningRewards(
+      this.userMarbleIndexes.length,
+      userMarblePositions
+    );
+    // const eDash = this.add
+    //   .text(
+    //     this.centerX,
+    //     60 * this.dpr,
+    //     `+${userWinningRewards.totalDash} eDASH`,
+    //     {
+    //       fontSize: `${26 * this.dpr}px`,
+    //       color: "#ffb101",
+    //       stroke: "#fff",
+    //       strokeThickness: 4,
+    //     }
+    //   )
+    //   .setVisible(false)
+    //   .setDepth(1000001)
+    //   .setScrollFactor(0);
+    // eDash.setPosition(eDash.x - eDash.width / 2, eDash.y - eDash.height / 2);
+    // const xpText = this.add
+    //   .text(
+    //     this.centerX,
+    //     60 * this.dpr + eDash.height,
+    //     `+${userWinningRewards.totalXp} XP`,
+    //     {
+    //       fontSize: `${26 * this.dpr}px`,
+    //       color: "#573FC8",
+    //       stroke: "#fff",
+    //       strokeThickness: 4,
+    //     }
+    //   )
+    //   .setVisible(false)
+    //   .setDepth(1000001)
+    //   .setScrollFactor(0);
+    // xpText.setPosition(
+    //   xpText.x - xpText.width / 2,
+    //   xpText.y - xpText.height / 2
+    // );
     // Add tween to scale the result image from 0 to 1
     this.tweens.add({
       targets: resultImage,
       scale: this.dpr * 0.9,
       duration: 500,
       ease: "Bounce.out",
-      onStart: () => {
-        xpText?.setVisible(true);
+      onComplete: () => {
+        // xpText.setVisible(true);
+        // eDash.setVisible(true);
+        EventBus.emit(
+          "game-over",
+          this.userMarbleIndexes.includes(this.winnerIdx),
+          this.voices,
+          this.voicesWinPositions,
+          userWinningRewards.totalXp,
+          userWinningRewards.totalDash
+        );
       },
     });
-    // const labelContent = isWin ? "You Win!" : "You Lose";
-    // // const xpContent = this.winnerIdx === 1 ? "+500 XP" : "+0 XP";
-
-    // const label = this.add
-    //   .text(this.centerX, this.centerY - 180, labelContent, {
-    //     fontSize: `${64 * this.dpr}px`,
-    //     color: "#ffffff",
-    //     stroke: "#000",
-    //     strokeThickness: 4,
-    //   })
-    //   .setScrollFactor(0);
-    // label.setDepth(1);
-    // label.setPosition(label.x - label.width / 2, label.y - label.height / 2);
-    // const labelXp = this.add
-    //   .text(this.centerX, this.centerY + 250, xpContent, {
-    //     fontSize: `${52 * this.dpr}px`,
-    //     color: "#573FC8",
-    //     stroke: "#fff",
-    //     strokeThickness: 4,
-    //   })
-    //   .setScrollFactor(0);
-    // // .setScale(this.dpr);
-    // labelXp.setDepth(1);
-    // labelXp.setPosition(
-    //   labelXp.x - labelXp.width / 2,
-    //   labelXp.y - labelXp.height / 2
-    // );
-    EventBus.emit(
-      "game-over",
-      this.winnerIdx === this.userMarbleIdx,
-      this.voices,
-      this.voices[this.userMarbleIdx].id
-    );
     this.isResultShown = true;
   }
 
@@ -750,9 +802,6 @@ export default class Game extends Phaser.Scene {
           this.userMarbleMaxSpeed = currentSpeed + addedSpeed;
           // console.log("User Marble Max Speed: ", this.userMarbleMaxSpeed);
           this.isBoosted = true;
-          this.marbleTrailParticles[this.userMarbleIdx].setParticleTint(
-            0xf83600
-          );
           this.tapResultLabel?.destroy();
           this.tapResultLabel = this.add
             .text(
@@ -867,22 +916,22 @@ export default class Game extends Phaser.Scene {
     );
 
     this.createMarbles(this.marbleRadius, miniShapes);
-    this.crossLeftRotation.map((baseSprite) =>
-      this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
-    );
-    this.crossRightRotation.map((baseSprite) =>
-      this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
-    );
-    [...this.leftRotatableStars, ...this.rightRotatableStars].map(
-      (baseSprite) =>
-        this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
-    );
-    [
-      ...this.horizontalCrossLeftRotation,
-      ...this.horizontalCrossRightRotation,
-    ].map((baseSprite) =>
-      this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
-    );
+    // this.crossLeftRotation.map((baseSprite) =>
+    //   this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+    // );
+    // this.crossRightRotation.map((baseSprite) =>
+    //   this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+    // );
+    // [...this.leftRotatableStars, ...this.rightRotatableStars].map(
+    //   (baseSprite) =>
+    //     this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+    // );
+    // [
+    //   ...this.horizontalCrossLeftRotation,
+    //   ...this.horizontalCrossRightRotation,
+    // ].map((baseSprite) =>
+    //   this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+    // );
 
     let coundownValue = 3;
     // Start Countdown:
@@ -959,16 +1008,22 @@ export default class Game extends Phaser.Scene {
     //   }, 2000);
     // }
     if (this.isBoosted && this.boostMultipler < this.userMarbleMaxSpeed) {
-      const userMarble = this.marbles[this.userMarbleIdx]; // TODO: User chosen marble
-      this.matter.body.setVelocity(userMarble, {
-        x: userMarble.velocity.x,
-        y: userMarble.velocity.y + 1,
+      // const userMarble = this.marbles[this.userMarbleIdx]; // TODO: User chosen marble
+      this.userMarbleIndexes.forEach((idx) => {
+        const userMarble = this.marbles[idx];
+        this.matter.body.setVelocity(userMarble, {
+          x: userMarble.velocity.x,
+          y: userMarble.velocity.y + 1,
+        });
+        this.marbleTrailParticles[idx].setParticleTint(0xf83600);
       });
       this.boostMultipler += 0.1;
       if (this.boostMultipler >= this.userMarbleMaxSpeed) {
-        this.marbleTrailParticles[this.userMarbleIdx].setParticleTint(
-          this.particleIntialTint
-        ); // white
+        this.userMarbleIndexes.forEach((idx) => {
+          this.marbleTrailParticles[idx].setParticleTint(
+            this.particleIntialTint
+          ); // white
+        });
         this.isBoosted = false;
       }
     }
@@ -1111,17 +1166,33 @@ export default class Game extends Phaser.Scene {
         }
         */
         const unFinishedPositions = [];
+        const unFinishedUserPositions = [];
         const finishedPositions = [];
-        const voicesPositions = [];
+        const voicesPositions: number[] = [];
         for (let i = 0; i < this.marbles.length; i++) {
           const y = this.marbles[i].position.y;
           voicesPositions.push(y);
           if (y < this.finishLineOffset) {
             unFinishedPositions.push(y);
+            if (this.userMarbleIndexes.includes(i)) {
+              unFinishedUserPositions.push(y);
+            }
           } else if (y > this.finishLineOffset) {
+            if (!this.winnerIndexes.includes(i)) {
+              this.winnerIndexes.push(i);
+            }
             finishedPositions.push(y);
           }
         }
+        // Sort voicesPositions from largest to smallest
+        const sortedVoicesPositions = [...voicesPositions].sort(
+          (a, b) => b - a
+        );
+        this.voicesWinPositions = voicesPositions.map((p) => {
+          const racePosition = sortedVoicesPositions.findIndex((v) => v === p);
+          return racePosition + 1;
+        });
+
         // Above is the refactored code
         // const voicesPositions = this.marbles.map((m) => m.position.y);
         // const unFinishedPositions = voicesPositions.filter(
@@ -1134,30 +1205,48 @@ export default class Game extends Phaser.Scene {
         if (this.winnerIdx === -1 && finishedPositions.length) {
           this.winnerIdx = voicesPositions.indexOf(finishedPositions[0]);
         }
-        if (this.winnerIdx === this.userMarbleIdx) {
-          this.isGameOver = true;
-          return;
-        }
-        const largest = Math.max(...unFinishedPositions);
+        // if (this.userMarbleIndexes.includes(this.winnerIdx)) {
+        //   this.isGameOver = true;
+        //   return;
+        // }
+        const largest = Math.max(...unFinishedUserPositions);
         const largestIndex = voicesPositions.findIndex((v) => v === largest);
         const secondLargest = Math.max(
           ...unFinishedPositions.filter((p) => p !== largest)
         );
-        if (largestIndex === -1) {
+        // if (largestIndex === -1) {
+        if (finishedPositions.length === this.userMarbleIndexes.length) {
           this.isGameOver = true;
           return;
+        }
+
+        const largestUserMarblePosition = Math.max(...unFinishedUserPositions);
+        const largestUserMarbleIdx = voicesPositions.findIndex(
+          (v) => v === largestUserMarblePosition
+        );
+        if (
+          largestUserMarbleIdx >= 0 &&
+          this.userMarbleIdx !== largestUserMarbleIdx
+        ) {
+          this.cameras.main.stopFollow();
+          this.cameras.main.startFollow(
+            this.marblesImages[largestUserMarbleIdx],
+            true
+          );
+          this.userMarbleIdx = largestUserMarbleIdx;
         }
         if (
           this.prevVoiceIdx !== largestIndex &&
           largest > secondLargest + this.marbleRadius
-        )
+        ) {
           this.throttledUpdate(largestIndex);
+        }
         // else if (secondLargest >= largest - this.marbleRadius * 2)
         //   this.throttledUpdate(secondLargestIndex, false);
-        if (this.autoScroll) {
-          // this.cameras.main.startFollow(this.marblesImages[0]);
-          // this.cameras.main.scrollY = largest - 300 * this.dpr;
-        }
+        // if (this.autoScroll) {
+        // this.cameras.main.startFollow(this.marblesImages[0]);
+        // this.cameras.main.scrollY = largest - 300 * this.dpr;
+        // }
       }
 
       // Optimised Code

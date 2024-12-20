@@ -110,9 +110,13 @@ export const sortArrBasedOnLikesObj = (
 //     minute: "numeric",
 //   });
 // };
-export const createRandomNumber = (min: number, max: number, not?: number) => {
+export const createRandomNumber = (
+  min: number,
+  max: number,
+  not?: number | number[]
+) => {
   let random = Math.floor(Math.random() * (max - min + 1) + min);
-  while (random === not) {
+  while (Array.isArray(not) ? not.includes(random) : random === not) {
     random = Math.floor(Math.random() * (max - min + 1) + min);
   }
   return random;
@@ -1064,8 +1068,117 @@ export const tireList = [
 
 export const tireCost = [3, 2, 0.99];
 
-export const hasTimestampCrossedOneDay = (timestamp: Timestamp) => {
+export const hasTimestampCrossedOneDay = (timestamp: Timestamp | undefined) => {
+  if (!timestamp) return true;
   const now = new Date();
   const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
   return timestamp.toDate() < oneDayAgo;
+};
+
+const xpWinningsByLevels = [
+  [1000, 50],
+  [1000, 500, 50, 40],
+  [1000, 500, 250, 50, 40, 30],
+  [1000, 500, 250, 125, 50, 40, 30, 20],
+  [1000, 500, 250, 125, 62, 50, 40, 30, 20, 10],
+];
+const dashWinningsByLevels = [
+  [2000, 0],
+  [2000, 1000, 0, 0],
+  [4000, 2000, 1000, 0, 0, 0],
+  [8000, 4000, 2000, 1000, 0, 0, 0, 0],
+  [16000, 8000, 4000, 2000, 1000, 0, 0, 0, 0, 0],
+];
+
+export const getWinningRewardsByPosition = (
+  position: number,
+  level: number
+) => {
+  const xpWinnings = xpWinningsByLevels[level - 1];
+  const dashWinnings = dashWinningsByLevels[level - 1];
+  return {
+    xp: xpWinnings[position - 1],
+    dash: dashWinnings[position - 1],
+  };
+};
+
+export const getTotalWinningRewards = (level: number, positions: number[]) => {
+  let totalXp = 0;
+  let totalDash = 0;
+  for (const position of positions) {
+    const rewards = getWinningRewardsByPosition(position, level);
+    totalXp += rewards.xp;
+    totalDash += rewards.dash;
+  }
+  return { totalXp, totalDash };
+};
+
+export const numberToK = (number: number) => {
+  return number > 1000 ? `${Math.floor(number / 1000)}K` : number;
+};
+const XP_FOR_LEVELS = [10000, 35000, 98000, 254000];
+const DASH_FOR_LEVELS = [25000, 125000, 625000, 3125000];
+
+export const getLevelFromXp = (xp: number = 0) => {
+  switch (true) {
+    case xp < XP_FOR_LEVELS[0]:
+      return 1;
+    case xp < XP_FOR_LEVELS[1]:
+      return 2;
+    case xp < XP_FOR_LEVELS[2]:
+      return 3;
+    case xp < XP_FOR_LEVELS[3]:
+      return 4;
+    case xp >= XP_FOR_LEVELS[3]:
+      return 5;
+  }
+};
+
+export const getXpForNextLevel = (level: number) => {
+  return XP_FOR_LEVELS[level - 1];
+};
+export const getDashForNextLevel = (level: number) => {
+  return DASH_FOR_LEVELS[level - 1];
+};
+
+export const unlockAvailable = (
+  xp: number,
+  dash: number,
+  currentLevel: number
+) => {
+  return (
+    dash >= getDashForNextLevel(currentLevel) &&
+    xp >= getXpForNextLevel(currentLevel)
+  );
+};
+
+export type RewardType =
+  | "DAILY_CHECK_IN"
+  | "WATCH_AD"
+  | "CONNECT_TON"
+  | "PLAY_DAILY_RACE"
+  | "PLAY_CHALLENGE"
+  | "BONUS"
+  | "REFERRAL"
+  | "PURCHASE_DASH";
+
+export const getRewardTokensAmount = (rewardType: RewardType) => {
+  switch (rewardType) {
+    case "DAILY_CHECK_IN":
+      return 10;
+    case "WATCH_AD":
+      return 100;
+    case "CONNECT_TON":
+      return 100;
+    case "PLAY_DAILY_RACE":
+      return 150;
+    case "PLAY_CHALLENGE":
+      return 30;
+    case "BONUS":
+      return 50;
+    case "REFERRAL":
+      return 100;
+    default:
+      return 0;
+  }
 };

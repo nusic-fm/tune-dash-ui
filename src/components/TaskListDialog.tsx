@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Chip,
   Dialog,
   DialogContent,
   Slide,
@@ -11,19 +12,28 @@ import { TransitionProps } from "@mui/material/transitions";
 import React, { useCallback, useEffect, useState } from "react";
 import { useAdsgram } from "../hooks/useAdsgram";
 import {
-  getRewardTokensAmount,
-  rewardInGameTokens,
+  rewardCoins,
   updateUserDocTimestamps,
   UserDoc,
 } from "../services/db/user.service";
-import { hasTimestampCrossedOneDay } from "../helpers/index.js";
+import {
+  getLevelFromXp,
+  getRewardTokensAmount,
+  hasTimestampCrossedOneDay,
+} from "../helpers/index.js";
 import TaskElement from "./TaskElement";
+import StoreElement from "./StoreElement";
+import { createOrder, updateOrder } from "../services/db/order.service";
+import axios from "axios";
+import WebApp from "@twa-dev/sdk";
+import { logFirebaseEvent } from "../services/firebase.service";
 
 type Props = {
   userDoc: UserDoc;
   open: boolean;
   onClose: () => void;
   onTaskButtonClick: (task: string) => void;
+  onLevelUp: () => void;
 };
 
 export const DialogTransition = React.forwardRef(function Transition(
@@ -35,15 +45,42 @@ export const DialogTransition = React.forwardRef(function Transition(
   return <Slide direction="down" ref={ref} {...props} />;
 });
 
+export type TaskItem = {
+  title: string;
+  rewardAmount: number;
+  isDaily: boolean;
+  id: string;
+  icon: string;
+};
+
+export type StoreItem = {
+  title: string;
+  icon: string;
+  payType: "stars" | "coins";
+  id: string;
+  stars: number;
+  coins: number;
+  buyButtonText: string;
+  oldPrice: string;
+  discount?: string;
+};
+
+type StoreItemGroup = {
+  title: string;
+  items: StoreItem[];
+  id: string;
+};
+
 const TaskListDialog = ({
   userDoc,
   open,
   onClose,
   onTaskButtonClick,
+  onLevelUp,
 }: Props) => {
   const onReward = useCallback(() => {
     updateUserDocTimestamps(userDoc.id, "lastAdWatchedTimestamp");
-    rewardInGameTokens(userDoc.id, "WATCH_AD");
+    rewardCoins(userDoc.id, "WATCH_AD");
   }, []);
   const onError = useCallback((result: any) => {
     setShowWatchAd(true);
@@ -59,49 +96,121 @@ const TaskListDialog = ({
   const [showDailyRace, setShowDailyRace] = useState(false);
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showStore, setShowStore] = useState(false);
-  const [tasks, setTasks] = useState<
-    {
-      title: string;
-      rewardAmount: number;
-      isDaily: boolean;
-      id: string;
-    }[]
-  >([
+  const [tasks, setTasks] = useState<TaskItem[]>([
     {
       title: "Watch Ad",
       rewardAmount: getRewardTokensAmount("WATCH_AD"),
       isDaily: false,
       id: "WATCH_AD",
+      icon: "ad.png",
     },
     {
       title: "Check In",
       rewardAmount: getRewardTokensAmount("DAILY_CHECK_IN"),
       isDaily: true,
       id: "DAILY_CHECK_IN",
+      icon: "ton.png",
     },
     {
       title: "Daily Race",
       rewardAmount: getRewardTokensAmount("PLAY_DAILY_RACE"),
       isDaily: true,
       id: "PLAY_DAILY_RACE",
+      icon: "race.png",
+    },
+  ]);
+  const [storeItems, setStoreItems] = useState<StoreItemGroup[]>([
+    {
+      title: "Dash Packs",
+      items: [
+        {
+          title: "1k Coins",
+          icon: "pack-1.png",
+          payType: "stars",
+          id: "1k_coins",
+          stars: 990,
+          coins: 1000,
+          buyButtonText: "$19.99",
+          oldPrice: "$39.99",
+          discount: "-50%",
+        },
+        {
+          title: "10k Coins",
+          icon: "pack-2.png",
+          payType: "stars",
+          id: "10k_coins",
+          stars: 9000,
+          coins: 10000,
+          buyButtonText: "$199.99",
+          oldPrice: "$399.99",
+          discount: "-50%",
+        },
+        {
+          title: "100k Coins",
+          icon: "pack-3.png",
+          payType: "stars",
+          id: "100k_coins",
+          stars: 8000,
+          coins: 100000,
+          buyButtonText: "$1999.99",
+          oldPrice: "$3999.99",
+          discount: "-50%",
+        },
+      ],
+      id: "dash_packs",
+    },
+    {
+      title: "Power-ups",
+      items: [
+        {
+          buyButtonText: "Unlock",
+          discount: "",
+          id: "super_speed",
+          icon: "lightening.png",
+          oldPrice: "",
+          payType: "coins",
+          stars: 0,
+          title: "Super Speed",
+          coins: 30,
+        },
+        {
+          buyButtonText: "Unlock",
+          discount: "",
+          id: "double_coins",
+          icon: "x2.png",
+          oldPrice: "",
+          payType: "coins",
+          stars: 0,
+          title: "Double Coins",
+          coins: 50,
+        },
+        {
+          buyButtonText: "Unlock",
+          discount: "",
+          id: "marble_bomb",
+          icon: "bomb.png",
+          oldPrice: "",
+          payType: "coins",
+          stars: 0,
+          title: "Marble Bomb",
+          coins: 15,
+        },
+      ],
+      id: "power_ups",
     },
   ]);
 
   useEffect(() => {
     const { lastDailyRacePlayedTimestamp, lastDailyCheckInTimestamp } = userDoc;
-    setShowCheckIn(
-      !lastDailyCheckInTimestamp ||
-        hasTimestampCrossedOneDay(lastDailyCheckInTimestamp)
-    );
+    setShowCheckIn(hasTimestampCrossedOneDay(lastDailyCheckInTimestamp));
     // setShowWatchAd(
     //   !lastAdWatchedTimestamp ||
     //     hasTimestampCrossedOneDay(lastAdWatchedTimestamp)
     // );
-    setShowDailyRace(
-      !lastDailyRacePlayedTimestamp ||
-        hasTimestampCrossedOneDay(lastDailyRacePlayedTimestamp)
-    );
+    setShowDailyRace(hasTimestampCrossedOneDay(lastDailyRacePlayedTimestamp));
   }, [userDoc, open]);
+
+  const xpBasedLevel = getLevelFromXp(userDoc.xp);
 
   return (
     <Dialog
@@ -156,51 +265,220 @@ const TaskListDialog = ({
         <Box height={"400px"} mt={8}>
           <Stack
             height={"90%"}
+            width={"100%"}
             gap={2}
-            direction={"row"}
-            flexWrap={"wrap"}
-            justifyContent={"center"}
-            alignItems={"center"}
-            sx={{
-              overflowY: "auto",
-            }}
+            sx={{ overflowY: "auto" }}
           >
             {showStore ? (
-              <Box></Box>
+              <Stack width={"100%"} gap={1}>
+                {storeItems.map((storeItemGroup, index) => {
+                  return (
+                    <Stack key={index} width={"100%"} gap={1}>
+                      <Typography variant="h6" color={"#A54A19"} pl={1}>
+                        {storeItemGroup.title}
+                      </Typography>
+                      <Stack
+                        direction={"row"}
+                        gap={1}
+                        // justifyContent={"center"}
+                        sx={{ overflowX: "auto", width: "100%" }}
+                      >
+                        {storeItemGroup.items.map((storeItem) => (
+                          <StoreElement
+                            key={storeItem.id}
+                            storeItem={storeItem}
+                            onClick={() => {}}
+                            onBuyCoins={async () => {
+                              if (storeItem.payType === "coins") {
+                                logFirebaseEvent("powerup_purchase_attempt", {
+                                  track_id: storeItem.id,
+                                  amount: storeItem.stars,
+                                  user_id: userDoc.id,
+                                });
+                                WebApp.showAlert("Coming Soon...");
+                                return;
+                              }
+                              try {
+                                const orderId = await createOrder(
+                                  userDoc.id,
+                                  userDoc.username,
+                                  storeItem.stars,
+                                  null,
+                                  storeItem
+                                );
+                                const starsLink = await axios.post(
+                                  `${
+                                    import.meta.env.VITE_TG_BOT_SERVER
+                                  }/create-stars-invoice-link`,
+                                  {
+                                    title: `Buy ${storeItem.coins} eDash`,
+                                    description: `Buy ${storeItem.coins} eDash for ${storeItem.stars} stars`,
+                                    prices: [
+                                      {
+                                        label: `${storeItem.coins} eDash`,
+                                        amount: storeItem.stars,
+                                      },
+                                    ],
+                                    payload: { orderId, userId: userDoc.id },
+                                  }
+                                );
+                                WebApp.openInvoice(
+                                  starsLink.data,
+                                  async (status) => {
+                                    if (status === "paid") {
+                                      await rewardCoins(
+                                        userDoc.id,
+                                        "PURCHASE_DASH",
+                                        storeItem.coins
+                                      );
+                                      logFirebaseEvent(
+                                        "dash_purchase_success",
+                                        {
+                                          track_id: storeItem.id,
+                                          amount: storeItem.stars,
+                                          coins: storeItem.coins,
+                                          order_number: orderId,
+                                        }
+                                      );
+                                      await updateOrder(orderId, "success");
+                                      WebApp.showAlert(
+                                        `Payment Success, ${storeItem.coins} coins are added to your account`
+                                      );
+                                      onClose();
+                                    } else if (status === "pending") {
+                                      // TODO: payment pending
+                                    } else {
+                                      await updateOrder(orderId, "failed");
+                                      logFirebaseEvent(
+                                        "dash_purchase_failure",
+                                        {
+                                          track_id: storeItem.id,
+                                          amount: storeItem.stars,
+                                          order_number: orderId,
+                                          user_id: userDoc.id,
+                                        }
+                                      );
+                                      WebApp.showAlert("Payment Failed");
+                                    }
+                                  }
+                                );
+                                logFirebaseEvent("dash_purchase_attempt", {
+                                  track_id: storeItem.id,
+                                  amount: storeItem.stars,
+                                  order_number: orderId,
+                                  user_id: userDoc.id,
+                                });
+                              } catch (e) {
+                                alert("Error Occured, try again later");
+                              }
+                            }}
+                            disabled={false}
+                          />
+                        ))}
+                      </Stack>
+                    </Stack>
+                  );
+                })}
+              </Stack>
             ) : (
-              tasks.map((task) => (
-                <TaskElement
-                  onClick={async () => {
-                    if (task.id === "WATCH_AD") {
-                      await showAd();
-                    } else if (task.id === "DAILY_CHECK_IN") {
-                      setShowCheckIn(false);
-                    } else if (task.id === "PLAY_DAILY_RACE") {
-                      setShowDailyRace(false);
-                      onTaskButtonClick(task.id);
-                      onClose();
+              <Stack
+                height={"90%"}
+                width={"100%"}
+                gap={2}
+                direction={"row"}
+                flexWrap={"wrap"}
+                justifyContent={"center"}
+                alignItems={"center"}
+                sx={{
+                  overflowY: "auto",
+                }}
+              >
+                {tasks.map((task) => (
+                  <TaskElement
+                    key={task.id}
+                    onClick={async () => {
+                      if (task.id === "WATCH_AD") {
+                        await showAd();
+                      } else if (task.id === "DAILY_CHECK_IN") {
+                        setShowCheckIn(false);
+                      } else if (task.id === "PLAY_DAILY_RACE") {
+                        setShowDailyRace(false);
+                        onTaskButtonClick(task.id);
+                        onClose();
+                      }
+                    }}
+                    disabled={
+                      task.id === "WATCH_AD"
+                        ? !showWatchAd
+                        : task.id === "DAILY_CHECK_IN"
+                        ? showCheckIn
+                        : !showDailyRace
                     }
-                  }}
-                  disabled={
-                    task.id === "WATCH_AD"
-                      ? !showWatchAd
-                      : task.id === "DAILY_CHECK_IN"
-                      ? showCheckIn
-                      : !showDailyRace
-                  }
-                  label={task.title}
-                  rewardAmount={task.rewardAmount}
-                  isDaily={task.isDaily}
-                />
-              ))
+                    task={task}
+                  />
+                ))}
+              </Stack>
             )}
           </Stack>
           <Stack
             height={"10%"}
             direction={"row"}
-            justifyContent={"center"}
+            justifyContent={"space-between"}
             alignItems={"center"}
           >
+            <Box
+              sx={{
+                width: 90,
+                height: 38,
+                background: `url(/assets/tunedash/tasks-modal/xp-holder.png)`,
+                backgroundSize: "contain",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+              }}
+              display={"flex"}
+              justifyContent={"start"}
+              alignItems={"center"}
+              gap={0.8}
+              position={"relative"}
+            >
+              <img
+                src="/assets/tunedash/tasks-modal/xp.png"
+                style={{
+                  // position: "absolute",
+                  // top: "50%",
+                  // left: 0,
+                  // width: 25,
+                  height: 22,
+                  // transform: "translateY(-50%)",
+                }}
+              />
+              <Typography variant="caption" align="center">
+                {userDoc.xp}
+              </Typography>
+            </Box>
+            {xpBasedLevel === userDoc.level ? (
+              <Chip
+                label={`Level ${userDoc.level}`}
+                size="small"
+                color="primary"
+              />
+            ) : (
+              <Chip
+                label="Level UP"
+                size="small"
+                color="success"
+                clickable
+                onClick={async () => {
+                  if (
+                    xpBasedLevel &&
+                    xpBasedLevel > userDoc.level &&
+                    userDoc.id
+                  ) {
+                    onLevelUp();
+                  }
+                }}
+              />
+            )}
             <Box
               sx={{
                 width: 94,
@@ -216,7 +494,7 @@ const TaskListDialog = ({
               pl={2}
             >
               <Typography variant="caption" align="center">
-                {userDoc.inGameTokensCount}
+                {userDoc.coins}
               </Typography>
             </Box>
           </Stack>

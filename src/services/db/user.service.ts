@@ -16,6 +16,11 @@ import {
   FieldValue,
 } from "firebase/firestore";
 import { VoiceV1Cover } from "./coversV1.service";
+import {
+  getRewardTokensAmount,
+  hasTimestampCrossedOneDay,
+  RewardType,
+} from "../../helpers";
 
 const DB_NAME = "tune_dash_users";
 
@@ -28,20 +33,21 @@ export type User = {
   isBot?: boolean;
   id: string;
   purchasedVoices: string[] | null;
-  xp?: number;
+  xp: number;
   wins?: number;
   playedTimes?: number;
   isVip?: boolean;
   chatId: number | null;
   chatTitle: string | null;
   chatPhotoUrl: string | null;
+  level: number;
+  coins: number;
 };
 export type UserDoc = User & {
   createdAt: Timestamp;
   lastSeen: Timestamp;
   lastDailyRacePlayedTimestamp?: Timestamp;
   lastDailyCheckInTimestamp?: Timestamp;
-  inGameTokensCount?: number;
   dailyVoiceRequestTimestamp?: Timestamp;
 };
 
@@ -65,16 +71,20 @@ const createUserDoc = async (
     const existingUserDoc = existingUser.data() as UserDoc;
     const visitObj: {
       lastSeen: FieldValue;
-      chatId?: number | null;
-      chatTitle?: string | null;
-      chatPhotoUrl?: string | null;
+      level?: number;
+      // chatId?: number | null;
+      // chatTitle?: string | null;
+      // chatPhotoUrl?: string | null;
     } = {
       lastSeen: serverTimestamp(),
     };
-    if (!existingUserDoc.chatId && userObj.chatId) {
-      visitObj["chatId"] = userObj.chatId;
-      visitObj["chatTitle"] = userObj.chatTitle;
-      visitObj["chatPhotoUrl"] = userObj.chatPhotoUrl;
+    // if (!existingUserDoc.chatId && userObj.chatId) {
+    //   visitObj["chatId"] = userObj.chatId;
+    //   visitObj["chatTitle"] = userObj.chatTitle;
+    //   visitObj["chatPhotoUrl"] = userObj.chatPhotoUrl;
+    // }
+    if (existingUserDoc.level === undefined) {
+      visitObj["level"] = 0;
     }
     await updateDoc(d, visitObj);
     logFirebaseEvent("login", {
@@ -84,7 +94,6 @@ const createUserDoc = async (
   }
   const newUserObj = {
     ...userObj,
-    xp: 0,
     wins: 0,
     playedTimes: 0,
   };
@@ -99,17 +108,19 @@ const createUserDoc = async (
   return newUserObj;
 };
 
-const updatePurchasedVoice = async (userId: string, voiceId: string) => {
-  const d = doc(db, DB_NAME, userId);
-  await updateDoc(d, { purchasedVoices: arrayUnion(voiceId) });
-};
+// const updatePurchasedVoice = async (userId: string, voiceId: string) => {
+//   const d = doc(db, DB_NAME, userId);
+//   await updateDoc(d, { purchasedVoices: arrayUnion(voiceId) });
+// };
 
 const updateGameResult = async (
   userId: string,
   coverDocId: string,
   isWinner: boolean,
   voices: VoiceV1Cover[],
-  winningVoiceId: string
+  winningPositions: number[],
+  xp: number,
+  dash: number
 ) => {
   const d = doc(db, DB_NAME, userId);
   const existingUser = await getDoc(d);
@@ -117,11 +128,17 @@ const updateGameResult = async (
     // TODO: Log User not found
     return;
   }
-  await updateDoc(d, {
+  const userDoc = existingUser.data() as UserDoc;
+  const updateObj: any = {
     wins: increment(isWinner ? 1 : 0),
     playedTimes: increment(1),
-    xp: increment(isWinner ? 500 : 0),
-  });
+    xp: increment(xp),
+    coins: increment(dash),
+  };
+  if (hasTimestampCrossedOneDay(userDoc.lastDailyRacePlayedTimestamp)) {
+    updateObj["lastDailyRacePlayedTimestamp"] = serverTimestamp();
+  }
+  await updateDoc(d, updateObj);
   // Save game in subcollection
   const gameDoc = doc(
     collection(db, DB_NAME, userId, "races"),
@@ -130,54 +147,23 @@ const updateGameResult = async (
   await setDoc(gameDoc, {
     voices,
     isWinner,
-    winningVoiceId,
+    winningPositions,
+    xp,
+    dash,
     timestamp: serverTimestamp(),
     coverDocId,
   });
 };
 
-type RewardType =
-  | "DAILY_CHECK_IN"
-  | "WATCH_AD"
-  | "CONNECT_TON"
-  | "PLAY_DAILY_RACE"
-  | "PLAY_CHALLENGE"
-  | "BONUS"
-  | "REFERRAL";
-
-export const getRewardTokensAmount = (rewardType: RewardType) => {
-  switch (rewardType) {
-    case "DAILY_CHECK_IN":
-      return 10;
-    case "WATCH_AD":
-      return 10;
-    case "CONNECT_TON":
-      return 100;
-    case "PLAY_DAILY_RACE":
-      return 15;
-    case "PLAY_CHALLENGE":
-      return 30;
-    case "BONUS":
-      return 50;
-    case "REFERRAL":
-      return 10015;
-  }
-};
-
-const rewardInGameTokens = async (
+const rewardCoins = async (
   userId: string,
-  rewardType:
-    | "DAILY_CHECK_IN"
-    | "WATCH_AD"
-    | "CONNECT_TON"
-    | "PLAY_DAILY_RACE"
-    | "PLAY_CHALLENGE"
-    | "BONUS"
-    | "REFERRAL"
+  rewardType: RewardType,
+  rewardAmount?: number
 ) => {
   const d = doc(db, DB_NAME, userId);
-  const reward = getRewardTokensAmount(rewardType);
-  await updateDoc(d, { inGameTokensCount: increment(reward) });
+  const reward = rewardAmount ?? getRewardTokensAmount(rewardType);
+  if (!reward) return;
+  await updateDoc(d, { coins: increment(reward) });
 };
 
 const updateUserDocTimestamps = async (
@@ -191,11 +177,17 @@ const updateUserDocTimestamps = async (
   await updateDoc(d, { [props]: serverTimestamp() });
 };
 
+const updateUserLevel = async (userId: string, level: number) => {
+  const d = doc(db, DB_NAME, userId);
+  await updateDoc(d, { level });
+};
+
 export {
   createUserDoc,
   getUserDocById,
-  updatePurchasedVoice,
+  // updatePurchasedVoice,
   updateGameResult,
-  rewardInGameTokens,
+  rewardCoins,
   updateUserDocTimestamps,
+  updateUserLevel,
 };

@@ -20,7 +20,7 @@ type Props = {
   onTrackSelected: (
     coverDoc: CoverV1,
     coverId: string,
-    voiceId: VoiceV1Cover | null
+    voiceId: VoiceV1Cover[] | null
   ) => void;
   selectedCoverDocId: string;
   onNextPageClick: () => void;
@@ -116,12 +116,13 @@ const SelectTrack = ({
                 zIndex={9}
                 onClick={async () => {
                   if (doc.id !== selectedCoverDocId) {
-                    const randomVoice =
-                      coverDoc.voices[
-                        createRandomNumber(0, coverDoc.voices.length - 1)
-                      ];
+                    const randomIdx = createRandomNumber(
+                      0,
+                      coverDoc.voices.length - 1
+                    );
+                    const randomVoice = coverDoc.voices[randomIdx];
                     await downloadInstrumental(doc.id, coverDoc, randomVoice);
-                    onTrackSelected(coverDoc, doc.id, randomVoice);
+                    onTrackSelected(coverDoc, doc.id, [randomVoice]);
                   }
                 }}
               >
