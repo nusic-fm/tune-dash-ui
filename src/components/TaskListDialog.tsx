@@ -12,13 +12,15 @@ import { TransitionProps } from "@mui/material/transitions";
 import React, { useCallback, useEffect, useState } from "react";
 import { useAdsgram } from "../hooks/useAdsgram";
 import {
-  getRewardTokensAmount,
   rewardCoins,
   updateUserDocTimestamps,
-  updateUserLevel,
   UserDoc,
 } from "../services/db/user.service";
-import { getLevelFromXp, hasTimestampCrossedOneDay } from "../helpers/index.js";
+import {
+  getLevelFromXp,
+  getRewardTokensAmount,
+  hasTimestampCrossedOneDay,
+} from "../helpers/index.js";
 import TaskElement from "./TaskElement";
 import StoreElement from "./StoreElement";
 import { createOrder, updateOrder } from "../services/db/order.service";
