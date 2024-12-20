@@ -43,7 +43,17 @@ const GameOverDialog = ({
       zIndex={999}
       gap={2}
     >
-      <Stack gap={1}>
+      <Stack
+        gap={1}
+        width={"100%"}
+        sx={{
+          background: "rgba(0, 0, 0, 0.5)",
+          borderRadius: 1,
+          padding: 1,
+        }}
+        alignItems={"center"}
+        mt="auto"
+      >
         <Box
           display={"flex"}
           justifyContent={"center"}
@@ -51,19 +61,40 @@ const GameOverDialog = ({
           alignItems={"center"}
           mt={2}
         >
-          <Typography color={"#00e547"}>+ {dashEarnings}</Typography>
-          <img src="/assets/tunedash/coins.png" alt="coins" />
-          <Button
-            endIcon={<SlideshowIcon />}
-            color="warning"
-            variant="contained"
-            size="small"
-            onClick={showAd}
+          <Typography
+            color={dashEarnings > 0 ? "#00e547" : "red"}
+            fontSize={"1.75rem"}
           >
-            x2
-          </Button>
+            +{dashEarnings}
+          </Typography>
+          <img src="/assets/tunedash/coins.png" alt="coins" />
+          {dashEarnings > 0 && (
+            <Button
+              endIcon={<SlideshowIcon />}
+              color="warning"
+              variant="contained"
+              size="small"
+              onClick={showAd}
+            >
+              x2
+            </Button>
+          )}
         </Box>
-        <Typography color={"#00e547"}>+ {xpEarnings} XP</Typography>
+        <Box
+          display={"flex"}
+          justifyContent={"center"}
+          gap={1}
+          alignItems={"center"}
+        >
+          <Typography color={"#00e547"} fontSize={"2rem"}>
+            +{xpEarnings}
+          </Typography>
+          <img
+            src="/assets/tunedash/tasks-modal/xp.png"
+            alt="xp"
+            style={{ width: 38 }}
+          />
+        </Box>
       </Stack>
       <Stack>
         <LongImageMotionButton name="Play again" onClick={onPlayAgain} />

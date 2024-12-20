@@ -44,10 +44,16 @@ const LevelsBar = ({
         position={"absolute"}
         top={"50%"}
         left={"50%"}
-        width={"95%"}
+        width={"calc(100% - 35px)"}
         p={0.5}
         bgcolor={"#ffd39f"}
-        sx={{ transform: "translate(-50%, -50%)" }}
+        sx={{
+          transform: "translate(-50%, -50%)",
+          // add background color only for a percentage of its width
+          background: `linear-gradient(to right, #ffb101 ${
+            (currentLevel > 2 ? currentLevel : currentLevel - 1) * 20
+          }%, #ffd39f 0%)`,
+        }}
         zIndex={0}
       ></Box>
       <Box
@@ -67,7 +73,9 @@ const LevelsBar = ({
         }}
       >
         {selectedLevel === 1 && <ArrowDown />}
-        <Typography>1</Typography>
+        <Typography fontSize={selectedLevel === 1 ? "1.5rem" : "1rem"}>
+          1
+        </Typography>
       </Box>
       <Box
         zIndex={1}
@@ -86,7 +94,9 @@ const LevelsBar = ({
         }}
       >
         {selectedLevel === 2 && <ArrowDown />}
-        <Typography>2</Typography>
+        <Typography fontSize={selectedLevel === 2 ? "1.5rem" : "1rem"}>
+          2
+        </Typography>
       </Box>
       <Box
         zIndex={1}
@@ -105,7 +115,9 @@ const LevelsBar = ({
         }}
       >
         {selectedLevel === 3 && <ArrowDown />}
-        <Typography>3</Typography>
+        <Typography fontSize={selectedLevel === 3 ? "1.5rem" : "1rem"}>
+          3
+        </Typography>
       </Box>
       <Box
         zIndex={1}
@@ -124,7 +136,9 @@ const LevelsBar = ({
         }}
       >
         {selectedLevel === 4 && <ArrowDown />}
-        <Typography>4</Typography>
+        <Typography fontSize={selectedLevel === 4 ? "1.5rem" : "1rem"}>
+          4
+        </Typography>
       </Box>
       <Box
         zIndex={1}
@@ -143,7 +157,9 @@ const LevelsBar = ({
         }}
       >
         {selectedLevel === 5 && <ArrowDown />}
-        <Typography>5</Typography>
+        <Typography fontSize={selectedLevel === 5 ? "1.5rem" : "1rem"}>
+          5
+        </Typography>
       </Box>
     </Stack>
   );

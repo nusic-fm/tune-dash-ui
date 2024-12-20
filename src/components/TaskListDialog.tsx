@@ -167,7 +167,7 @@ const TaskListDialog = ({
           payType: "coins",
           stars: 0,
           title: "Super Speed",
-          coins: 15,
+          coins: 30,
         },
         {
           buyButtonText: "Unlock",
@@ -178,7 +178,7 @@ const TaskListDialog = ({
           payType: "coins",
           stars: 0,
           title: "Double Coins",
-          coins: 15,
+          coins: 50,
         },
         {
           buyButtonText: "Unlock",
@@ -460,7 +460,7 @@ const TaskListDialog = ({
               />
             ) : (
               <Chip
-                label="Level UP!!!"
+                label="Level UP"
                 size="small"
                 color="success"
                 clickable

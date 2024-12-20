@@ -195,15 +195,17 @@ function App() {
               (user) => {
                 setUserDoc(user);
                 setUserIdForAnalytics(user.id);
+                setSelectedLevel(user.level || 1);
               }
             );
           } catch (e) {
             // TODO: Handle error
           }
-        } else {
-          const ud = await getUserDocById("839574155");
-          setUserDoc(ud);
         }
+        // else {
+        //   const ud = await getUserDocById("839574155");
+        //   setUserDoc(ud);
+        // }
         setIsDownloaded(true);
         // setScreenName("start");
       })();
