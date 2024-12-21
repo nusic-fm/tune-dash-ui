@@ -1167,11 +1167,11 @@ export const getRewardTokensAmount = (rewardType: RewardType) => {
     case "DAILY_CHECK_IN":
       return 10;
     case "WATCH_AD":
-      return 100;
+      return 1000;
     case "CONNECT_TON":
       return 100;
     case "PLAY_DAILY_RACE":
-      return 150;
+      return 1500;
     case "PLAY_CHALLENGE":
       return 30;
     case "BONUS":

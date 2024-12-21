@@ -44,7 +44,7 @@ const TaskElement = ({ onClick, disabled, task }: Props) => {
         boxShadow: "0px 3.02px 7.249px 0px rgba(0, 0, 0, 0.25)",
         border: "2px solid #D79F72",
       }}
-      px={4}
+      px={3}
       py={1}
     >
       <Stack direction={"row"} gap={2} alignItems={"space-between"}>

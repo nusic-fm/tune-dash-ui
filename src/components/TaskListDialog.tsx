@@ -82,9 +82,8 @@ const TaskListDialog = ({
     updateUserDocTimestamps(userDoc.id, "lastAdWatchedTimestamp");
     rewardCoins(userDoc.id, "WATCH_AD");
   }, []);
-  const onError = useCallback((result: any) => {
+  const onError = useCallback(() => {
     setShowWatchAd(true);
-    alert(JSON.stringify(result, null, 4));
   }, []);
 
   const showAd = useAdsgram({
@@ -104,13 +103,13 @@ const TaskListDialog = ({
       id: "WATCH_AD",
       icon: "ad.png",
     },
-    {
-      title: "Check In",
-      rewardAmount: getRewardTokensAmount("DAILY_CHECK_IN"),
-      isDaily: true,
-      id: "DAILY_CHECK_IN",
-      icon: "ton.png",
-    },
+    // {
+    //   title: "Check In",
+    //   rewardAmount: getRewardTokensAmount("DAILY_CHECK_IN"),
+    //   isDaily: true,
+    //   id: "DAILY_CHECK_IN",
+    //   icon: "ton.png",
+    // },
     {
       title: "Daily Race",
       rewardAmount: getRewardTokensAmount("PLAY_DAILY_RACE"),
@@ -171,7 +170,7 @@ const TaskListDialog = ({
           payType: "coins",
           stars: 0,
           title: "Super Speed",
-          coins: 30,
+          coins: 3000,
         },
         {
           buyButtonText: "Unlock",
@@ -182,7 +181,7 @@ const TaskListDialog = ({
           payType: "coins",
           stars: 0,
           title: "Double Coins",
-          coins: 50,
+          coins: 5000,
         },
         {
           buyButtonText: "Unlock",
@@ -193,7 +192,7 @@ const TaskListDialog = ({
           payType: "coins",
           stars: 0,
           title: "Marble Bomb",
-          coins: 15,
+          coins: 1500,
         },
       ],
       id: "power_ups",
@@ -479,9 +478,40 @@ const TaskListDialog = ({
                 }}
               />
             )}
+
             <Box
               sx={{
-                width: 94,
+                width: 90,
+                height: 38,
+                background: `url(/assets/tunedash/tasks-modal/xp-holder.png)`,
+                backgroundSize: "contain",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+              }}
+              display={"flex"}
+              justifyContent={"center"}
+              alignItems={"center"}
+              // gap={0.8}
+              position={"relative"}
+            >
+              <img
+                src="/assets/tunedash/double-coin.png"
+                style={{
+                  position: "absolute",
+                  // top: "50%",
+                  left: 2,
+                  // width: 25,
+                  height: 40,
+                  transform: "translateX(-50%)",
+                }}
+              />
+              <Typography variant="caption" align="center">
+                {userDoc.coins}
+              </Typography>
+            </Box>
+            {/* <Box
+              sx={{
+                width: 100,
                 height: 38,
                 background: `url(/assets/tunedash/tasks-modal/token-holdings-bg.png)`,
                 backgroundSize: "cover",
@@ -491,12 +521,12 @@ const TaskListDialog = ({
               display={"flex"}
               justifyContent={"center"}
               alignItems={"center"}
-              pl={2}
+              pl={4}
             >
               <Typography variant="caption" align="center">
                 {userDoc.coins}
               </Typography>
-            </Box>
+            </Box> */}
           </Stack>
         </Box>
       </DialogContent>
