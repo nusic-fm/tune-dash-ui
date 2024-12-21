@@ -1209,7 +1209,7 @@ export default class Game extends Phaser.Scene {
         //   this.isGameOver = true;
         //   return;
         // }
-        const largest = Math.max(...unFinishedUserPositions);
+        const largest = Math.max(...unFinishedPositions);
         const largestIndex = voicesPositions.findIndex((v) => v === largest);
         const secondLargest = Math.max(
           ...unFinishedPositions.filter((p) => p !== largest)
