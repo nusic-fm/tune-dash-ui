@@ -1160,24 +1160,20 @@ export type RewardType =
   | "PLAY_CHALLENGE"
   | "BONUS"
   | "REFERRAL"
-  | "PURCHASE_DASH";
+  | "PURCHASE_DASH"
+  | "JOIN_CHANNEL"
+  | "SHARE_FRIENDS";
 
 export const getRewardTokensAmount = (rewardType: RewardType) => {
   switch (rewardType) {
-    case "DAILY_CHECK_IN":
-      return 10;
     case "WATCH_AD":
       return 1000;
-    case "CONNECT_TON":
-      return 100;
     case "PLAY_DAILY_RACE":
       return 1500;
-    case "PLAY_CHALLENGE":
-      return 30;
-    case "BONUS":
-      return 50;
-    case "REFERRAL":
-      return 100;
+    case "JOIN_CHANNEL":
+      return 1500;
+    case "SHARE_FRIENDS":
+      return 1000;
     default:
       return 0;
   }

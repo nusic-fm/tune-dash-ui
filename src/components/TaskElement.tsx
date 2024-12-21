@@ -74,7 +74,9 @@ const TaskElement = ({ onClick, disabled, task }: Props) => {
       <motion.button
         whileHover={{ scale: disabled ? 1 : 1.1 }}
         whileTap={{ scale: disabled ? 1 : 0.9 }}
-        onClick={onClick}
+        onClick={() => {
+          if (!disabled) onClick();
+        }}
         disabled={disabled}
         style={{
           width: 70,

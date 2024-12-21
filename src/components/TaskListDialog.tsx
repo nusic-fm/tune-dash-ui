@@ -14,6 +14,7 @@ import { useAdsgram } from "../hooks/useAdsgram";
 import {
   rewardCoins,
   updateUserDocTimestamps,
+  updateUserProps,
   UserDoc,
 } from "../services/db/user.service";
 import {
@@ -95,6 +96,7 @@ const TaskListDialog = ({
   const [showDailyRace, setShowDailyRace] = useState(false);
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showStore, setShowStore] = useState(false);
+  const [loadingTaskId, setLoadingTaskId] = useState<string>("");
   const [tasks, setTasks] = useState<TaskItem[]>([
     {
       title: "Watch Ad",
@@ -117,11 +119,36 @@ const TaskListDialog = ({
       id: "PLAY_DAILY_RACE",
       icon: "race.png",
     },
+    {
+      title: "Join Channel",
+      rewardAmount: getRewardTokensAmount("JOIN_CHANNEL"),
+      isDaily: false,
+      id: "JOIN_CHANNEL",
+      icon: "tg-channel.png",
+    },
+    // {
+    //   title: "Invite Friend",
+    //   rewardAmount: getRewardTokensAmount("SHARE_FRIENDS"),
+    //   isDaily: false,
+    //   id: "SHARE_FRIENDS",
+    //   icon: "fren.png",
+    // },
   ]);
   const [storeItems, setStoreItems] = useState<StoreItemGroup[]>([
     {
       title: "Dash Packs",
       items: [
+        {
+          title: "800 Coins",
+          icon: "pack-1.png",
+          payType: "stars",
+          id: "800_coins",
+          stars: 100,
+          coins: 800,
+          buyButtonText: "$1.99",
+          oldPrice: "$2.3",
+          discount: "-15%",
+        },
         {
           title: "4.5k Coins",
           icon: "pack-1.png",
@@ -154,6 +181,17 @@ const TaskListDialog = ({
           buyButtonText: "$199.99",
           oldPrice: "$360",
           discount: "-45%",
+        },
+        {
+          title: "1.36M Coins",
+          icon: "pack-3.png",
+          payType: "stars",
+          id: "1.3m_coins",
+          stars: 100000,
+          coins: 1360000,
+          buyButtonText: "$1999.99",
+          oldPrice: "$3999",
+          discount: "-50%",
         },
       ],
       id: "dash_packs",
@@ -392,30 +430,60 @@ const TaskListDialog = ({
                   overflowY: "auto",
                 }}
               >
-                {tasks.map((task) => (
-                  <TaskElement
-                    key={task.id}
-                    onClick={async () => {
-                      if (task.id === "WATCH_AD") {
-                        await showAd();
-                      } else if (task.id === "DAILY_CHECK_IN") {
-                        setShowCheckIn(false);
-                      } else if (task.id === "PLAY_DAILY_RACE") {
-                        setShowDailyRace(false);
-                        onTaskButtonClick(task.id);
-                        onClose();
+                {tasks.map((task) => {
+                  if (task.id === "JOIN_CHANNEL" && userDoc.isChannelMember)
+                    return null;
+                  return (
+                    <TaskElement
+                      key={task.id}
+                      onClick={async () => {
+                        if (task.id === "WATCH_AD") {
+                          await showAd();
+                        } else if (task.id === "DAILY_CHECK_IN") {
+                          setShowCheckIn(false);
+                        } else if (task.id === "PLAY_DAILY_RACE") {
+                          setShowDailyRace(false);
+                          onTaskButtonClick(task.id);
+                          onClose();
+                        } else if (task.id === "JOIN_CHANNEL") {
+                          setLoadingTaskId(task.id);
+                          const res = await axios.post(
+                            `${
+                              import.meta.env.VITE_TG_BOT_SERVER
+                            }/get-chat-member`,
+                            {
+                              chatId: "tunedash",
+                              userId: userDoc.id,
+                            }
+                          );
+                          const isMember = res.data;
+                          if (Boolean(isMember)) {
+                            await rewardCoins(userDoc.id, "JOIN_CHANNEL");
+                            await updateUserProps(
+                              userDoc.id,
+                              "isChannelMember",
+                              true
+                            );
+                          } else {
+                            WebApp.openTelegramLink("https://t.me/tunedash");
+                          }
+                          setLoadingTaskId("");
+                        } else if (task.id === "SHARE_FRIENDS") {
+                          // setLoadingTaskId(task.id);
+                          // WebApp.send;
+                        }
+                      }}
+                      disabled={
+                        loadingTaskId === task.id || task.id === "WATCH_AD"
+                          ? !showWatchAd
+                          : task.id === "DAILY_CHECK_IN"
+                          ? showCheckIn
+                          : !showDailyRace
                       }
-                    }}
-                    disabled={
-                      task.id === "WATCH_AD"
-                        ? !showWatchAd
-                        : task.id === "DAILY_CHECK_IN"
-                        ? showCheckIn
-                        : !showDailyRace
-                    }
-                    task={task}
-                  />
-                ))}
+                      task={task}
+                    />
+                  );
+                })}
               </Stack>
             )}
           </Stack>

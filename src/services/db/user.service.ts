@@ -49,6 +49,7 @@ export type UserDoc = User & {
   lastDailyRacePlayedTimestamp?: Timestamp;
   lastDailyCheckInTimestamp?: Timestamp;
   dailyVoiceRequestTimestamp?: Timestamp;
+  isChannelMember?: boolean;
 };
 
 const getUserDocById = async (docId: string) => {
@@ -182,6 +183,15 @@ const updateUserLevel = async (userId: string, level: number) => {
   await updateDoc(d, { level });
 };
 
+const updateUserProps = async (
+  userId: string,
+  prop: keyof UserDoc,
+  value: any
+) => {
+  const d = doc(db, DB_NAME, userId);
+  await updateDoc(d, { [prop]: value });
+};
+
 export {
   createUserDoc,
   getUserDocById,
@@ -190,4 +200,5 @@ export {
   rewardCoins,
   updateUserDocTimestamps,
   updateUserLevel,
+  updateUserProps,
 };
