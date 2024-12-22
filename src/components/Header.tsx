@@ -32,6 +32,7 @@ const Header = ({
 }: Props) => {
   const [showTaskListDialog, setShowTaskListDialog] = useState(false);
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+  const [viewLevel, setViewLevel] = useState((userDoc?.level || 1) + 1);
 
   return (
     <Stack width={"100%"}>
@@ -125,7 +126,11 @@ const Header = ({
             currentLevel={userDoc?.level || 1}
             selectedLevel={selectedLevel}
             setSelectedLevel={setSelectedLevel}
-            onLevelUp={() => setShowLevelUpModal(true)}
+            onLevelUp={(clickedLevel) => {
+              setShowLevelUpModal(true);
+              const nextLevel = (userDoc?.level || 1) + 1;
+              setViewLevel(clickedLevel > nextLevel ? clickedLevel : nextLevel);
+            }}
           />
         </Box>
       )}
@@ -133,6 +138,7 @@ const Header = ({
         <LevelUpModal
           setShowLevelUpModal={setShowLevelUpModal}
           userDoc={userDoc}
+          viewLevel={viewLevel}
         />
       )}
     </Stack>

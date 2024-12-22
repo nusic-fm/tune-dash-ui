@@ -1,12 +1,14 @@
 import { Stack, Typography, Box, CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
 import { TaskItem } from "./TaskListDialog";
+import DoneRoundedIcon from "@mui/icons-material/DoneRounded";
 
 type Props = {
   onClick: () => void;
   disabled: boolean;
   task: TaskItem;
   isLoading: boolean;
+  checked: boolean;
 };
 
 export const LIGHT_YELLOW_COLOR = "#f9c76f";
@@ -33,7 +35,13 @@ export const LIGHT_YELLOW_COLOR = "#f9c76f";
 //   );
 // };
 
-const TaskElement = ({ onClick, disabled, task, isLoading }: Props) => {
+const TaskElement = ({
+  onClick,
+  disabled,
+  task,
+  isLoading,
+  checked,
+}: Props) => {
   return (
     <Stack
       gap={1}
@@ -93,11 +101,13 @@ const TaskElement = ({ onClick, disabled, task, isLoading }: Props) => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          opacity: disabled ? 0.4 : 1,
+          // opacity: disabled ? 0.4 : 1,
         }}
       >
         {isLoading ? (
           <CircularProgress size={"12px"} />
+        ) : checked ? (
+          <DoneRoundedIcon color="success" />
         ) : (
           <Typography variant="caption">Go</Typography>
         )}

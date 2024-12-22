@@ -22,12 +22,17 @@ import { increment } from "firebase/firestore";
 type Props = {
   setShowLevelUpModal: (show: boolean) => void;
   userDoc: UserDoc;
+  viewLevel: number;
 };
 
-function LevelUpModal({ setShowLevelUpModal, userDoc }: Props) {
-  const nextLevel = userDoc.level + 1;
-  const xpNeededForNextLevel = getXpForNextLevel(userDoc.level);
-  const dashNeededForNextLevel = getDashForNextLevel(userDoc.level);
+function LevelUpModal({ setShowLevelUpModal, userDoc, viewLevel }: Props) {
+  const userNextLevel = userDoc.level + 1;
+  const xpNeededForNextLevel = getXpForNextLevel(
+    viewLevel - 1 || userDoc.level
+  );
+  const dashNeededForNextLevel = getDashForNextLevel(
+    viewLevel - 1 || userDoc.level
+  );
   const missingDash = dashNeededForNextLevel - userDoc.coins;
   const missingXp = xpNeededForNextLevel - userDoc.xp;
   const isMaxLevel = userDoc.level === 5;
@@ -78,7 +83,7 @@ function LevelUpModal({ setShowLevelUpModal, userDoc }: Props) {
               mt: 1,
             }}
           >
-            {nextLevel}
+            {viewLevel}
           </Typography>
         </Box>
         {isMaxLevel ? (
@@ -221,7 +226,7 @@ function LevelUpModal({ setShowLevelUpModal, userDoc }: Props) {
                   getDashForNextLevel(userDoc.level),
                   null,
                   {
-                    title: `Unlock Level ${nextLevel}`,
+                    title: `Unlock Level ${userNextLevel}`,
                     payType: "stars",
                     id: "unlock-level",
                     stars,
@@ -234,8 +239,8 @@ function LevelUpModal({ setShowLevelUpModal, userDoc }: Props) {
                   }/create-stars-invoice-link`,
                   {
                     // TODO: Support for multiple voices
-                    title: `Unlock Level ${nextLevel}`,
-                    description: `Unlock Level ${nextLevel} for `,
+                    title: `Unlock Level ${userNextLevel}`,
+                    description: `Unlock Level ${userNextLevel} for `,
                     prices: [
                       {
                         label: `${missingDash} eDash`,
@@ -270,7 +275,7 @@ function LevelUpModal({ setShowLevelUpModal, userDoc }: Props) {
                   setIsLoading(true);
                   await updateUserLevel(
                     userDoc.id,
-                    nextLevel,
+                    userDoc.level + 1,
                     increment(-getDashForNextLevel(userDoc.level))
                   );
                   setIsLoading(false);

@@ -52,6 +52,7 @@ export type TaskItem = {
   isDaily: boolean;
   id: string;
   icon: string;
+  checked: boolean;
 };
 
 export type StoreItem = {
@@ -82,9 +83,10 @@ const TaskListDialog = ({
   const onReward = useCallback(() => {
     updateUserDocTimestamps(userDoc.id, "lastAdWatchedTimestamp");
     rewardCoins(userDoc.id, "WATCH_AD");
+    setLoadingTaskId("");
   }, []);
   const onError = useCallback(() => {
-    setShowWatchAd(true);
+    setLoadingTaskId("");
   }, []);
 
   const showAd = useAdsgram({
@@ -92,10 +94,6 @@ const TaskListDialog = ({
     onReward,
     onError,
   });
-  const [showWatchAd, setShowWatchAd] = useState(true);
-  const [showDailyRace, setShowDailyRace] = useState(false);
-  const [showCheckIn, setShowCheckIn] = useState(false);
-  const [showShareFriends, setShowShareFriends] = useState(true);
   const [showStore, setShowStore] = useState(false);
   const [loadingTaskId, setLoadingTaskId] = useState<string>("");
   const [tasks, setTasks] = useState<TaskItem[]>([
@@ -105,6 +103,7 @@ const TaskListDialog = ({
       isDaily: false,
       id: "WATCH_AD",
       icon: "ad.png",
+      checked: false,
     },
     // {
     //   title: "Check In",
@@ -119,6 +118,7 @@ const TaskListDialog = ({
       isDaily: true,
       id: "PLAY_DAILY_RACE",
       icon: "race.png",
+      checked: false,
     },
     {
       title: "Join Chat",
@@ -126,6 +126,7 @@ const TaskListDialog = ({
       isDaily: false,
       id: "JOIN_CHANNEL",
       icon: "tg-channel.png",
+      checked: false,
     },
     {
       title: "Invite Friend",
@@ -133,6 +134,7 @@ const TaskListDialog = ({
       isDaily: false,
       id: "SHARE_FRIENDS",
       icon: "fren.png",
+      checked: false,
     },
   ]);
   const [storeItems, setStoreItems] = useState<StoreItemGroup[]>([
@@ -239,19 +241,25 @@ const TaskListDialog = ({
   ]);
 
   useEffect(() => {
-    const {
-      lastDailyRacePlayedTimestamp,
-      lastDailyCheckInTimestamp,
-      lastShareFriendsTimestamp,
-    } = userDoc;
-    setShowCheckIn(hasTimestampCrossedOneDay(lastDailyCheckInTimestamp));
-    setShowShareFriends(hasTimestampCrossedOneDay(lastShareFriendsTimestamp));
-
-    // setShowWatchAd(
-    //   !lastAdWatchedTimestamp ||
-    //     hasTimestampCrossedOneDay(lastAdWatchedTimestamp)
-    // );
-    setShowDailyRace(hasTimestampCrossedOneDay(lastDailyRacePlayedTimestamp));
+    const { lastDailyRacePlayedTimestamp, lastShareFriendsTimestamp } = userDoc;
+    setTasks((prevTasks: TaskItem[]) => {
+      return prevTasks.map((task) => {
+        if (task.id === "JOIN_CHANNEL" && userDoc.isChannelMember) {
+          return { ...task, checked: true };
+        } else if (
+          task.id === "SHARE_FRIENDS" &&
+          hasTimestampCrossedOneDay(lastShareFriendsTimestamp)
+        ) {
+          return { ...task, checked: true };
+        } else if (
+          task.id === "PLAY_DAILY_RACE" &&
+          hasTimestampCrossedOneDay(lastDailyRacePlayedTimestamp)
+        ) {
+          return { ...task, checked: true };
+        }
+        return task;
+      });
+    });
   }, [userDoc, open]);
 
   const xpBasedLevel = getLevelFromXp(userDoc.xp);
@@ -437,96 +445,92 @@ const TaskListDialog = ({
                   overflowY: "auto",
                 }}
               >
-                {tasks.map((task) => {
-                  if (
-                    (task.id === "JOIN_CHANNEL" && userDoc.isChannelMember) ||
-                    (task.id === "SHARE_FRIENDS" && !showShareFriends)
-                  )
-                    return null;
-                  return (
-                    <TaskElement
-                      key={task.id}
-                      onClick={async () => {
-                        if (task.id === "WATCH_AD") {
-                          await showAd();
-                        } else if (task.id === "DAILY_CHECK_IN") {
-                          setShowCheckIn(false);
-                        } else if (task.id === "PLAY_DAILY_RACE") {
-                          setShowDailyRace(false);
-                          onTaskButtonClick(task.id);
-                          onClose();
-                        } else if (task.id === "JOIN_CHANNEL") {
-                          setLoadingTaskId(task.id);
-                          const res = await axios.post(
-                            `${
-                              import.meta.env.VITE_TG_BOT_SERVER
-                            }/get-chat-member`,
-                            {
-                              chatId: "-1002258982493",
-                              userId: userDoc.id,
-                            }
-                          );
-                          const isMember = res.data.isMember;
-                          if (isMember) {
-                            await rewardCoins(userDoc.id, "JOIN_CHANNEL");
-                            await updateUserProps(
-                              userDoc.id,
-                              "isChannelMember",
-                              true
-                            );
-                          } else {
-                            WebApp.openTelegramLink(
-                              "https://t.me/+dGjfzWPKMzIyNDY1"
-                            );
-                          }
-                          setLoadingTaskId("");
-                        } else if (task.id === "SHARE_FRIENDS") {
-                          setLoadingTaskId(task.id);
-                          const res = await axios.post(
-                            `${
-                              import.meta.env.VITE_TG_BOT_SERVER
-                            }/get-message-id`,
-                            {
-                              userId: userDoc.id,
-                            }
-                          );
-                          if (res.data) {
-                            WebApp.shareMessage(res.data, async (isSent) => {
-                              if (isSent) {
-                                await rewardCoins(userDoc.id, "SHARE_FRIENDS");
-                                await updateUserDocTimestamps(
-                                  userDoc.id,
-                                  "lastShareFriendsTimestamp"
-                                );
+                {tasks
+                  .sort((a, b) => (a.checked ? 1 : b.checked ? -1 : 0))
+                  .map((task) => {
+                    return (
+                      <TaskElement
+                        key={task.id}
+                        onClick={async () => {
+                          if (task.id === "WATCH_AD") {
+                            await showAd();
+                            // } else if (task.id === "DAILY_CHECK_IN") {
+                            //   setShowCheckIn(false);
+                          } else if (task.id === "PLAY_DAILY_RACE") {
+                            // setShowDailyRace(false);
+                            setLoadingTaskId(task.id);
+                            onTaskButtonClick(task.id);
+                            onClose();
+                          } else if (task.id === "JOIN_CHANNEL") {
+                            setLoadingTaskId(task.id);
+                            const res = await axios.post(
+                              `${
+                                import.meta.env.VITE_TG_BOT_SERVER
+                              }/get-chat-member`,
+                              {
+                                chatId: "-1002258982493",
+                                userId: userDoc.id,
                               }
-                            });
+                            );
+                            const isMember = res.data.isMember;
+                            if (isMember) {
+                              await rewardCoins(userDoc.id, "JOIN_CHANNEL");
+                              await updateUserProps(
+                                userDoc.id,
+                                "isChannelMember",
+                                true
+                              );
+                            } else {
+                              WebApp.openTelegramLink(
+                                "https://t.me/+dGjfzWPKMzIyNDY1"
+                              );
+                            }
+                            setLoadingTaskId("");
+                          } else if (task.id === "SHARE_FRIENDS") {
+                            setLoadingTaskId(task.id);
+                            const res = await axios.post(
+                              `${
+                                import.meta.env.VITE_TG_BOT_SERVER
+                              }/get-message-id`,
+                              {
+                                userId: userDoc.id,
+                              }
+                            );
+                            if (res.data) {
+                              WebApp.shareMessage(res.data, async (isSent) => {
+                                if (isSent) {
+                                  await rewardCoins(
+                                    userDoc.id,
+                                    "SHARE_FRIENDS"
+                                  );
+                                  await updateUserDocTimestamps(
+                                    userDoc.id,
+                                    "lastShareFriendsTimestamp"
+                                  );
+                                }
+                              });
+                            }
+                            // WebApp.shareToStory("https://t.me/tunedash_bot", {
+                            //   text: "Captain GPT has captured the voices of your favorite personalities, it's up to you to set them free...",
+                            //   widget_link: {
+                            //     url: "https://t.me/tunedash_bot",
+                            //     name: "Tune Dash",
+                            //   },
+                            // });
+                            // await rewardCoins(userDoc.id, "SHARE_FRIENDS");
+                            // await updateUserDocTimestamps(
+                            //   userDoc.id,
+                            //   "lastShareFriendsTimestamp"
+                            // );
                           }
-                          // WebApp.shareToStory("https://t.me/tunedash_bot", {
-                          //   text: "Captain GPT has captured the voices of your favorite personalities, it's up to you to set them free...",
-                          //   widget_link: {
-                          //     url: "https://t.me/tunedash_bot",
-                          //     name: "Tune Dash",
-                          //   },
-                          // });
-                          // await rewardCoins(userDoc.id, "SHARE_FRIENDS");
-                          // await updateUserDocTimestamps(
-                          //   userDoc.id,
-                          //   "lastShareFriendsTimestamp"
-                          // );
-                        }
-                      }}
-                      disabled={
-                        loadingTaskId === task.id || task.id === "WATCH_AD"
-                          ? !showWatchAd
-                          : task.id === "DAILY_CHECK_IN"
-                          ? showCheckIn
-                          : !showDailyRace
-                      }
-                      isLoading={loadingTaskId === task.id}
-                      task={task}
-                    />
-                  );
-                })}
+                        }}
+                        disabled={task.checked}
+                        checked={task.checked}
+                        isLoading={loadingTaskId === task.id}
+                        task={task}
+                      />
+                    );
+                  })}
               </Stack>
             )}
           </Stack>
