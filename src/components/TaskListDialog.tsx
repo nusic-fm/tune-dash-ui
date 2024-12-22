@@ -480,18 +480,38 @@ const TaskListDialog = ({
                           }
                           setLoadingTaskId("");
                         } else if (task.id === "SHARE_FRIENDS") {
-                          WebApp.shareToStory("https://t.me/tunedash_bot", {
-                            text: "Captain GPT has captured the voices of your favorite personalities, it's up to you to set them free...",
-                            widget_link: {
-                              url: "https://t.me/tunedash_bot",
-                              name: "Tune Dash",
-                            },
-                          });
-                          await rewardCoins(userDoc.id, "SHARE_FRIENDS");
-                          await updateUserDocTimestamps(
-                            userDoc.id,
-                            "lastShareFriendsTimestamp"
+                          setLoadingTaskId(task.id);
+                          const res = await axios.post(
+                            `${
+                              import.meta.env.VITE_TG_BOT_SERVER
+                            }/get-message-id`,
+                            {
+                              userId: userDoc.id,
+                            }
                           );
+                          if (res.data) {
+                            WebApp.shareMessage(res.data, async (isSent) => {
+                              if (isSent) {
+                                await rewardCoins(userDoc.id, "SHARE_FRIENDS");
+                                await updateUserDocTimestamps(
+                                  userDoc.id,
+                                  "lastShareFriendsTimestamp"
+                                );
+                              }
+                            });
+                          }
+                          // WebApp.shareToStory("https://t.me/tunedash_bot", {
+                          //   text: "Captain GPT has captured the voices of your favorite personalities, it's up to you to set them free...",
+                          //   widget_link: {
+                          //     url: "https://t.me/tunedash_bot",
+                          //     name: "Tune Dash",
+                          //   },
+                          // });
+                          // await rewardCoins(userDoc.id, "SHARE_FRIENDS");
+                          // await updateUserDocTimestamps(
+                          //   userDoc.id,
+                          //   "lastShareFriendsTimestamp"
+                          // );
                         }
                       }}
                       disabled={
