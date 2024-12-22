@@ -4,6 +4,7 @@ type Props = {
   currentLevel: number;
   selectedLevel: number;
   setSelectedLevel: (level: number) => void;
+  onLevelUp: () => void;
 };
 
 const size = 35;
@@ -30,6 +31,7 @@ const LevelsBar = ({
   currentLevel,
   selectedLevel,
   setSelectedLevel,
+  onLevelUp,
 }: Props) => {
   return (
     <Stack
@@ -88,6 +90,9 @@ const LevelsBar = ({
         justifyContent={"center"}
         position={"relative"}
         onClick={() => {
+          if (currentLevel < 2) {
+            onLevelUp();
+          }
           if (currentLevel >= 2) {
             setSelectedLevel(2);
           }
@@ -109,6 +114,9 @@ const LevelsBar = ({
         justifyContent={"center"}
         position={"relative"}
         onClick={() => {
+          if (currentLevel < 3) {
+            onLevelUp();
+          }
           if (currentLevel >= 3) {
             setSelectedLevel(3);
           }
@@ -130,6 +138,9 @@ const LevelsBar = ({
         justifyContent={"center"}
         position={"relative"}
         onClick={() => {
+          if (currentLevel < 4) {
+            onLevelUp();
+          }
           if (currentLevel >= 4) {
             setSelectedLevel(4);
           }
@@ -151,6 +162,9 @@ const LevelsBar = ({
         justifyContent={"center"}
         position={"relative"}
         onClick={() => {
+          if (currentLevel < 5) {
+            onLevelUp();
+          }
           if (currentLevel >= 5) {
             setSelectedLevel(5);
           }

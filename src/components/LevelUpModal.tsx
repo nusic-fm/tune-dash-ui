@@ -17,6 +17,7 @@ import DoneRoundedIcon from "@mui/icons-material/DoneRounded";
 import PriorityHighRoundedIcon from "@mui/icons-material/PriorityHighRounded";
 import { useState } from "react";
 import { LoadingButton } from "@mui/lab";
+import { increment } from "firebase/firestore";
 
 type Props = {
   setShowLevelUpModal: (show: boolean) => void;
@@ -28,6 +29,7 @@ function LevelUpModal({ setShowLevelUpModal, userDoc }: Props) {
   const xpNeededForNextLevel = getXpForNextLevel(userDoc.level);
   const dashNeededForNextLevel = getDashForNextLevel(userDoc.level);
   const missingDash = dashNeededForNextLevel - userDoc.coins;
+  const missingXp = xpNeededForNextLevel - userDoc.xp;
   const isMaxLevel = userDoc.level === 5;
   const [isLoading, setIsLoading] = useState(false);
 
@@ -96,8 +98,14 @@ function LevelUpModal({ setShowLevelUpModal, userDoc }: Props) {
             mt={1.5}
           >
             <Badge
-              badgeContent={<DoneRoundedIcon fontSize="small" />}
-              color="success"
+              badgeContent={
+                missingXp > 0 ? (
+                  <PriorityHighRoundedIcon fontSize="small" />
+                ) : (
+                  <DoneRoundedIcon fontSize="small" />
+                )
+              }
+              color={missingXp > 0 ? "error" : "success"}
             >
               <Stack
                 gap={1}
@@ -111,6 +119,7 @@ function LevelUpModal({ setShowLevelUpModal, userDoc }: Props) {
                 }}
                 px={2}
                 py={1}
+                width={120}
               >
                 <Stack direction={"row"} gap={2} alignItems={"space-between"}>
                   <Stack alignItems={"center"}>
@@ -147,7 +156,7 @@ function LevelUpModal({ setShowLevelUpModal, userDoc }: Props) {
                   <DoneRoundedIcon fontSize="small" />
                 )
               }
-              color="error"
+              color={missingDash > 0 ? "error" : "success"}
             >
               <Stack
                 gap={1}
@@ -247,7 +256,7 @@ function LevelUpModal({ setShowLevelUpModal, userDoc }: Props) {
                   setIsLoading(false);
                 });
               }}
-              disabled={isMaxLevel}
+              disabled={isMaxLevel || missingXp > 0}
             >
               Unlock
             </LoadingButton>
@@ -259,7 +268,11 @@ function LevelUpModal({ setShowLevelUpModal, userDoc }: Props) {
               onClick={async () => {
                 if (unlockAvailable(userDoc.xp, userDoc.coins, userDoc.level)) {
                   setIsLoading(true);
-                  await updateUserLevel(userDoc.id, nextLevel);
+                  await updateUserLevel(
+                    userDoc.id,
+                    nextLevel,
+                    increment(-getDashForNextLevel(userDoc.level))
+                  );
                   setIsLoading(false);
                 } else {
                   WebApp.showAlert(

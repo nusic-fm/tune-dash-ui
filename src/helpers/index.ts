@@ -1116,29 +1116,23 @@ export const getTotalWinningRewards = (level: number, positions: number[]) => {
 export const numberToK = (number: number) => {
   return number > 1000 ? `${Math.floor(number / 1000)}K` : number;
 };
-const XP_FOR_LEVELS = [10000, 35000, 98000, 254000];
-const DASH_FOR_LEVELS = [25000, 125000, 625000, 3125000];
+const XP_FOR_LEVELS = [0, 10000, 35000, 98000, 254000];
+const DASH_FOR_LEVELS = [0, 25000, 125000, 625000, 3125000];
 
 export const getLevelFromXp = (xp: number = 0) => {
-  switch (true) {
-    case xp < XP_FOR_LEVELS[0]:
-      return 1;
-    case xp < XP_FOR_LEVELS[1]:
-      return 2;
-    case xp < XP_FOR_LEVELS[2]:
-      return 3;
-    case xp < XP_FOR_LEVELS[3]:
-      return 4;
-    case xp >= XP_FOR_LEVELS[3]:
-      return 5;
-  }
+  if (xp >= XP_FOR_LEVELS[4]) return 5;
+  if (xp >= XP_FOR_LEVELS[3]) return 4;
+  if (xp >= XP_FOR_LEVELS[2]) return 3;
+  if (xp >= XP_FOR_LEVELS[1]) return 2;
+  if (xp >= XP_FOR_LEVELS[0]) return 1;
+  return 0;
 };
 
 export const getXpForNextLevel = (level: number) => {
-  return XP_FOR_LEVELS[level - 1];
+  return XP_FOR_LEVELS[level];
 };
 export const getDashForNextLevel = (level: number) => {
-  return DASH_FOR_LEVELS[level - 1];
+  return DASH_FOR_LEVELS[level];
 };
 
 export const unlockAvailable = (

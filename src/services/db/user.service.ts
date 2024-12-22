@@ -10,7 +10,6 @@ import {
   Timestamp,
   setDoc,
   increment,
-  arrayUnion,
   collection,
   onSnapshot,
   FieldValue,
@@ -180,9 +179,16 @@ const updateUserDocTimestamps = async (
   await updateDoc(d, { [props]: serverTimestamp() });
 };
 
-const updateUserLevel = async (userId: string, level: number) => {
+const updateUserLevel = async (
+  userId: string,
+  level: number,
+  coins: FieldValue
+) => {
   const d = doc(db, DB_NAME, userId);
-  await updateDoc(d, { level });
+  await updateDoc(d, {
+    level,
+    coins,
+  });
 };
 
 const updateUserProps = async (

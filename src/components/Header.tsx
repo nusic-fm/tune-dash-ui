@@ -125,6 +125,7 @@ const Header = ({
             currentLevel={userDoc?.level || 1}
             selectedLevel={selectedLevel}
             setSelectedLevel={setSelectedLevel}
+            onLevelUp={() => setShowLevelUpModal(true)}
           />
         </Box>
       )}
