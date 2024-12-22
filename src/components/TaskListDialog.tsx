@@ -95,6 +95,7 @@ const TaskListDialog = ({
   const [showWatchAd, setShowWatchAd] = useState(true);
   const [showDailyRace, setShowDailyRace] = useState(false);
   const [showCheckIn, setShowCheckIn] = useState(false);
+  const [showShareFriends, setShowShareFriends] = useState(true);
   const [showStore, setShowStore] = useState(false);
   const [loadingTaskId, setLoadingTaskId] = useState<string>("");
   const [tasks, setTasks] = useState<TaskItem[]>([
@@ -126,13 +127,13 @@ const TaskListDialog = ({
       id: "JOIN_CHANNEL",
       icon: "tg-channel.png",
     },
-    // {
-    //   title: "Invite Friend",
-    //   rewardAmount: getRewardTokensAmount("SHARE_FRIENDS"),
-    //   isDaily: false,
-    //   id: "SHARE_FRIENDS",
-    //   icon: "fren.png",
-    // },
+    {
+      title: "Invite Friend",
+      rewardAmount: getRewardTokensAmount("SHARE_FRIENDS"),
+      isDaily: false,
+      id: "SHARE_FRIENDS",
+      icon: "fren.png",
+    },
   ]);
   const [storeItems, setStoreItems] = useState<StoreItemGroup[]>([
     {
@@ -238,8 +239,13 @@ const TaskListDialog = ({
   ]);
 
   useEffect(() => {
-    const { lastDailyRacePlayedTimestamp, lastDailyCheckInTimestamp } = userDoc;
+    const {
+      lastDailyRacePlayedTimestamp,
+      lastDailyCheckInTimestamp,
+      lastShareFriendsTimestamp,
+    } = userDoc;
     setShowCheckIn(hasTimestampCrossedOneDay(lastDailyCheckInTimestamp));
+    setShowShareFriends(hasTimestampCrossedOneDay(lastShareFriendsTimestamp));
     // setShowWatchAd(
     //   !lastAdWatchedTimestamp ||
     //     hasTimestampCrossedOneDay(lastAdWatchedTimestamp)
@@ -431,7 +437,10 @@ const TaskListDialog = ({
                 }}
               >
                 {tasks.map((task) => {
-                  if (task.id === "JOIN_CHANNEL" && userDoc.isChannelMember)
+                  if (
+                    (task.id === "JOIN_CHANNEL" && userDoc.isChannelMember) ||
+                    (task.id === "SHARE_FRIENDS" && !showShareFriends)
+                  )
                     return null;
                   return (
                     <TaskElement
@@ -469,8 +478,18 @@ const TaskListDialog = ({
                           }
                           setLoadingTaskId("");
                         } else if (task.id === "SHARE_FRIENDS") {
-                          // setLoadingTaskId(task.id);
-                          // WebApp.send;
+                          WebApp.shareToStory("https://t.me/tunedash_bot", {
+                            text: "Captain GPT has captured the voices of your favorite personalities, it's up to you to set them free...",
+                            widget_link: {
+                              url: "https://t.me/tunedash_bot",
+                              name: "Tune Dash",
+                            },
+                          });
+                          await rewardCoins(userDoc.id, "SHARE_FRIENDS");
+                          await updateUserDocTimestamps(
+                            userDoc.id,
+                            "lastShareFriendsTimestamp"
+                          );
                         }
                       }}
                       disabled={

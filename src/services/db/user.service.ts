@@ -48,6 +48,7 @@ export type UserDoc = User & {
   lastSeen: Timestamp;
   lastDailyRacePlayedTimestamp?: Timestamp;
   lastDailyCheckInTimestamp?: Timestamp;
+  lastShareFriendsTimestamp?: Timestamp;
   dailyVoiceRequestTimestamp?: Timestamp;
   isChannelMember?: boolean;
 };
@@ -173,6 +174,7 @@ const updateUserDocTimestamps = async (
     | "lastAdWatchedTimestamp"
     | "lastDailyRacePlayedTimestamp"
     | "dailyVoiceRequestTimestamp"
+    | "lastShareFriendsTimestamp"
 ) => {
   const d = doc(db, DB_NAME, userId);
   await updateDoc(d, { [props]: serverTimestamp() });
