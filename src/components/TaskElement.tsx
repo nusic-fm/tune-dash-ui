@@ -1,4 +1,4 @@
-import { Stack, Typography, Box } from "@mui/material";
+import { Stack, Typography, Box, CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
 import { TaskItem } from "./TaskListDialog";
 
@@ -6,6 +6,7 @@ type Props = {
   onClick: () => void;
   disabled: boolean;
   task: TaskItem;
+  isLoading: boolean;
 };
 
 export const LIGHT_YELLOW_COLOR = "#f9c76f";
@@ -32,7 +33,7 @@ export const LIGHT_YELLOW_COLOR = "#f9c76f";
 //   );
 // };
 
-const TaskElement = ({ onClick, disabled, task }: Props) => {
+const TaskElement = ({ onClick, disabled, task, isLoading }: Props) => {
   return (
     <Stack
       gap={1}
@@ -72,10 +73,10 @@ const TaskElement = ({ onClick, disabled, task }: Props) => {
         </Stack>
       </Stack>
       <motion.button
-        whileHover={{ scale: disabled ? 1 : 1.1 }}
-        whileTap={{ scale: disabled ? 1 : 0.9 }}
+        whileHover={{ scale: disabled || isLoading ? 1 : 1.1 }}
+        whileTap={{ scale: disabled || isLoading ? 1 : 0.9 }}
         onClick={() => {
-          if (!disabled) onClick();
+          if (!disabled && !isLoading) onClick();
         }}
         disabled={disabled}
         style={{
@@ -95,7 +96,11 @@ const TaskElement = ({ onClick, disabled, task }: Props) => {
           opacity: disabled ? 0.4 : 1,
         }}
       >
-        <Typography variant="caption">Go</Typography>
+        {isLoading ? (
+          <CircularProgress size={"12px"} />
+        ) : (
+          <Typography variant="caption">Go</Typography>
+        )}
       </motion.button>
     </Stack>
   );

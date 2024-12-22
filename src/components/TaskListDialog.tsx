@@ -121,7 +121,7 @@ const TaskListDialog = ({
       icon: "race.png",
     },
     {
-      title: "Join Channel",
+      title: "Join Chat",
       rewardAmount: getRewardTokensAmount("JOIN_CHANNEL"),
       isDaily: false,
       id: "JOIN_CHANNEL",
@@ -246,6 +246,7 @@ const TaskListDialog = ({
     } = userDoc;
     setShowCheckIn(hasTimestampCrossedOneDay(lastDailyCheckInTimestamp));
     setShowShareFriends(hasTimestampCrossedOneDay(lastShareFriendsTimestamp));
+
     // setShowWatchAd(
     //   !lastAdWatchedTimestamp ||
     //     hasTimestampCrossedOneDay(lastAdWatchedTimestamp)
@@ -465,8 +466,8 @@ const TaskListDialog = ({
                               userId: userDoc.id,
                             }
                           );
-                          const isMember = res.data;
-                          if (Boolean(isMember)) {
+                          const isMember = res.data.isMember;
+                          if (isMember) {
                             await rewardCoins(userDoc.id, "JOIN_CHANNEL");
                             await updateUserProps(
                               userDoc.id,
@@ -521,6 +522,7 @@ const TaskListDialog = ({
                           ? showCheckIn
                           : !showDailyRace
                       }
+                      isLoading={loadingTaskId === task.id}
                       task={task}
                     />
                   );
