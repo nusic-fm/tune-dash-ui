@@ -461,7 +461,7 @@ const TaskListDialog = ({
                               import.meta.env.VITE_TG_BOT_SERVER
                             }/get-chat-member`,
                             {
-                              chatId: "tunedash",
+                              chatId: "-1002258982493",
                               userId: userDoc.id,
                             }
                           );
@@ -474,7 +474,9 @@ const TaskListDialog = ({
                               true
                             );
                           } else {
-                            WebApp.openTelegramLink("https://t.me/tunedash");
+                            WebApp.openTelegramLink(
+                              "https://t.me/+dGjfzWPKMzIyNDY1"
+                            );
                           }
                           setLoadingTaskId("");
                         } else if (task.id === "SHARE_FRIENDS") {
