@@ -5,7 +5,7 @@ import {
   QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { CoverV1, VoiceV1Cover } from "../services/db/coversV1.service";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   downloadAudioFiles,
   marbleRaceOnlyInstrument,
@@ -14,6 +14,7 @@ import {
 import { createRandomNumber } from "../helpers";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
 import HeadsetRoundedIcon from "@mui/icons-material/HeadsetRounded";
+import { COVER_IDS } from "../App";
 
 type Props = {
   coversSnapshot: QuerySnapshot<DocumentData>;
@@ -94,18 +95,23 @@ const SelectTrack = ({
         py={2}
         // px={1}
       >
-        {coversSnapshot.docs.map(
-          (doc: QueryDocumentSnapshot<DocumentData, DocumentData>) => {
+        {coversSnapshot.docs
+          .sort((a, b) => {
+            const aId = a.id;
+            const bId = b.id;
+            return COVER_IDS.indexOf(aId) - COVER_IDS.indexOf(bId);
+          })
+          .map((doc: QueryDocumentSnapshot<DocumentData, DocumentData>) => {
             const coverDoc = doc.data() as CoverV1;
             return (
               <Box
                 sx={{
                   background:
-                    doc.id === "fEGU8n7EdEqhtMIfse09"
-                      ? `url(/assets/tunedash/sr.png)`
+                    doc.id === "jbX4FSCgZL3hz90CmnRd"
+                      ? `url(/assets/tunedash/sr2.png)`
                       : `url(/assets/tunedash/track-rect.png)`,
                   width: 312,
-                  height: doc.id === "fEGU8n7EdEqhtMIfse09" ? 85 : 67,
+                  height: doc.id === "jbX4FSCgZL3hz90CmnRd" ? 85 : 67,
                   backgroundRepeat: "no-repeat",
                 }}
                 key={doc.id}
@@ -168,8 +174,7 @@ const SelectTrack = ({
                 )}
               </Box>
             );
-          }
-        )}
+          })}
       </Stack>
       <LongImageMotionButton
         onClick={

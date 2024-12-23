@@ -453,6 +453,7 @@ const TaskListDialog = ({
                         key={task.id}
                         onClick={async () => {
                           if (task.id === "WATCH_AD") {
+                            setLoadingTaskId(task.id);
                             await showAd();
                             // } else if (task.id === "DAILY_CHECK_IN") {
                             //   setShowCheckIn(false);

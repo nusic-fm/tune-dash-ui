@@ -369,7 +369,7 @@ const downloadAndPlayIntro = async () => {
   // bf = buffer;
   // }
   const introPlayer = new Tone.Player(buffer).toDestination();
-  introPlayer.setLoopPoints(0, 246.5);
+  introPlayer.setLoopPoints(0, 248.5);
   introPlayer.loop = true;
   introPlayerRef = introPlayer;
 };

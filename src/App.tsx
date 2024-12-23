@@ -56,7 +56,13 @@ const getGameBgPath = (screenName: string) => {
 };
 
 // const screenNames = ["splash", "start", "menu", "select-track", "choose-primary-voice", "voices-clash", "game"];
-
+export const COVER_IDS = [
+  "HPF5qmOAAdfU4O9uJM5T",
+  "7GskJxL0ldK9OGbl6e1Y",
+  "jbX4FSCgZL3hz90CmnRd",
+  "i9aUmvBYqdlCjqtQLe8u",
+  "lsUBEcaYfOidpvjUxpz1",
+];
 function App() {
   //  References to the PhaserGame component (game and scene are exposed)
   const phaserRef = useRef<IRefPhaserGame | null>(null);
@@ -113,13 +119,7 @@ function App() {
   const [coversSnapshot, cssLoading, cssError] = useCollection(
     query(
       collection(db, "tunedash_covers"),
-      where(documentId(), "in", [
-        "HPF5qmOAAdfU4O9uJM5T",
-        "7GskJxL0ldK9OGbl6e1Y",
-        "fEGU8n7EdEqhtMIfse09",
-        "i9aUmvBYqdlCjqtQLe8u",
-        "lsUBEcaYfOidpvjUxpz1",
-      ]) // random
+      where(documentId(), "in", COVER_IDS) // random
     )
   );
   const downloadVocalsAndStartGame = async () => {
