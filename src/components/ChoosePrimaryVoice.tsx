@@ -1,4 +1,4 @@
-import { Stack, Box, Typography, Chip } from "@mui/material";
+import { Stack, Box, Typography, Chip, CircularProgress } from "@mui/material";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
 import { createRandomNumber, getVoiceAvatarPath } from "../helpers";
 import { useEffect, useState } from "react";
@@ -36,6 +36,7 @@ const ChoosePrimaryVoice = ({
   );
   const [showAddVoiceDialog, setShowAddVoiceDialog] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (noOfVoices === 1) {
@@ -145,7 +146,7 @@ const ChoosePrimaryVoice = ({
           {voices.map((voice, idx) => (
             <Stack key={idx} width={"25%"} alignItems={"center"}>
               <Box
-                onClick={() => {
+                onClick={async () => {
                   if (primaryVoiceInfo.map((v) => v.id).includes(voice.id)) {
                     return;
                   }
@@ -154,11 +155,13 @@ const ChoosePrimaryVoice = ({
                   newVoices[currentIdx] = voice;
                   setPrimaryVoiceInfo(newVoices);
                   setSelectedVoiceInfo(voice);
-                  switchVocalsByDownloading(
+                  setIsLoading(true);
+                  await switchVocalsByDownloading(
                     selectedCoverId,
                     voice.id,
                     selectedVoiceInfo.id
                   );
+                  setIsLoading(false);
                 }}
                 position={"relative"}
                 width={65}
@@ -183,10 +186,14 @@ const ChoosePrimaryVoice = ({
                     borderRadius={"50%"}
                     sx={{ background: "rgba(0, 0, 0, 0.5)" }}
                   >
-                    <DoneRoundedIcon
-                      sx={{ color: "#00e547" }}
-                      fontSize="large"
-                    />
+                    {isLoading ? (
+                      <CircularProgress sx={{ color: "#00e547" }} size={20} />
+                    ) : (
+                      <DoneRoundedIcon
+                        sx={{ color: "#00e547" }}
+                        fontSize="large"
+                      />
+                    )}
                   </Box>
                 )}
                 {voice.id === selectedVoiceInfo.id && (
