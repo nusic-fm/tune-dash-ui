@@ -11,8 +11,9 @@ import {
   duplicateArrayElemToN,
   getBeatsArray,
   createRandomNumber,
-  getWinningRewardsByPosition,
+  // getWinningRewardsByPosition,
   getTotalWinningRewards,
+  noToPositionSuffix,
 } from "../../helpers";
 import { EventBus } from "../EventBus";
 import { IGameDataParams } from "../PhaserGame";
@@ -500,25 +501,25 @@ export default class Game extends Phaser.Scene {
       });
     }
   };
-  showXp(position: number, level: number) {
-    const { xp, dash } = getWinningRewardsByPosition(position, level);
-    console.log("xp: ", xp);
-    console.log("dash: ", dash);
-    const xpText = this.add
-      .text(this.centerX, 60 * this.dpr, `+${xp}XP`, {
-        fontSize: `${52 * this.dpr}px`,
-        color: "#573FC8",
-        stroke: "#fff",
-        strokeThickness: 4,
-      })
-      .setVisible(false)
-      .setDepth(1000001)
-      .setScrollFactor(0);
-    xpText.setPosition(
-      xpText.x - xpText.width / 2,
-      xpText.y - xpText.height / 2
-    );
-  }
+  // showXp(position: number, level: number) {
+  //   const { xp, dash } = getWinningRewardsByPosition(position, level);
+  //   console.log("xp: ", xp);
+  //   console.log("dash: ", dash);
+  //   const xpText = this.add
+  //     .text(this.centerX, 60 * this.dpr, `+${xp}XP`, {
+  //       fontSize: `${52 * this.dpr}px`,
+  //       color: "#573FC8",
+  //       stroke: "#fff",
+  //       strokeThickness: 4,
+  //     })
+  //     .setVisible(false)
+  //     .setDepth(1000001)
+  //     .setScrollFactor(0);
+  //   xpText.setPosition(
+  //     xpText.x - xpText.width / 2,
+  //     xpText.y - xpText.height / 2
+  //   );
+  // }
   showResult() {
     // console.log("result voicesWinPositions: ", this.voicesWinPositions);
     const _voicesWinPositions = [...this.voicesWinPositions]; // Just to make sure the original array is not modified
@@ -586,25 +587,35 @@ export default class Game extends Phaser.Scene {
     //   .setDepth(1000001)
     //   .setScrollFactor(0);
     // eDash.setPosition(eDash.x - eDash.width / 2, eDash.y - eDash.height / 2);
-    // const xpText = this.add
-    //   .text(
-    //     this.centerX,
-    //     60 * this.dpr + eDash.height,
-    //     `+${userWinningRewards.totalXp} XP`,
-    //     {
-    //       fontSize: `${26 * this.dpr}px`,
-    //       color: "#573FC8",
-    //       stroke: "#fff",
-    //       strokeThickness: 4,
-    //     }
-    //   )
-    //   .setVisible(false)
-    //   .setDepth(1000001)
-    //   .setScrollFactor(0);
-    // xpText.setPosition(
-    //   xpText.x - xpText.width / 2,
-    //   xpText.y - xpText.height / 2
-    // );
+    const lowestPosition = _.min(userMarblePositions) as number;
+    const finalUserPosition = userWinners.length
+      ? noToPositionSuffix(lowestPosition)
+      : "YOU LOST";
+    const xpText = this.add
+      .text(
+        this.centerX,
+        (userWinners.length ? 160 : 220) * this.dpr,
+        finalUserPosition,
+        {
+          fontSize: `${66 * this.dpr}px`,
+          color:
+            lowestPosition <= this.userMarbleIndexes.length
+              ? "#00f5e7" // "linear-gradient(0deg, rgba(48,168,185,1) 50%, rgba(0,237,243,1) 100%)"
+              : "#a479fe", //"linear-gradient(0deg, rgba(167,108,254,1) 50%, rgba(163,52,184,1) 100%)",
+          stroke:
+            lowestPosition <= this.userMarbleIndexes.length
+              ? "#003f61"
+              : "#2f1a62",
+          strokeThickness: 12 * this.dpr,
+        }
+      )
+      .setVisible(false)
+      .setDepth(1000001)
+      .setScrollFactor(0);
+    xpText.setPosition(
+      xpText.x - xpText.width / 2,
+      xpText.y - xpText.height / 2
+    );
     // Add tween to scale the result image from 0 to 1
     this.tweens.add({
       targets: resultImage,
@@ -612,7 +623,7 @@ export default class Game extends Phaser.Scene {
       duration: 500,
       ease: "Bounce.out",
       onComplete: () => {
-        // xpText.setVisible(true);
+        xpText.setVisible(true);
         // eDash.setVisible(true);
         EventBus.emit(
           "game-over",

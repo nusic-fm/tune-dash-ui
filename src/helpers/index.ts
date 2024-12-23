@@ -1198,3 +1198,13 @@ export const getRewardTokensAmount = (rewardType: RewardType) => {
       return 0;
   }
 };
+
+export const noToPositionSuffix = (position: number) => {
+  return position === 4
+    ? "Fourth"
+    : position === 3
+    ? "THIRD"
+    : position === 2
+    ? "SECOND"
+    : "YOU WIN";
+};
