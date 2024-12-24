@@ -1,4 +1,4 @@
-import { Box, Stack, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import Header from "./components/Header";
 
@@ -87,7 +87,7 @@ function App() {
   });
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [startSectionIdx, setStartSectionIdx] = useState(1);
-  const [noOfRaceTracks, setNoOfRaceTracks] = useState(10);
+  const [noOfRaceTracks, setNoOfRaceTracks] = useState(11);
   const theme = useTheme();
   const isMobileView = useMediaQuery(theme.breakpoints.down("md"));
   const canvasElemWidth = isMobileView ? window.innerWidth : 414;
@@ -211,6 +211,7 @@ function App() {
         }
         // else {
         //   const ud = await getUserDocById("839574155");
+        //   setSelectedLevel(5);
         //   setUserDoc(ud);
         // }
         setIsDownloaded(true);
@@ -314,31 +315,134 @@ function App() {
               position={"relative"}
             >
               {screenName === "game" && isPlayingGame ? (
-                <Box
+                <Stack
                   position={"absolute"}
                   top={0}
                   left={0}
                   right={0}
-                  width={"100%"}
-                  display={"flex"}
+                  gap={1}
+                  alignItems={"center"}
                   justifyContent={"center"}
-                  pt={1}
                 >
-                  <SmallImageMotionButton
-                    name="Stop"
-                    onClick={() => {
-                      phaserRef.current?.game?.destroy(true);
-                      phaserRef.current = null;
-                      !!primaryVoiceInfo &&
-                        marbleRacePlayVocals(
-                          selectedCoverDocId,
-                          primaryVoiceInfo[0].id
-                        );
-                      setSecondaryVoiceInfo(null);
-                      setScreenName("voices-clash");
-                    }}
-                  />
-                </Box>
+                  <Box
+                    width={"100%"}
+                    display={"flex"}
+                    justifyContent={"center"}
+                    pt={1}
+                  >
+                    <SmallImageMotionButton
+                      name="Stop"
+                      onClick={() => {
+                        phaserRef.current?.game?.destroy(true);
+                        phaserRef.current = null;
+                        !!primaryVoiceInfo &&
+                          marbleRacePlayVocals(
+                            selectedCoverDocId,
+                            primaryVoiceInfo[0].id
+                          );
+                        setSecondaryVoiceInfo(null);
+                        setScreenName("voices-clash");
+                      }}
+                    />
+                  </Box>
+                  <Box
+                    display={"flex"}
+                    alignItems={"center"}
+                    position={"relative"}
+                  >
+                    <Stack width={160} gap={1} alignItems={"center"}>
+                      <Typography
+                        align="center"
+                        sx={{
+                          textTransform: "capitalize",
+                          fontSize: 16,
+                          fontWeight: 600,
+                          color: "#fff",
+                          textShadow: "0px 0px 10px #f2ad31",
+                        }}
+                      >
+                        Team {userDoc?.firstName || userDoc?.username}
+                      </Typography>
+                      <Box
+                        display={"flex"}
+                        alignItems={"center"}
+                        justifyContent={"center"}
+                        flexWrap={"wrap"}
+                      >
+                        {primaryVoiceInfo?.map((voice) => (
+                          <img
+                            key={voice.id}
+                            src={getVoiceAvatarPath(voice.id)}
+                            style={{
+                              borderRadius: "50%",
+                              outline: "4px solid #04344d",
+                              width: "50px",
+                              height: "50px",
+                              objectFit: "cover",
+                              objectPosition: "center",
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    </Stack>
+                    <Box
+                      position={"absolute"}
+                      top={0}
+                      left={0}
+                      width={"100%"}
+                      height={"100%"}
+                      display={"flex"}
+                      justifyContent={"center"}
+                      alignItems={"center"}
+                    >
+                      <img
+                        src="/assets/tunedash/vs.png"
+                        width={60}
+                        height={61}
+                      />
+                    </Box>
+                    <Stack
+                      width={160}
+                      // height={160}
+                      gap={1}
+                      alignItems={"center"}
+                    >
+                      <Typography
+                        align="center"
+                        sx={{
+                          textTransform: "capitalize",
+                          fontSize: 16,
+                          fontWeight: 600,
+                          color: "#fff",
+                          textShadow: "0px 0px 10px #f2ad31",
+                        }}
+                      >
+                        Captain GPT
+                      </Typography>
+                      <Box
+                        display={"flex"}
+                        alignItems={"center"}
+                        justifyContent={"center"}
+                        flexWrap={"wrap"}
+                      >
+                        {secondaryVoiceInfo?.map((voice) => (
+                          <img
+                            key={voice.id}
+                            src={getVoiceAvatarPath(voice.id)}
+                            style={{
+                              borderRadius: "50%",
+                              outline: "8px solid #04344d",
+                              width: "50px",
+                              height: "50px",
+                              objectFit: "cover",
+                              objectPosition: "center",
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    </Stack>
+                  </Box>
+                </Stack>
               ) : showGameOverButtons.show ? (
                 <GameOverDialog
                   xpEarnings={showGameOverButtons.xp}

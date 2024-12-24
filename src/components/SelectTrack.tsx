@@ -121,6 +121,7 @@ const SelectTrack = ({
                 gap={1}
                 zIndex={9}
                 onClick={async () => {
+                  if (downloadingCoverId) return;
                   if (doc.id !== selectedCoverDocId) {
                     const randomIdx = createRandomNumber(
                       0,
@@ -168,7 +169,7 @@ const SelectTrack = ({
                   <Chip
                     label="Select"
                     size="small"
-                    clickable
+                    clickable={!downloadingCoverId}
                     sx={{ backgroundColor: "#000", color: "#FFA500" }}
                   />
                 )}
