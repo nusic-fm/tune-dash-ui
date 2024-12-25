@@ -126,10 +126,10 @@ const initializeTone = async () => {
 
 const setEvents = () => {
   const transport = Tone.getTransport();
-  transport.off("start");
-  transport.off("stop");
-  transport.off("pause");
-  transport.off("loopStart");
+  // transport.off("start");
+  // transport.off("stop");
+  // transport.off("pause");
+  // transport.off("loopStart");
   transport.on("start", () => {
     console.log("Tone Started");
     isTonePlaying = true;
