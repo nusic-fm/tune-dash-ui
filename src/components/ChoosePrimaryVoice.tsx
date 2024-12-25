@@ -8,7 +8,6 @@ import SearchVoiceModelsDialog from "./SearchVoiceModelsDialog";
 import { UserDoc } from "../services/db/user.service";
 import { motion } from "framer-motion";
 import DisplayMultiVoiceSelection from "./DisplayMultiVoiceSelection";
-import DoneRoundedIcon from "@mui/icons-material/DoneRounded";
 
 type Props = {
   onProceedToNextScreen: () => void;
@@ -20,6 +19,15 @@ type Props = {
   noOfVoices: number;
   setPrimaryVoiceInfo: (voiceInfo: VoiceV1Cover[]) => void;
 };
+
+// Five Different Light Colors for Background
+export const FIVE_LIGHT_COLORS = [
+  "#fff",
+  "#ff7f7f",
+  "#fc9f5d",
+  "#9298ea",
+  "#ffd39f",
+];
 
 const ChoosePrimaryVoice = ({
   onProceedToNextScreen,
@@ -136,7 +144,7 @@ const ChoosePrimaryVoice = ({
           flexWrap={"wrap"}
           height={"85%"}
           width={"100%"}
-          // my={2}
+          py={1}
           borderRadius={10}
           sx={{
             overflowY: "auto",
@@ -170,7 +178,6 @@ const ChoosePrimaryVoice = ({
                 alignItems={"center"}
                 justifyContent={"center"}
                 borderRadius={"50%"}
-                border={"4px solid #AABBCC"}
               >
                 {primaryVoiceInfo.map((v) => v.id).includes(voice.id) && (
                   <Box
@@ -184,33 +191,53 @@ const ChoosePrimaryVoice = ({
                     alignItems={"center"}
                     justifyContent={"center"}
                     borderRadius={"50%"}
-                    sx={{ background: "rgba(0, 0, 0, 0.5)" }}
+                    sx={{
+                      background: "rgba(0, 0, 0, 0.5)",
+                      border: `4px solid ${
+                        FIVE_LIGHT_COLORS[
+                          primaryVoiceInfo.findIndex((v) => v.id === voice.id)
+                        ]
+                      }`,
+                    }}
                   >
-                    {isLoading ? (
-                      <CircularProgress sx={{ color: "#00e547" }} size={20} />
+                    {isLoading && voice.id === selectedVoiceInfo.id ? (
+                      <CircularProgress color="primary" size={20} />
                     ) : (
-                      <DoneRoundedIcon
-                        sx={{ color: "#00e547" }}
-                        fontSize="large"
-                      />
+                      // <DoneRoundedIcon
+                      //   sx={{ color: "#00e547" }}
+                      //   fontSize="large"
+                      // />
+                      <Box
+                        sx={{
+                          width: 22,
+                          height: 18,
+                          background:
+                            FIVE_LIGHT_COLORS[
+                              primaryVoiceInfo.findIndex(
+                                (v) => v.id === voice.id
+                              )
+                            ],
+                          borderRadius: 1,
+                        }}
+                        width={"100%"}
+                        height={"100%"}
+                        display={"flex"}
+                        justifyContent={"center"}
+                        alignItems={"center"}
+                      >
+                        <Typography
+                          variant="caption"
+                          fontWeight={600}
+                          color={"#000"}
+                          fontSize={12}
+                        >
+                          {primaryVoiceInfo.findIndex(
+                            (v) => v.id === voice.id
+                          ) + 1}
+                        </Typography>
+                      </Box>
                     )}
                   </Box>
-                )}
-                {voice.id === selectedVoiceInfo.id && (
-                  <img
-                    src={"/assets/tunedash/focus.png"}
-                    width={"100%"}
-                    height={"100%"}
-                    style={{
-                      zIndex: 0,
-                      cursor: "pointer",
-                      // zoom: 1.1,
-                      transform: "scale(1.2)",
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                    }}
-                  />
                 )}
                 <img
                   src={getVoiceAvatarPath(voice.id)}

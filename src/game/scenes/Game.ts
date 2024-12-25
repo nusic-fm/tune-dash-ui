@@ -597,7 +597,7 @@ export default class Game extends Phaser.Scene {
         (userWinners.length ? 160 : 220) * this.dpr,
         finalUserPosition,
         {
-          fontSize: `${66 * this.dpr}px`,
+          fontSize: `${42 * this.dpr}px`,
           color:
             lowestPosition <= this.userMarbleIndexes.length
               ? "#00f5e7" // "linear-gradient(0deg, rgba(48,168,185,1) 50%, rgba(0,237,243,1) 100%)"

@@ -2,6 +2,7 @@ import { Box, Stack, Typography } from "@mui/material";
 import { getVoiceAvatarPath } from "../helpers";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import { FIVE_LIGHT_COLORS } from "./ChoosePrimaryVoice";
 
 type Props = {
   noOfVoices: number;
@@ -109,7 +110,7 @@ const DisplayMultiVoiceSelection = ({
                       transform: "translate(-50%, -50%)",
                       width: 22,
                       height: 18,
-                      background: "#00e547",
+                      background: FIVE_LIGHT_COLORS[idx - 1],
                       borderRadius: 1,
                     }}
                     width={"100%"}
@@ -149,7 +150,7 @@ const DisplayMultiVoiceSelection = ({
               transform: "translate(-50%, -50%)",
               width: 22,
               height: 18,
-              background: "#00e547",
+              background: FIVE_LIGHT_COLORS[0],
               borderRadius: 1,
             }}
             width={"100%"}
@@ -315,7 +316,7 @@ const DisplayMultiVoiceSelection = ({
                       transform: "translate(-50%, -50%)",
                       width: 22,
                       height: 18,
-                      background: "#00e547",
+                      background: FIVE_LIGHT_COLORS[idx - 1],
                       borderRadius: 1,
                     }}
                     width={"100%"}
