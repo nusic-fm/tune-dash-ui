@@ -7,7 +7,9 @@ import { switchVocalsByDownloading } from "../hooks/useTonejs";
 import SearchVoiceModelsDialog from "./SearchVoiceModelsDialog";
 import { UserDoc } from "../services/db/user.service";
 import { motion } from "framer-motion";
-import DisplayMultiVoiceSelection from "./DisplayMultiVoiceSelection";
+import DisplayMultiVoiceSelection, {
+  FOCUS_COLORS,
+} from "./DisplayMultiVoiceSelection";
 
 type Props = {
   onProceedToNextScreen: () => void;
@@ -22,11 +24,11 @@ type Props = {
 
 // Five Different Light Colors for Background
 export const FIVE_LIGHT_COLORS = [
-  "#fff",
-  "#ff7f7f",
-  "#fc9f5d",
-  "#9298ea",
-  "#ffd39f",
+  "#00E842",
+  "#FF60FB",
+  "#00E3EB",
+  "#FFFFFF",
+  "#F0B140",
 ];
 
 const ChoosePrimaryVoice = ({
@@ -193,15 +195,13 @@ const ChoosePrimaryVoice = ({
                     borderRadius={"50%"}
                     sx={{
                       background: "rgba(0, 0, 0, 0.5)",
-                      border: `4px solid ${
-                        FIVE_LIGHT_COLORS[
-                          primaryVoiceInfo.findIndex((v) => v.id === voice.id)
-                        ]
-                      }`,
                     }}
                   >
                     {isLoading && voice.id === selectedVoiceInfo.id ? (
-                      <CircularProgress color="primary" size={20} />
+                      <CircularProgress
+                        sx={{ color: FIVE_LIGHT_COLORS[currentIdx - 1] }}
+                        size={20}
+                      />
                     ) : (
                       // <DoneRoundedIcon
                       //   sx={{ color: "#00e547" }}
@@ -238,6 +238,26 @@ const ChoosePrimaryVoice = ({
                       </Box>
                     )}
                   </Box>
+                )}
+                {primaryVoiceInfo.map((v) => v.id).includes(voice.id) && (
+                  <img
+                    src={`/assets/tunedash/focus_${
+                      FOCUS_COLORS[
+                        primaryVoiceInfo.findIndex((v) => v.id === voice.id)
+                      ]
+                    }.png`}
+                    width={"100%"}
+                    height={"100%"}
+                    style={{
+                      zIndex: 0,
+                      cursor: "pointer",
+                      // zoom: 1.1,
+                      transform: "scale(1.2)",
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                    }}
+                  />
                 )}
                 <img
                   src={getVoiceAvatarPath(voice.id)}
