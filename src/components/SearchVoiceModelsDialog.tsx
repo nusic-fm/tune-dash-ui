@@ -125,7 +125,7 @@ const SearchVoiceModelsDialog = ({
             }}
             px={2}
           >
-            <Typography>Add a Voice</Typography>
+            <Typography>Add Voice</Typography>
           </Box>
           <Box
             // position={"absolute"}
@@ -259,7 +259,10 @@ const SearchVoiceModelsDialog = ({
                     }}
                     width={"100%"}
                     sx={{
-                      outline: "2px solid #FFBE48",
+                      outline:
+                        selectedVoiceModel?.title === voiceModel.title
+                          ? "2px solid #FFBE48"
+                          : "",
                       background:
                         selectedVoiceModel?.title === voiceModel.title
                           ? "#F8CA76"
