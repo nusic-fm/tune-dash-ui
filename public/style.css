@@ -87,3 +87,20 @@ body {
     justify-content: center;
     align-items: center;
 } */
+
+/* Image blinking animation */
+.focus-scale {
+  animation: focus-scale 1s linear infinite;
+}
+/* Scale up and down animation */
+@keyframes focus-scale {
+  0% {
+    transform: scale(1.2);
+  }
+  50% {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1.2);
+  }
+}

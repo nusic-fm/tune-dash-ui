@@ -13,7 +13,11 @@ type Props = {
 const sideOptionWidth = 55;
 const sideOptionHeight = 55;
 export const FOCUS_COLORS = ["green", "pink", "skyblue", "white", "yellow"];
-const DisplayMultiVoiceSelection = ({ noOfVoices, voicesInfo }: Props) => {
+const DisplayMultiVoiceSelection = ({
+  noOfVoices,
+  voicesInfo,
+  currentIdx,
+}: Props) => {
   return (
     <Stack
       direction={"row"}
@@ -86,6 +90,7 @@ const DisplayMultiVoiceSelection = ({ noOfVoices, voicesInfo }: Props) => {
                 {idx <= noOfVoices && (
                   <>
                     <img
+                      className={idx - 1 === currentIdx ? "focus-scale" : ""}
                       src={`/assets/tunedash/focus_${
                         FOCUS_COLORS[idx - 1]
                       }.png`}
@@ -221,6 +226,7 @@ const DisplayMultiVoiceSelection = ({ noOfVoices, voicesInfo }: Props) => {
         )}
         {/* {currentIdx === 0 && ( */}
         <img
+          className={currentIdx === 0 ? "focus-scale" : ""}
           src={`/assets/tunedash/focus_${FOCUS_COLORS[0]}.png`}
           width={"100%"}
           height={"100%"}
@@ -300,6 +306,7 @@ const DisplayMultiVoiceSelection = ({ noOfVoices, voicesInfo }: Props) => {
                 {idx <= noOfVoices && (
                   <>
                     <img
+                      className={idx - 1 === currentIdx ? "focus-scale" : ""}
                       src={`/assets/tunedash/focus_${
                         FOCUS_COLORS[idx - 1]
                       }.png`}

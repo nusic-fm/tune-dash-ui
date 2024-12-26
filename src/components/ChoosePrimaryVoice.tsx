@@ -167,6 +167,10 @@ const ChoosePrimaryVoice = ({
             <Stack key={idx} width={"25%"} alignItems={"center"}>
               <Box
                 onClick={async () => {
+                  if (primaryVoiceInfo[currentIdx]?.id === voice.id) {
+                    setCurrentIdx((prevIdx) => (prevIdx + 1) % noOfVoices);
+                    return;
+                  }
                   if (primaryVoiceInfo.map((v) => v.id).includes(voice.id)) {
                     return;
                   }
