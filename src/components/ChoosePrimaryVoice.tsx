@@ -74,9 +74,19 @@ const ChoosePrimaryVoice = ({
       alignItems={"center"}
       position={"relative"}
     >
+      <Typography
+        variant="h6"
+        sx={{
+          textTransform: "capitalize",
+          color: "#fff",
+          textShadow: "0px 0px 10px #f2ad31",
+        }}
+      >
+        Team {userDoc?.firstName || userDoc?.username}
+      </Typography>
       <DisplayMultiVoiceSelection
         noOfVoices={noOfVoices}
-        primaryVoiceInfo={primaryVoiceInfo}
+        voicesInfo={primaryVoiceInfo}
         currentIdx={currentIdx}
       />
       <Box

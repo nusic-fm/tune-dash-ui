@@ -6,18 +6,14 @@ import { FIVE_LIGHT_COLORS } from "./ChoosePrimaryVoice";
 
 type Props = {
   noOfVoices: number;
-  primaryVoiceInfo: VoiceV1Cover[];
+  voicesInfo: VoiceV1Cover[];
   currentIdx: number;
 };
 
 const sideOptionWidth = 55;
 const sideOptionHeight = 55;
 export const FOCUS_COLORS = ["green", "pink", "skyblue", "white", "yellow"];
-const DisplayMultiVoiceSelection = ({
-  noOfVoices,
-  primaryVoiceInfo,
-  currentIdx,
-}: Props) => {
+const DisplayMultiVoiceSelection = ({ noOfVoices, voicesInfo }: Props) => {
   return (
     <Stack
       direction={"row"}
@@ -26,9 +22,9 @@ const DisplayMultiVoiceSelection = ({
       width={"100%"}
       alignItems={"center"}
     >
-      <Stack gap={1}>
+      <Stack gap={3}>
         {[3, 5].map((idx) => {
-          const voiceInfo = primaryVoiceInfo[idx - 1];
+          const voiceInfo = voicesInfo[idx - 1];
           return (
             <Stack
               key={idx}
@@ -86,49 +82,55 @@ const DisplayMultiVoiceSelection = ({
                     }}
                   />
                 )}
-                {currentIdx === idx - 1 && (
-                  <img
-                    src={`/assets/tunedash/focus_${FOCUS_COLORS[idx - 1]}.png`}
-                    width={"100%"}
-                    height={"100%"}
-                    style={{
-                      zIndex: 0,
-                      cursor: "pointer",
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      transform: "scale(1.2)",
-                    }}
-                  />
-                )}
-                {currentIdx === idx - 1 && (
-                  <Box
-                    position={"absolute"}
-                    top={-10}
-                    left={"50%"}
-                    sx={{
-                      transform: "translate(-50%, -50%)",
-                      width: 22,
-                      height: 18,
-                      background: FIVE_LIGHT_COLORS[idx - 1],
-                      borderRadius: 1,
-                    }}
-                    width={"100%"}
-                    height={"100%"}
-                    display={"flex"}
-                    justifyContent={"center"}
-                    alignItems={"center"}
-                  >
-                    <Typography
-                      variant="caption"
-                      fontWeight={600}
-                      color={"#000"}
-                      fontSize={12}
+                {/* {currentIdx === idx - 1 && ( */}
+                {idx <= noOfVoices && (
+                  <>
+                    <img
+                      src={`/assets/tunedash/focus_${
+                        FOCUS_COLORS[idx - 1]
+                      }.png`}
+                      width={"100%"}
+                      height={"100%"}
+                      style={{
+                        zIndex: 0,
+                        cursor: "pointer",
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        transform: "scale(1.2)",
+                      }}
+                    />
+                    {/* )} */}
+                    {/* {currentIdx === idx - 1 && ( */}
+                    <Box
+                      position={"absolute"}
+                      top={-10}
+                      left={"50%"}
+                      sx={{
+                        transform: "translate(-50%, -50%)",
+                        width: 22,
+                        height: 18,
+                        background: FIVE_LIGHT_COLORS[idx - 1],
+                        borderRadius: 1,
+                      }}
+                      width={"100%"}
+                      height={"100%"}
+                      display={"flex"}
+                      justifyContent={"center"}
+                      alignItems={"center"}
                     >
-                      {idx}
-                    </Typography>
-                  </Box>
+                      <Typography
+                        variant="caption"
+                        fontWeight={600}
+                        color={"#000"}
+                        fontSize={12}
+                      >
+                        {idx}
+                      </Typography>
+                    </Box>
+                  </>
                 )}
+                {/* )} */}
               </Box>
             </Stack>
           );
@@ -141,37 +143,37 @@ const DisplayMultiVoiceSelection = ({
         width={105}
         height={125}
       >
-        {currentIdx === 0 && (
-          <Box
-            position={"absolute"}
-            top={-10}
-            left={"50%"}
-            sx={{
-              transform: "translate(-50%, -50%)",
-              width: 22,
-              height: 18,
-              background: FIVE_LIGHT_COLORS[0],
-              borderRadius: 1,
-            }}
-            width={"100%"}
-            height={"100%"}
-            display={"flex"}
-            justifyContent={"center"}
-            alignItems={"center"}
+        {/* {currentIdx === 0 && ( */}
+        <Box
+          position={"absolute"}
+          top={-10}
+          left={"50%"}
+          sx={{
+            transform: "translate(-50%, -50%)",
+            width: 22,
+            height: 18,
+            background: FIVE_LIGHT_COLORS[0],
+            borderRadius: 1,
+          }}
+          width={"100%"}
+          height={"100%"}
+          display={"flex"}
+          justifyContent={"center"}
+          alignItems={"center"}
+        >
+          <Typography
+            variant="caption"
+            fontWeight={600}
+            color={"#000"}
+            fontSize={12}
           >
-            <Typography
-              variant="caption"
-              fontWeight={600}
-              color={"#000"}
-              fontSize={12}
-            >
-              1
-            </Typography>
-          </Box>
-        )}
-        {primaryVoiceInfo[0] ? (
+            1
+          </Typography>
+        </Box>
+        {/* )} */}
+        {voicesInfo[0] ? (
           <img
-            src={getVoiceAvatarPath(primaryVoiceInfo[0].id)}
+            src={getVoiceAvatarPath(voicesInfo[0].id)}
             width={105}
             height={105}
             style={{
@@ -190,51 +192,53 @@ const DisplayMultiVoiceSelection = ({
             }}
           />
         )}
-        <Box
-          px={1}
-          width={105}
-          height={20}
-          sx={{
-            background: `url(/assets/tunedash/track-rect.png)`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-          display={"flex"}
-          justifyContent={"center"}
-          alignItems={"center"}
-        >
-          <Typography
-            variant="caption"
-            fontWeight={600}
+        {voicesInfo[0] && (
+          <Box
+            px={1}
+            width={105}
+            height={20}
             sx={{
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
+              background: `url(/assets/tunedash/track-rect.png)`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
             }}
+            display={"flex"}
+            justifyContent={"center"}
+            alignItems={"center"}
           >
-            {primaryVoiceInfo[0]?.name}
-          </Typography>
-        </Box>
-        {currentIdx === 0 && (
-          <img
-            src={`/assets/tunedash/focus_${FOCUS_COLORS[0]}.png`}
-            width={"100%"}
-            height={"100%"}
-            style={{
-              zIndex: 0,
-              cursor: "pointer",
-              // zoom: 1.1,
-              transform: "scale(1.2)",
-              position: "absolute",
-              top: 0,
-              left: 0,
-            }}
-          />
+            <Typography
+              variant="caption"
+              fontWeight={600}
+              sx={{
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {voicesInfo[0]?.name}
+            </Typography>
+          </Box>
         )}
+        {/* {currentIdx === 0 && ( */}
+        <img
+          src={`/assets/tunedash/focus_${FOCUS_COLORS[0]}.png`}
+          width={"100%"}
+          height={"100%"}
+          style={{
+            zIndex: 0,
+            cursor: "pointer",
+            // zoom: 1.1,
+            transform: "scale(1.2)",
+            position: "absolute",
+            top: 0,
+            left: 0,
+          }}
+        />
+        {/* )} */}
       </Stack>
-      <Stack gap={1}>
+      <Stack gap={3}>
         {[2, 4].map((idx) => {
-          const voiceInfo = primaryVoiceInfo[idx - 1];
+          const voiceInfo = voicesInfo[idx - 1];
           return (
             <Stack
               key={idx}
@@ -292,49 +296,55 @@ const DisplayMultiVoiceSelection = ({
                     }}
                   />
                 )}
-                {currentIdx === idx - 1 && (
-                  <img
-                    src={`/assets/tunedash/focus_${FOCUS_COLORS[idx - 1]}.png`}
-                    width={"100%"}
-                    height={"100%"}
-                    style={{
-                      zIndex: 0,
-                      cursor: "pointer",
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      transform: "scale(1.2)",
-                    }}
-                  />
-                )}
-                {currentIdx === idx - 1 && (
-                  <Box
-                    position={"absolute"}
-                    top={-10}
-                    left={"50%"}
-                    sx={{
-                      transform: "translate(-50%, -50%)",
-                      width: 22,
-                      height: 18,
-                      background: FIVE_LIGHT_COLORS[idx - 1],
-                      borderRadius: 1,
-                    }}
-                    width={"100%"}
-                    height={"100%"}
-                    display={"flex"}
-                    justifyContent={"center"}
-                    alignItems={"center"}
-                  >
-                    <Typography
-                      variant="caption"
-                      fontWeight={600}
-                      color={"#000"}
-                      fontSize={12}
+                {/* {currentIdx === idx - 1 && ( */}
+                {idx <= noOfVoices && (
+                  <>
+                    <img
+                      src={`/assets/tunedash/focus_${
+                        FOCUS_COLORS[idx - 1]
+                      }.png`}
+                      width={"100%"}
+                      height={"100%"}
+                      style={{
+                        zIndex: 0,
+                        cursor: "pointer",
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        transform: "scale(1.2)",
+                      }}
+                    />
+                    {/* )} */}
+                    {/* {currentIdx === idx - 1 && ( */}
+                    <Box
+                      position={"absolute"}
+                      top={-10}
+                      left={"50%"}
+                      sx={{
+                        transform: "translate(-50%, -50%)",
+                        width: 22,
+                        height: 18,
+                        background: FIVE_LIGHT_COLORS[idx - 1],
+                        borderRadius: 1,
+                      }}
+                      width={"100%"}
+                      height={"100%"}
+                      display={"flex"}
+                      justifyContent={"center"}
+                      alignItems={"center"}
                     >
-                      {idx}
-                    </Typography>
-                  </Box>
+                      <Typography
+                        variant="caption"
+                        fontWeight={600}
+                        color={"#000"}
+                        fontSize={12}
+                      >
+                        {idx}
+                      </Typography>
+                    </Box>
+                  </>
                 )}
+                {/* )} */}
               </Box>
             </Stack>
           );

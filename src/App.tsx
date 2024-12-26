@@ -37,6 +37,7 @@ import SlideUp from "./components/SlideUp";
 import WebApp from "@twa-dev/sdk";
 import { EventBus } from "./game/EventBus";
 import GameOverDialog from "./components/GameOverDialog";
+import ChooseOpponentVoice from "./components/ChooseOpponentVoice";
 
 export const tracks = ["01", "03", "06", "07", "16"];
 
@@ -49,6 +50,7 @@ const getGameBgPath = (screenName: string) => {
     case "select-track":
       return "/assets/tunedash/bgs/menu.webp";
     case "choose-primary-voice":
+    case "choose-secondary-voice":
     case "voices-clash":
     case "game-ready":
       return "/assets/tunedash/bgs/voice.webp";
@@ -87,7 +89,7 @@ function App() {
   });
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [startSectionIdx, setStartSectionIdx] = useState(1);
-  const [noOfRaceTracks, setNoOfRaceTracks] = useState(11);
+  const [noOfRaceTracks, setNoOfRaceTracks] = useState(10);
   const theme = useTheme();
   const isMobileView = useMediaQuery(theme.breakpoints.down("md"));
   const canvasElemWidth = isMobileView ? window.innerWidth : 414;
@@ -503,6 +505,9 @@ function App() {
                       case "choose-primary-voice":
                         setScreenName("select-track");
                         break;
+                      case "choose-secondary-voice":
+                        setScreenName("voices-clash");
+                        break;
                       case "voices-clash":
                       case "game-ready":
                         if (showOpponentVoiceSelection) {
@@ -605,6 +610,29 @@ function App() {
                     noOfVoices={noOfVoices}
                   />
                 )}
+              {coverDoc &&
+                userDoc &&
+                screenName === "choose-secondary-voice" && (
+                  <ChooseOpponentVoice
+                    voices={coverDoc.voices.filter(
+                      (v) => !primaryVoiceInfo?.map((v) => v.id).includes(v.id)
+                    )}
+                    onProceedToNextScreen={() => {
+                      // setPrimaryVoiceInfo(voiceInfo);
+                      // setScreenName("voices-clash");
+                      setScreenName("game-ready");
+                      // TODO:
+                      logFirebaseEvent("voice_selection", {
+                        track_id: selectedCoverDocId,
+                        track_title: coverDoc?.title,
+                      });
+                    }}
+                    setSecondaryVoiceInfo={setSecondaryVoiceInfo}
+                    // secondaryVoiceInfo={secondaryVoiceInfo || []}
+                    userDoc={userDoc}
+                    noOfVoices={noOfVoices}
+                  />
+                )}
               {primaryVoiceInfo?.length &&
                 coverDoc &&
                 (screenName === "voices-clash" ||
@@ -614,8 +642,10 @@ function App() {
                     selectedCoverDocId={selectedCoverDocId}
                     primaryVoiceInfo={primaryVoiceInfo}
                     secondaryVoiceInfo={secondaryVoiceInfo}
-                    onChooseOpponent={(voiceInfo) => {
-                      setSecondaryVoiceInfo(voiceInfo);
+                    setSecondaryVoiceInfo={setSecondaryVoiceInfo}
+                    onChooseOpponent={() => {
+                      setScreenName("choose-secondary-voice");
+                      // setSecondaryVoiceInfo(voiceInfo);
                     }}
                     onStartRaceClick={async () => {
                       await downloadVocalsAndStartGame();
@@ -624,10 +654,6 @@ function App() {
                     }}
                     downloadProgress={downloadProgress}
                     userDoc={userDoc}
-                    showOpponentVoiceSelection={showOpponentVoiceSelection}
-                    setShowOpponentVoiceSelection={
-                      setShowOpponentVoiceSelection
-                    }
                     noOfVoices={noOfVoices}
                   />
                 )}
@@ -654,7 +680,9 @@ function App() {
                       0,
                       noOfRaceTracks
                     )}
-                    noOfRaceTracks={noOfRaceTracks}
+                    noOfRaceTracks={
+                      userDoc?.firstName === "Freedom" ? 12 : noOfRaceTracks
+                    }
                     gravityY={4}
                     width={canvasElemWidth}
                     trailPath={getTrailPath(selectedTrailPath)}

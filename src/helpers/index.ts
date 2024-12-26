@@ -1210,3 +1210,5 @@ export const noToPositionSuffix = (position: number) => {
     ? "SECOND PLACE"
     : "YOU WIN";
 };
+
+export const dashPerDollar = 400;
