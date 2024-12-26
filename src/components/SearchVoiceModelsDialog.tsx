@@ -11,16 +11,19 @@ import LongImageMotionButton from "./Buttons/LongImageMotionButton";
 import { useCallback, useState } from "react";
 import axios from "axios";
 import { createVoiceRequest } from "../services/db/voiceRequests.service";
-import { hasTimestampCrossedOneDay } from "../helpers";
+import { hasTimestampCrossedOneDay, numberToDecimalsK } from "../helpers";
 import { UserDoc } from "../services/db/user.service";
 import SearchIcon from "@mui/icons-material/Search";
+import AddCircleRoundedIcon from "@mui/icons-material/AddCircleRounded";
+import RemoveCircleRoundedIcon from "@mui/icons-material/RemoveCircleRounded";
+import WebApp from "@twa-dev/sdk";
 
 type Props = {
   showAddVoiceDialog: boolean;
   setShowAddVoiceDialog: (show: boolean) => void;
   coverId: string;
   coverTitle: string;
-  userDoc: UserDoc | null;
+  userDoc: UserDoc;
 };
 
 type WeightsModel = {
@@ -45,6 +48,7 @@ const SearchVoiceModelsDialog = ({
     useState<WeightsModel | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [noResult, setNoResult] = useState(false);
+  const [bounty, setBounty] = useState(200);
 
   const onSearch = useCallback(async () => {
     if (searchText.length < 3) {
@@ -64,6 +68,7 @@ const SearchVoiceModelsDialog = ({
       if (result.data.length === 0) {
         setNoResult(true);
       } else {
+        setSelectedVoiceModel(result.data[0]);
         setVoiceModels(result.data);
       }
     } catch (e) {
@@ -89,7 +94,7 @@ const SearchVoiceModelsDialog = ({
         alignItems={"center"}
       >
         <Stack
-          height={150}
+          // height={150}
           width={"90%"}
           sx={{
             background: "#E3A32E",
@@ -100,7 +105,16 @@ const SearchVoiceModelsDialog = ({
           justifyContent={"center"}
           position={"relative"}
           gap={2}
+          py={2}
         >
+          <Stack>
+            <Typography variant="caption">
+              Want a new voice singing this song?
+            </Typography>
+            <Typography variant="caption">
+              Place bounty on your request here!
+            </Typography>
+          </Stack>
           <Box
             position={"absolute"}
             top={-50}
@@ -158,11 +172,56 @@ const SearchVoiceModelsDialog = ({
               <SearchIcon />
             </IconButton>
           </Box>
+          <Box display={"flex"} gap={2} alignItems={"center"}>
+            <Box display={"flex"} alignItems={"center"} gap={0.5}>
+              <img
+                src="/assets/tunedash/double-coin.png"
+                width={30}
+                height={30}
+                style={{ objectFit: "cover" }}
+              />
+              <Typography>eDash</Typography>
+            </Box>
+            <Box
+              display={"flex"}
+              alignItems={"center"}
+              bgcolor={"#F8CA76"}
+              borderRadius={2}
+              px={1}
+            >
+              <Typography>{numberToDecimalsK(bounty)}</Typography>
+              <IconButton
+                size="small"
+                onClick={() => {
+                  const newBounty = bounty + 200;
+                  if (newBounty > userDoc?.coins) {
+                    return WebApp.showAlert("You don't have enough eDash");
+                  }
+                  setBounty(newBounty);
+                }}
+              >
+                <AddCircleRoundedIcon />
+              </IconButton>
+              <IconButton
+                size="small"
+                disabled={bounty <= 200}
+                onClick={() => {
+                  const newBounty = bounty - 200;
+                  if (newBounty < 0) {
+                    return WebApp.showAlert("Bounty cannot be negative");
+                  }
+                  setBounty(newBounty);
+                }}
+              >
+                <RemoveCircleRoundedIcon />
+              </IconButton>
+            </Box>
+          </Box>
         </Stack>
         {(voiceModels.length > 0 || noResult || isLoading) && (
           <Paper
             sx={{
-              mt: -2.5,
+              mt: -1.5,
               // background: "#E3A32E",
               background:
                 "linear-gradient(181deg, rgba(255, 182, 50, 0.63) 31.04%, rgba(253, 171, 23, 0.63) 55.47%, rgba(240, 190, 99, 0.63) 83.03%)",
@@ -200,15 +259,29 @@ const SearchVoiceModelsDialog = ({
                     }}
                     width={"100%"}
                     sx={{
-                      outline:
+                      outline: "2px solid #FFBE48",
+                      background:
                         selectedVoiceModel?.title === voiceModel.title
-                          ? "1px solid #000"
-                          : "none",
-                      borderRadius: 4,
+                          ? "#F8CA76"
+                          : "transparent",
+                      borderRadius: 1,
                     }}
                     px={1}
+                    position={"relative"}
                   >
-                    <Typography align="center">{voiceModel.title}</Typography>
+                    <Typography
+                      align="center"
+                      variant="caption"
+                      sx={{
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {voiceModel.title}
+                    </Typography>
                   </Stack>
                 ))}
               </Stack>
@@ -233,6 +306,7 @@ const SearchVoiceModelsDialog = ({
                       userId: userDoc.id,
                       userName: userDoc.username || "",
                       voiceModelName: selectedVoiceModel.title,
+                      bounty,
                     });
                     alert("Voice request created successfully");
                     setShowAddVoiceDialog(false);

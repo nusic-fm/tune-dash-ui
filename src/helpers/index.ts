@@ -1140,7 +1140,10 @@ export const getTotalWinningRewards = (level: number, positions: number[]) => {
 };
 
 export const numberToK = (number: number) => {
-  return number > 1000 ? `${Math.floor(number / 1000)}K` : number;
+  return number > 999 ? `${Math.floor(number / 1000)}K` : number;
+};
+export const numberToDecimalsK = (number: number) => {
+  return number > 999 ? `${number / 1000}K` : number;
 };
 const XP_FOR_LEVELS = [0, 10000, 35000, 98000, 254000];
 const DASH_FOR_LEVELS = [0, 25000, 125000, 625000, 3125000];

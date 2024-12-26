@@ -133,7 +133,6 @@ const ChoosePrimaryVoice = ({
               alignItems: "center",
             }}
           ></motion.button>
-          <Box></Box>
           <Chip
             sx={{
               position: "absolute",
@@ -363,13 +362,15 @@ const ChoosePrimaryVoice = ({
           onPrimaryVoiceSelected(selectedVoiceInfo);
         }}
       /> */}
-      <SearchVoiceModelsDialog
-        showAddVoiceDialog={showAddVoiceDialog}
-        setShowAddVoiceDialog={setShowAddVoiceDialog}
-        coverId={selectedCoverId}
-        coverTitle={coverTitle}
-        userDoc={userDoc}
-      />
+      {userDoc && (
+        <SearchVoiceModelsDialog
+          showAddVoiceDialog={showAddVoiceDialog}
+          setShowAddVoiceDialog={setShowAddVoiceDialog}
+          coverId={selectedCoverId}
+          coverTitle={coverTitle}
+          userDoc={userDoc}
+        />
+      )}
     </Stack>
   );
 };

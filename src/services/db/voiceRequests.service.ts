@@ -9,6 +9,7 @@ type VoiceRequest = {
   modelId: string;
   userId: string;
   userName: string;
+  bounty: number;
 };
 
 const DB_NAME = "tunedash_voice_requests";
