@@ -307,7 +307,7 @@ const ChooseOpponentVoice = ({
           }}
           name={`${totalDash} DASH`}
           width={230}
-          height={75}
+          height={70}
         />
       </Box>
     </Stack>

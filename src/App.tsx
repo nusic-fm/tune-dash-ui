@@ -496,11 +496,11 @@ function App() {
                   }
                   onBackButtonClick={() => {
                     switch (screenName) {
-                      case "menu":
-                        setScreenName("start");
-                        break;
+                      // case "menu":
+                      //   setScreenName("start");
+                      //   break;
                       case "select-track":
-                        setScreenName("menu");
+                        setScreenName("start");
                         break;
                       case "choose-primary-voice":
                         setScreenName("select-track");
@@ -536,7 +536,8 @@ function App() {
               {screenName === "start" && (
                 <ScreenOne
                   onStartClick={async () => {
-                    setScreenName("menu");
+                    // setScreenName("menu");
+                    setScreenName("select-track");
                     logFirebaseEvent("start_from_landing_page", {
                       duration_on_screen: getDurationOnScreen(),
                     });

@@ -35,7 +35,7 @@ const Header = ({
   const [viewLevel, setViewLevel] = useState((userDoc?.level || 1) + 1);
 
   return (
-    <Stack width={"100%"}>
+    <Stack width={"100%"} position={"sticky"} top={0} zIndex={100}>
       <Stack
         direction="row"
         justifyContent="space-between"

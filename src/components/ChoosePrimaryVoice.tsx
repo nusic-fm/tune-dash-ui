@@ -342,7 +342,7 @@ const ChoosePrimaryVoice = ({
           }}
           name="Proceed"
           width={230}
-          height={75}
+          height={70}
         />
       </Box>
       {/* <motion.button
