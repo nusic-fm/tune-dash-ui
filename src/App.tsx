@@ -433,7 +433,7 @@ function App() {
                             src={getVoiceAvatarPath(voice.id)}
                             style={{
                               borderRadius: "50%",
-                              outline: "8px solid #04344d",
+                              outline: "4px solid #04344d",
                               width: "50px",
                               height: "50px",
                               objectFit: "cover",
