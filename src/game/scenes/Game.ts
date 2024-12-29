@@ -161,22 +161,22 @@ export default class Game extends Phaser.Scene {
     marbleRacePlayVocals(this.coverDocId, this.voices[index].id);
   }
 
-  createTextureMask = (
-    xOffset: number,
-    yOffset: number,
-    baseSprite: Phaser.Physics.Matter.Sprite | Phaser.Physics.Matter.Image
-  ) => {
-    // Create the texture sprite
-    const textureSprite = this.add.sprite(xOffset, yOffset, "textureImage");
-    textureSprite.setScale(this.dpr);
+  // createTextureMask = (
+  //   xOffset: number,
+  //   yOffset: number,
+  //   baseSprite: Phaser.Physics.Matter.Sprite | Phaser.Physics.Matter.Image
+  // ) => {
+  //   // Create the texture sprite
+  //   const textureSprite = this.add.sprite(xOffset, yOffset, "textureImage");
+  //   textureSprite.setScale(this.dpr);
 
-    // Use the base sprite's texture as a mask for the texture sprite
-    const mask = new Phaser.Display.Masks.BitmapMask(this, baseSprite);
-    textureSprite.setMask(mask);
+  //   // Use the base sprite's texture as a mask for the texture sprite
+  //   const mask = new Phaser.Display.Masks.BitmapMask(this, baseSprite);
+  //   textureSprite.setMask(mask);
 
-    // Optionally, hide the base sprite if you only want to show the texture
-    baseSprite.setVisible(false);
-  };
+  //   // Optionally, hide the base sprite if you only want to show the texture
+  //   baseSprite.setVisible(false);
+  // };
 
   createSeesawScreen = (
     xOffset: number,
@@ -216,8 +216,8 @@ export default class Game extends Phaser.Scene {
       length: 0,
     });
     this.matter.world.add(contraint);
-    this.createTextureMask(seesawX, seesawY, seesaw);
-    this.createTextureMask(xOffset, yOffset, baseSprite);
+    // this.createTextureMask(seesawX, seesawY, seesaw);
+    // this.createTextureMask(xOffset, yOffset, baseSprite);
     return startOffset + baseSprite.height * this.dpr;
   };
   createCircleBlockers = (
@@ -232,7 +232,7 @@ export default class Game extends Phaser.Scene {
         isStatic: true,
       })
       .setScale(this.dpr * (this.canvasWidth / (512 - 100)));
-    this.createTextureMask(xOffset, yOffset, baseSprite);
+    // this.createTextureMask(xOffset, yOffset, baseSprite);
     return startOffset + baseSprite.height * this.dpr;
   };
 
@@ -248,7 +248,7 @@ export default class Game extends Phaser.Scene {
         isStatic: true,
       })
       .setScale(this.dpr * (this.canvasWidth / (512 - 100)));
-    this.createTextureMask(xOffset, yOffset, baseSprite);
+    // this.createTextureMask(xOffset, yOffset, baseSprite);
     [
       [100 * this.dpr, startOffset + 260 * this.dpr],
       [(this.canvasWidth / 414) * 310 * this.dpr, startOffset + 260 * this.dpr],
@@ -280,7 +280,7 @@ export default class Game extends Phaser.Scene {
       .setScale(this.dpr * (this.canvasWidth / (512 - 100)));
     // Increase the strength of the base sprite
     baseSprite.setMass(1000);
-    this.createTextureMask(xOffset, yOffset, baseSprite);
+    // this.createTextureMask(xOffset, yOffset, baseSprite);
     startOffset += baseSprite.height * this.dpr;
     this.increaseSizeScreenOffset.push(startOffset);
     startOffset += 300;
@@ -299,7 +299,7 @@ export default class Game extends Phaser.Scene {
       .setScale(this.dpr * (this.canvasWidth / (512 - 100)));
     const yOffset = startOffset + baseSprite.height / 2;
     baseSprite.setPosition(baseSprite.x, yOffset);
-    this.createTextureMask(xOffset, yOffset, baseSprite);
+    // this.createTextureMask(xOffset, yOffset, baseSprite);
     // Show Powerups
     [
       [100 * this.dpr, startOffset + 350 * this.dpr],
@@ -333,11 +333,11 @@ export default class Game extends Phaser.Scene {
     );
     baseSprite.setPosition(baseSprite.x, startOffset + baseSprite.height / 2);
     baseSprite.setScale(this.dpr * (this.canvasWidth / (512 - 100)));
-    this.createTextureMask(
-      xOffset,
-      startOffset + baseSprite.height / 2,
-      baseSprite
-    );
+    // this.createTextureMask(
+    //   xOffset,
+    //   startOffset + baseSprite.height / 2,
+    //   baseSprite
+    // );
     const left: [number, number] = _.sample([
       [this.centerX - 360, startOffset],
       [this.centerX - 360, startOffset + 450],

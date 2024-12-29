@@ -59,46 +59,45 @@ export default class Preloader extends Phaser.Scene {
     this.params.voices.map((voice) => {
       this.load.image(voice.id, voice.avatar);
     });
+    const BASE_RACETRACK_URL =
+      "https://voxaudio.nusic.fm/marble_race%2Fmasked_race_tracks%2F";
     this.params.selectedTracks.map((trackNo) => {
       switch (trackNo) {
         case "01":
           this.load.image(
             "prod_texture_loaded_01",
-            `https://voxaudio.nusic.fm/marble_race%2Frace_tracks%2F01.png?alt=media`
+            `${BASE_RACETRACK_URL}01.png?alt=media`
           );
           break;
         case "03":
           this.load.image(
             "prod_texture_loaded_03",
-            `https://voxaudio.nusic.fm/marble_race%2Frace_tracks%2F03.png?alt=media`
+            `${BASE_RACETRACK_URL}03.png?alt=media`
           );
           break;
         case "06":
           this.load.image(
             "prod_texture_loaded_06",
-            `https://voxaudio.nusic.fm/marble_race%2Frace_tracks%2F06.png?alt=media`
+            `${BASE_RACETRACK_URL}06.png?alt=media`
           );
-          this.load.image(
-            "06b",
-            `https://voxaudio.nusic.fm/marble_race%2Frace_tracks%2F06b.png?alt=media`
-          );
+          this.load.image("06b", `${BASE_RACETRACK_URL}06b.png?alt=media`);
           break;
         case "07":
           this.load.image(
             "prod_texture_loaded_07",
-            `https://voxaudio.nusic.fm/marble_race%2Frace_tracks%2F07.png?alt=media`
+            `${BASE_RACETRACK_URL}07.png?alt=media`
           );
           break;
         case "16":
           this.load.image(
             "prod_texture_loaded_16",
-            `https://voxaudio.nusic.fm/marble_race%2Frace_tracks%2F16.png?alt=media`
+            `${BASE_RACETRACK_URL}16.png?alt=media`
           );
           break;
         case "21":
           this.load.image(
             "prod_texture_loaded_21",
-            `https://voxaudio.nusic.fm/marble_race%2Frace_tracks%2F21.png?alt=media`
+            `${BASE_RACETRACK_URL}21.png?alt=media`
           );
           break;
       }
@@ -107,7 +106,7 @@ export default class Preloader extends Phaser.Scene {
     this.load.json("prod_shapes", "assets/physics/new_shapes.json");
     // Mini
     this.load.json("mini_shapes", "assets/physics/mini_shapes.json");
-    this.load.image("textureImage", this.params.skinPath);
+    // this.load.image("textureImage", this.params.skinPath);
     this.load.image(
       "wheel",
       `https://voxaudio.nusic.fm/marble_race%2Frace_tracks%2Fwheel.png?alt=media`

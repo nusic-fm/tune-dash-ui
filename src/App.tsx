@@ -74,7 +74,7 @@ function App() {
     "sutureGradient01.png"
   );
   const [selectedTrailPath, setSelectedTrailPath] =
-    useState<string>("chrome_ball.png");
+    useState<string>("cloud.png");
   const [selectedTracksList, setSelectedTracksList] = useState<string[]>(() => {
     // Check in the localstorage if there are selected tracks
     // const localTracks = localStorage.getItem("selectedTracks");
