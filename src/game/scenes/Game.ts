@@ -53,7 +53,7 @@ export default class Game extends Phaser.Scene {
   // public trails: { x: number; y: number }[][] = [];
   // public trailGraphics: Phaser.GameObjects.Graphics[] = [];
   // public trailsGroup: Phaser.GameObjects.Group[] = [];
-  public trailLength: number = 0;
+  // public trailLength: number = 0;
   // public trailPoints: {
   //   x: number;
   //   y: number;
@@ -138,11 +138,11 @@ export default class Game extends Phaser.Scene {
     this.trailConfig = {
       speed: { min: -50, max: 50 },
       scale: {
-        start: this.dpr,
-        end: this.dpr * 0.5,
+        start: this.dpr * 0.8,
+        end: this.dpr * 0.2,
       },
       blendMode: "ADD",
-      lifespan: 400,
+      lifespan: 300,
       alpha: 0.5,
     };
     this.marbleRadius = (22 / 414) * this.canvasWidth * this.dpr;
@@ -446,13 +446,14 @@ export default class Game extends Phaser.Scene {
       // Create label for each circle
       let label = this.add.text(
         circleImage.x,
-        circleImage.y - 560,
+        circleImage.y,
         this.voices[i].name,
         {
-          fontSize: "32px",
+          fontSize: `${18 * this.dpr}px`,
           color: "#ffffff",
           stroke: "#000",
-          strokeThickness: 4,
+          strokeThickness: 2,
+          fontFamily: "Audiowide",
         }
       );
       label.setDepth(1);
@@ -464,6 +465,7 @@ export default class Game extends Phaser.Scene {
       .text(this.centerX, this.centerY - 100, "3", {
         fontSize: `${64 * this.dpr}px`,
         color: "#ffffff",
+        fontFamily: "Audiowide",
       })
       .setOrigin(0.5);
     if (this.powerups.length) {
@@ -607,6 +609,7 @@ export default class Game extends Phaser.Scene {
               ? "#003f61"
               : "#2f1a62",
           strokeThickness: 12 * this.dpr,
+          // fontFamily: "Audiowide",
         }
       )
       .setVisible(false)
@@ -751,6 +754,7 @@ export default class Game extends Phaser.Scene {
                 : "red",
             stroke: "rgba(0,0,0,1)",
             strokeThickness: 6,
+            fontFamily: "Audiowide",
           })
           .setDepth(101)
           .setScrollFactor(0);
@@ -821,9 +825,10 @@ export default class Game extends Phaser.Scene {
               "Boosted",
               {
                 fontSize: `${42 * this.dpr}px`,
-                color: "white",
+                color: "green",
                 stroke: "rgba(0,0,0,1)",
                 strokeThickness: 6,
+                fontFamily: "Audiowide",
                 // backgroundColor: "rgba(0,0,0,1)",
               }
             )
@@ -1095,16 +1100,25 @@ export default class Game extends Phaser.Scene {
           );
         }
 
+        // Check for size changes
+        const isHeightReduced = this.heightReducedIndices.includes(i);
         // Update label position
         if (label) {
+          let xOffsetFromWidth = label.width / 2;
+          let yOffsetFromHeight = 40 * this.dpr;
+          if (isHeightReduced) {
+            xOffsetFromWidth /= 2;
+            yOffsetFromHeight = 20 * this.dpr;
+            label.setScale(0.5);
+          } else {
+            label.setScale(1);
+          }
           label.setPosition(
-            voiceBody.position.x - label.width / 2,
-            voiceBody.position.y - 60
+            voiceBody.position.x - xOffsetFromWidth,
+            voiceBody.position.y - yOffsetFromHeight
           );
         }
 
-        // Check for size changes
-        const isHeightReduced = this.heightReducedIndices.includes(i);
         const y = voiceBody.position.y;
 
         if (

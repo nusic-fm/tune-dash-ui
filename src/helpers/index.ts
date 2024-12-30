@@ -243,16 +243,21 @@ export const duplicateArrayElemToN = (
   arr: string[],
   n: number = 6
 ): string[] => {
-  const result = [];
+  const result: string[] = [];
   const everySecondResultShouldBe = arr.filter((v) =>
     ["01", "03", "07"].includes(v)
   );
-  const others = arr.filter((v) => !["01", "03", "07"].includes(v));
   for (let i = 0; i < n; i++) {
+    const previous: string | undefined = result[i - 1];
     if (i % 2 === 0) {
-      result.push(_.sample(everySecondResultShouldBe));
+      const availableTracks = everySecondResultShouldBe.filter(
+        (track) => track !== previous
+      );
+      const selectedTrack = _.sample(availableTracks);
+      selectedTrack && result.push(selectedTrack);
     } else {
-      result.push(_.sample(others));
+      const selectedTrack = _.sample(arr.filter((v) => v !== previous));
+      selectedTrack && result.push(selectedTrack);
     }
   }
   return result as string[];

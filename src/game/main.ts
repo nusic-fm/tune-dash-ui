@@ -27,8 +27,8 @@ const config: Phaser.Types.Core.GameConfig = {
   //   target: 60,
   //   forceSetTimeOut: true,
   // },
-  // pixelArt: true,
-  // antialias: false,
+  // pixelArt: false,
+  antialias: true,
   // scale: {
   //     mode: Phaser.Scale.FIT,
   // },
@@ -36,7 +36,7 @@ const config: Phaser.Types.Core.GameConfig = {
   //     pixelArt: true,
   // },
   // mode: Phaser.Scale.FIT,
-  // autoRound: false,
+  autoRound: true,
   powerPreference: "high-performance",
   scene: [Preloader, GameScene],
 };
