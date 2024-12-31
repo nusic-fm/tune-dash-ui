@@ -8,7 +8,7 @@ type VoiceRequest = {
   voiceModelName: string;
   modelId: string;
   userId: string;
-  userName: string;
+  name: string;
   bounty: number;
 };
 

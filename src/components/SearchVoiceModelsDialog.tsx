@@ -307,7 +307,11 @@ const SearchVoiceModelsDialog = ({
                       coverTitle,
                       modelId: selectedVoiceModel.id,
                       userId: userDoc.id,
-                      userName: userDoc.username || "",
+                      name:
+                        userDoc.username ||
+                        userDoc.firstName ||
+                        userDoc.lastName ||
+                        "",
                       voiceModelName: selectedVoiceModel.title,
                       bounty,
                     });
