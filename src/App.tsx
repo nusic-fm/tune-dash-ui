@@ -62,7 +62,7 @@ const getGameBgPath = (screenName: string) => {
 export const COVER_IDS = [
   "HPF5qmOAAdfU4O9uJM5T",
   "7GskJxL0ldK9OGbl6e1Y",
-  "jbX4FSCgZL3hz90CmnRd",
+  "MBaraXdPD8nOfIKL9XBx",
   "i9aUmvBYqdlCjqtQLe8u",
   "lsUBEcaYfOidpvjUxpz1",
 ];

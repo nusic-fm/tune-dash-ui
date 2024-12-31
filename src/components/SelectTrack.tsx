@@ -107,11 +107,11 @@ const SelectTrack = ({
               <Box
                 sx={{
                   background:
-                    doc.id === "jbX4FSCgZL3hz90CmnRd"
-                      ? `url(/assets/tunedash/sr2.png)`
+                    doc.id === "MBaraXdPD8nOfIKL9XBx"
+                      ? `url(/assets/tunedash/special-track.png)`
                       : `url(/assets/tunedash/track-rect.png)`,
                   width: 312,
-                  height: doc.id === "jbX4FSCgZL3hz90CmnRd" ? 85 : 67,
+                  height: doc.id === "MBaraXdPD8nOfIKL9XBx" ? 76 : 67,
                   backgroundRepeat: "no-repeat",
                 }}
                 key={doc.id}
@@ -133,7 +133,15 @@ const SelectTrack = ({
                   }
                 }}
               >
-                <Box width={"70%"} sx={{ overflow: "hidden" }}>
+                <Box
+                  width={
+                    selectedCoverDocId === doc.id ||
+                    downloadingCoverId === doc.id
+                      ? "75%"
+                      : "70%"
+                  }
+                  sx={{ overflow: "hidden" }}
+                >
                   <Typography
                     sx={{
                       // ellipsis
