@@ -38,6 +38,7 @@ import WebApp from "@twa-dev/sdk";
 import { EventBus } from "./game/EventBus";
 import GameOverDialog from "./components/GameOverDialog";
 import ChooseOpponentVoice from "./components/ChooseOpponentVoice";
+import { getBeatsByCoverId } from "./services/db/metadata.service";
 
 export const tracks = ["01", "03", "06", "07", "16"];
 
@@ -118,6 +119,9 @@ function App() {
   const [showIosNotice, setShowIosNotice] = useState(false);
   const [noOfVoices, setNoOfVoices] = useState(1);
   const [selectedLevel, setSelectedLevel] = useState(1);
+  const [currentGameCoverBeats, setCurrentGameCoverBeats] = useState<number[]>(
+    []
+  );
   const [coversSnapshot, cssLoading, cssError] = useCollection(
     query(
       collection(db, "tunedash_covers"),
@@ -649,6 +653,8 @@ function App() {
                       // setSecondaryVoiceInfo(voiceInfo);
                     }}
                     onStartRaceClick={async () => {
+                      const beats = await getBeatsByCoverId(selectedCoverDocId);
+                      setCurrentGameCoverBeats(beats);
                       await downloadVocalsAndStartGame();
                       setIsPlayingGame(true);
                       setScreenName("game");
@@ -691,6 +697,7 @@ function App() {
                     userMarbleIndexes={new Array(noOfVoices)
                       .fill(0)
                       .map((_, i) => i)}
+                    beats={currentGameCoverBeats}
                   />
                 )}
             </Stack>

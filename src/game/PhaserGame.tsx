@@ -25,6 +25,7 @@ export interface IGameDataParams {
   showObstacles?: boolean;
   dpr: number;
   userMarbleIndexes: number[];
+  beats: number[];
 }
 
 interface IProps extends IGameDataParams {
@@ -46,6 +47,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
       trailPath,
       dpr,
       userMarbleIndexes,
+      beats,
     },
     ref
   ) {
@@ -81,6 +83,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
         trailPath,
         dpr,
         userMarbleIndexes,
+        beats,
       });
 
       if (typeof ref === "function") {

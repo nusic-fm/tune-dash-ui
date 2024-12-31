@@ -9,7 +9,6 @@ import { GameVoiceInfo } from "./Preloader";
 import { BodyType } from "matter";
 import {
   duplicateArrayElemToN,
-  getBeatsArray,
   createRandomNumber,
   // getWinningRewardsByPosition,
   getTotalWinningRewards,
@@ -127,7 +126,7 @@ export default class Game extends Phaser.Scene {
     this.coverDocId = data.coverDocId;
     const musicOffset = getToneCurrentTime();
     this.musicStartOffset = musicOffset;
-    this.allTapTimings = getBeatsArray(this.coverDocId, this.musicStartOffset);
+    this.allTapTimings = data.beats;
     this.noOfRaceTracks = data.noOfRaceTracks || 5;
     this.selectedTracks = duplicateArrayElemToN(
       data.selectedTracks,
