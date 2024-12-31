@@ -1074,7 +1074,7 @@ export default class Game extends Phaser.Scene {
         this.largeCircle?.setRotation(this.baseAngle);
         this.matter.body.setAngularVelocity(
           this.largeCircle?.body as BodyType,
-          0.09
+          0.15
         );
       }
       // Optimize marble updates
