@@ -89,6 +89,7 @@ const SelectTrack = ({
           height: 452,
           backgroundRepeat: "no-repeat",
           backgroundSize: "contain",
+          overflowY: "auto",
         }}
         gap={2}
         alignItems={"center"}
@@ -114,6 +115,7 @@ const SelectTrack = ({
                   height: doc.id === "fEGU8n7EdEqhtMIfse09" ? 86 : 67,
                   backgroundRepeat: "no-repeat",
                 }}
+                flexShrink={0}
                 key={doc.id}
                 display={"flex"}
                 alignItems={"center"}

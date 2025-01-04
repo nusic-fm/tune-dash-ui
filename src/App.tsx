@@ -65,6 +65,7 @@ export const COVER_IDS = [
   "fEGU8n7EdEqhtMIfse09",
   "i9aUmvBYqdlCjqtQLe8u",
   "lsUBEcaYfOidpvjUxpz1",
+  "hsvQc0nSw4X8BXXCiCEe",
 ];
 function App() {
   //  References to the PhaserGame component (game and scene are exposed)
