@@ -354,7 +354,9 @@ const toggleMuteAudio = async () => {
 };
 
 const downloadAndPlayIntro = async (
-  url: string = "https://voxaudio.nusic.fm/intro.mp3?alt=media"
+  url: string = "https://voxaudio.nusic.fm/intro.mp3?alt=media",
+  endLoop: number = 248.5,
+  isMuted: boolean = true
 ) => {
   // await initializeDB();
   // const url = "https://voxaudio.nusic.fm/intro.mp3?alt=media";
@@ -374,10 +376,24 @@ const downloadAndPlayIntro = async (
   });
   // bf = buffer;
   // }
+  if (introPlayerRef) {
+    const totalSecondsPlayed = Tone.now() - introStartTime;
+    updateIntroPlayedSeconds(totalSecondsPlayed);
+    introPlayerRef?.stop();
+    introPlayerRef?.dispose();
+    introPlayerRef = null;
+  }
+  if (Tone.Transport.state === "started") {
+    stopAndDestroyPlayers();
+  }
+
   const introPlayer = new Tone.Player(buffer).toDestination();
-  introPlayer.setLoopPoints(0, 248.5);
+  introPlayer.setLoopPoints(0, endLoop);
   introPlayer.loop = true;
   introPlayerRef = introPlayer;
+  if (!isMuted) {
+    introPlayer.start(0, endLoop);
+  }
 };
 
 const getDurationOnScreen = () => {

@@ -232,6 +232,7 @@ const SelectTrack = ({
               height: 67,
               backgroundRepeat: "no-repeat",
             }}
+            position={"relative"}
             flexShrink={0}
             display={"flex"}
             alignItems={"center"}
@@ -253,13 +254,22 @@ const SelectTrack = ({
                 // );
                 //
                 await downloadAndPlayIntro(
-                  `https://voxaudio.nusic.fm/covers/${pendingCover.id}/audio.mp3`
+                  `https://voxaudio.nusic.fm/covers/${pendingCover.id}/audio.mp3?alt=media`,
+                  pendingCover.duration - 1,
+                  false
                 );
                 onTrackSelected(pendingCover, pendingCover.id, []);
-                onNextPageClick();
               }
             }}
           >
+            <Box
+              position={"absolute"}
+              top={0}
+              right={"50%"}
+              sx={{ transform: "translate(50%, -50%)" }}
+            >
+              <Badge badgeContent="Pending" color="error"></Badge>
+            </Box>
             <Box
               width={
                 selectedCoverDocId === pendingCover.id ||
@@ -279,9 +289,7 @@ const SelectTrack = ({
                 alignSelf={"center"}
                 // width={"70%"}
                 fontSize={14}
-                // id={
-                //   selectedCoverDocId === pendingCover.id ? "scroll-text" : ""
-                // }
+                id={selectedCoverDocId === pendingCover.id ? "scroll-text" : ""}
               >
                 {pendingCover.title}
               </Typography>
@@ -295,15 +303,13 @@ const SelectTrack = ({
             ) : selectedCoverDocId === pendingCover.id ? (
               <HeadsetRoundedIcon />
             ) : (
-              <Badge badgeContent="!" color="error">
-                <Chip
-                  label={pendingCover.audioUploaded ? "Select" : "Pending"}
-                  size="small"
-                  clickable={!downloadingCoverId}
-                  sx={{ backgroundColor: "#000", color: "#FFA500" }}
-                  disabled={!pendingCover.audioUploaded}
-                />
-              </Badge>
+              <Chip
+                label={pendingCover.audioUploaded ? "Select" : "Pending"}
+                size="small"
+                clickable={!downloadingCoverId}
+                sx={{ backgroundColor: "#000", color: "#FFA500" }}
+                disabled={!pendingCover.audioUploaded}
+              />
             )}
           </Box>
         )}
@@ -317,7 +323,9 @@ const SelectTrack = ({
           //   currentlyPlayingVoiceInfo || null
           // )
         }
-        name="Choose Voice"
+        name={
+          selectedCoverDocId === pendingCover?.id ? "Add Voice" : "Choose Voice"
+        }
         width={230}
         height={75}
       />

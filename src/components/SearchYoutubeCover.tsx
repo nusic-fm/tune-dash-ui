@@ -52,18 +52,16 @@ const SearchYoutubeCover = ({ userDoc, onAddCover }: Props) => {
             return;
           }
           setIsLoading(true);
-          const formData = new FormData();
-          formData.append("vid", videoId);
           const res = await axios.post(
-            `${import.meta.env.VITE_AUDIO_ANALYZER}/ytp-content`,
-            formData
+            `${import.meta.env.VITE_VOX_COVER_SERVER}/ytp-content`,
+            {
+              vid: videoId,
+            }
           );
           if (res.data) {
             const {
               title,
-              channelDescription,
               channelId,
-              channelThumbnail,
               channelTitle,
               videoDescription,
               videoThumbnail,
@@ -85,8 +83,6 @@ const SearchYoutubeCover = ({ userDoc, onAddCover }: Props) => {
                 videoDescription,
                 channelId,
                 channelTitle,
-                channelDescription,
-                channelThumbnail,
               },
               vid: videoId,
               shareInfo: {

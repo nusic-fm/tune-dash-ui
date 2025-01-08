@@ -594,6 +594,9 @@ export const noToPositionSuffix = (position: number) => {
 export const dashPerDollar = 400;
 
 export const getYoutubeVideoId = (youtubeUrl: string) => {
-  const videoId = youtubeUrl.split("v=")[1];
-  return videoId;
+  // Example: https://www.youtube.com/watch?v=Fhgpf2ikOWY&t=118s
+  const regExp =
+    /.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|live\/|watch\?v=)([^#\&\?]*).*/;
+  const match = youtubeUrl.match(regExp);
+  return match ? match[1] : null;
 };

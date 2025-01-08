@@ -63,11 +63,11 @@ export type CoverV1 = {
   metadata?: {
     channelId: string;
     channelTitle: string;
-    channelDescription: string;
-    channelThumbnail: string;
+    channelDescription?: string;
+    channelThumbnail?: string;
     videoThumbnail: string;
     videoName: string;
-    videoDescription: string;
+    videoDescription?: string;
   };
   //   avatarUrl: string;
   vid?: string;
