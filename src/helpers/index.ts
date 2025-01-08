@@ -592,3 +592,8 @@ export const noToPositionSuffix = (position: number) => {
 };
 
 export const dashPerDollar = 400;
+
+export const getYoutubeVideoId = (youtubeUrl: string) => {
+  const videoId = youtubeUrl.split("v=")[1];
+  return videoId;
+};

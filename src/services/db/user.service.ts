@@ -174,6 +174,7 @@ const updateUserDocTimestamps = async (
     | "lastDailyRacePlayedTimestamp"
     | "dailyVoiceRequestTimestamp"
     | "lastShareFriendsTimestamp"
+    | "lastAddCoverTimestamp"
 ) => {
   const d = doc(db, DB_NAME, userId);
   await updateDoc(d, { [props]: serverTimestamp() });
@@ -200,6 +201,11 @@ const updateUserProps = async (
   await updateDoc(d, { [prop]: value });
 };
 
+const updateUserObj = async (userId: string, obj: any) => {
+  const d = doc(db, DB_NAME, userId);
+  await updateDoc(d, obj);
+};
+
 export {
   createUserDoc,
   getUserDocById,
@@ -209,4 +215,5 @@ export {
   updateUserDocTimestamps,
   updateUserLevel,
   updateUserProps,
+  updateUserObj,
 };
