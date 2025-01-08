@@ -9,7 +9,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { createVoiceRequest } from "../services/db/voiceRequests.service";
 import { numberToDecimalsK } from "../helpers";
@@ -56,6 +56,16 @@ const SearchVoiceModelsDialog = ({
   const [isLoading, setIsLoading] = useState(false);
   const [noResult, setNoResult] = useState(false);
   const [bounty, setBounty] = useState(200);
+
+  useEffect(() => {
+    if (!showAddVoiceDialog) {
+      setSearchText("");
+      setSelectedVoiceModel(null);
+      setVoiceModels([]);
+      setNoResult(false);
+      setIsLoading(false);
+    }
+  }, [showAddVoiceDialog]);
 
   const onSearch = useCallback(async () => {
     if (searchText.length < 3) {
@@ -326,7 +336,9 @@ const SearchVoiceModelsDialog = ({
                         bounty,
                       }) as any,
                     });
-                    alert("Voice request created successfully");
+                    WebApp.showAlert(
+                      "Voice request created successfully, Check back later or Join our TG group to get notified when it's ready."
+                    );
                     onClose({
                       name: selectedVoiceModel.title,
                       modelId: selectedVoiceModel.id,

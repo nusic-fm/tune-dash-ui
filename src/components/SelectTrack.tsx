@@ -259,6 +259,7 @@ const SelectTrack = ({
                   false
                 );
                 onTrackSelected(pendingCover, pendingCover.id, []);
+                onNextPageClick();
               }
             }}
           >
