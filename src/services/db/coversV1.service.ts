@@ -17,6 +17,7 @@ import {
   where,
   getDocs,
   limit,
+  arrayUnion,
 } from "firebase/firestore";
 
 const DB_NAME = "tunedash_covers";
@@ -45,7 +46,10 @@ export type CoverV1 = {
   bpm: number;
   duration: number;
   isReady: boolean;
-  voices: VoiceV1Cover[];
+  voices: {
+    id: string;
+    name: string;
+  }[];
   title: string;
   vocalsStartOffset: number;
   vocalsEndOffset: number;
@@ -111,6 +115,17 @@ const updateCoverV1Doc = async (
   await updateDoc(d, { ...coverObj, updatedAt: serverTimestamp() });
 };
 
+const addVoiceToCover = async (
+  id: string,
+  voice: {
+    id: string;
+    name: string;
+  }
+) => {
+  const d = doc(db, DB_NAME, id);
+  await updateDoc(d, { voices: arrayUnion(voice) });
+};
+
 const SUB_COLLECTION = "comments";
 
 const addCommentToCover = async (id: string, commentInfo: Comment) => {
@@ -147,6 +162,7 @@ export {
   addCommentToCover,
   getCoverDocById,
   getPendingCoverFromUserId,
+  addVoiceToCover,
   // addToDisLikes,
   // addToLikes,
 };

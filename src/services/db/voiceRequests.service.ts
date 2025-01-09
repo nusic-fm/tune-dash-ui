@@ -2,7 +2,7 @@ import { doc, increment, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "../firebase.service";
 import { updateUserObj } from "./user.service";
 
-type VoiceRequest = {
+export type VoiceRequest = {
   coverId: string;
   coverTitle: string;
   voiceModelName: string;
@@ -10,7 +10,10 @@ type VoiceRequest = {
   userId: string;
   name: string;
   bounty: number;
+  isCompleted: boolean;
+  selectedVoiceId?: string;
 };
+export type VoiceRequestDoc = VoiceRequest & { id: string };
 
 const DB_NAME = "tunedash_voice_requests";
 
@@ -27,4 +30,12 @@ const createVoiceRequest = async (voiceRequest: VoiceRequest) => {
   // );
 };
 
-export { createVoiceRequest };
+const updateVoiceRequestDoc = async (
+  id: string,
+  data: Partial<VoiceRequest>
+) => {
+  const d = doc(db, DB_NAME, id);
+  await setDoc(d, { ...data, updatedAt: serverTimestamp() });
+};
+
+export { createVoiceRequest, updateVoiceRequestDoc };
