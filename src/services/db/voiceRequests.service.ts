@@ -18,6 +18,7 @@ export type VoiceRequest = {
   bounty: number;
   isCompleted: boolean;
   selectedVoiceId?: string;
+  voiceId?: string;
 };
 export type VoiceRequestDoc = VoiceRequest & { id: string };
 
@@ -44,7 +45,6 @@ const updateVoiceRequestDoc = async (
   await updateDoc(d, {
     ...data,
     updatedAt: serverTimestamp(),
-    isCompleted: true,
   });
 };
 
