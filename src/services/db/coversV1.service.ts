@@ -53,11 +53,6 @@ export type CoverV1 = {
   audioUploaded?: boolean;
   instrumentalUploaded?: boolean;
   beatsUploaded?: boolean;
-  requestedVoices?: {
-    name: string;
-    modelId: string;
-    bounty: number;
-  }[];
 
   audioUrl?: string;
   metadata?: {

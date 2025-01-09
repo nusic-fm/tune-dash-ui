@@ -39,6 +39,7 @@ import { EventBus } from "./game/EventBus";
 import GameOverDialog from "./components/GameOverDialog";
 import ChooseOpponentVoice from "./components/ChooseOpponentVoice";
 import { getBeatsByCoverId } from "./services/db/metadata.service";
+import CreateMode from "./components/CreateMode";
 
 export const tracks = ["01", "03", "06", "07", "16"];
 
@@ -594,28 +595,35 @@ function App() {
                   userDoc={userDoc}
                 />
               )}
-              {coverDoc && screenName === "choose-primary-voice" && (
-                <ChoosePrimaryVoice
-                  selectedCoverId={selectedCoverDocId}
-                  voices={coverDoc.voices}
-                  primaryVoiceInfo={primaryVoiceInfo || []}
-                  onProceedToNextScreen={() => {
-                    // setPrimaryVoiceInfo(voiceInfo);
-                    // setScreenName("voices-clash");
-                    setScreenName("game-ready");
-                    // TODO:
-                    logFirebaseEvent("voice_selection", {
-                      track_id: selectedCoverDocId,
-                      track_title: coverDoc?.title,
-                    });
-                  }}
-                  setPrimaryVoiceInfo={setPrimaryVoiceInfo}
-                  coverTitle={coverDoc.title}
-                  userDoc={userDoc}
-                  noOfVoices={noOfVoices}
-                  coverDoc={coverDoc}
-                />
-              )}
+              {coverDoc &&
+                screenName === "choose-primary-voice" &&
+                (coverDoc.isReady ? (
+                  <ChoosePrimaryVoice
+                    selectedCoverId={selectedCoverDocId}
+                    voices={coverDoc.voices}
+                    primaryVoiceInfo={primaryVoiceInfo || []}
+                    onProceedToNextScreen={() => {
+                      // setPrimaryVoiceInfo(voiceInfo);
+                      // setScreenName("voices-clash");
+                      setScreenName("game-ready");
+                      // TODO:
+                      logFirebaseEvent("voice_selection", {
+                        track_id: selectedCoverDocId,
+                        track_title: coverDoc?.title,
+                      });
+                    }}
+                    setPrimaryVoiceInfo={setPrimaryVoiceInfo}
+                    coverTitle={coverDoc.title}
+                    userDoc={userDoc}
+                    noOfVoices={noOfVoices}
+                  />
+                ) : (
+                  <CreateMode
+                    selectedCoverId={selectedCoverDocId}
+                    coverTitle={coverDoc.title}
+                    userDoc={userDoc}
+                  />
+                ))}
               {coverDoc &&
                 userDoc &&
                 screenName === "choose-secondary-voice" && (

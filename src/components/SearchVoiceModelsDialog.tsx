@@ -54,6 +54,7 @@ const SearchVoiceModelsDialog = ({
   const [selectedVoiceModel, setSelectedVoiceModel] =
     useState<WeightsModel | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [noResult, setNoResult] = useState(false);
   const [bounty, setBounty] = useState(200);
 
@@ -304,7 +305,9 @@ const SearchVoiceModelsDialog = ({
               </Stack>
               <LongImageMotionButton
                 disabled={
-                  (hideSearchButton && !selectedVoiceModel) || isLoading
+                  (hideSearchButton && !selectedVoiceModel) ||
+                  isLoading ||
+                  isSubmitting
                 }
                 onClick={async () => {
                   // TODO: check if user can create voice request
@@ -316,6 +319,7 @@ const SearchVoiceModelsDialog = ({
                   //   return alert("You have already requested a voice today");
                   // }
                   if (selectedVoiceModel && userDoc) {
+                    setIsSubmitting(true);
                     await createVoiceRequest({
                       coverId,
                       coverTitle,
@@ -328,17 +332,13 @@ const SearchVoiceModelsDialog = ({
                         "",
                       voiceModelName: selectedVoiceModel.title,
                       bounty,
-                    });
-                    await updateCoverV1Doc(coverId, {
-                      requestedVoices: arrayUnion({
-                        name: selectedVoiceModel.title,
-                        modelId: selectedVoiceModel.id,
-                        bounty,
-                      }) as any,
+                      isCompleted: false,
+                      voiceId: "",
                     });
                     WebApp.showAlert(
                       "Voice request created successfully, Check back later or Join our TG group to get notified when it's ready."
                     );
+                    setIsSubmitting(false);
                     onClose({
                       name: selectedVoiceModel.title,
                       modelId: selectedVoiceModel.id,
@@ -346,7 +346,7 @@ const SearchVoiceModelsDialog = ({
                     });
                   }
                 }}
-                name={"Submit"}
+                name={isSubmitting ? "Submitting..." : "Submit"}
                 width={150}
                 height={50}
               />
