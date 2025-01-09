@@ -260,6 +260,7 @@ const AddVoiceDialog = ({
   const [voiceModelImage, setVoiceModelImage] = useState<File | null>(null);
   const [voiceModelId, setVoiceModelId] = useState<string>("");
   const [voiceModelAudio, setVoiceModelAudio] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   return (
     <Dialog open onClose={() => setShowVoiceRequestDoc(null)}>
       <DialogTitle>Voice Info</DialogTitle>
@@ -316,17 +317,15 @@ const AddVoiceDialog = ({
               />
             </Stack>
           )}
-          <Button
+          <LoadingButton
             variant="contained"
             color="primary"
+            loading={isLoading}
             onClick={async () => {
+              setIsLoading(true);
               if (voiceModelName && voiceModelAudio) {
                 if (voiceModelImage) {
-                  await uploadVoiceImage(
-                    showVoiceRequestDoc.coverId,
-                    voiceModelId,
-                    voiceModelImage
-                  );
+                  await uploadVoiceImage(voiceModelId, voiceModelImage);
                 }
                 await uploadVoiceAudio(
                   showVoiceRequestDoc.coverId,
@@ -344,10 +343,11 @@ const AddVoiceDialog = ({
                 });
                 setShowVoiceRequestDoc(null);
               }
+              setIsLoading(false);
             }}
           >
             Save
-          </Button>
+          </LoadingButton>
         </Stack>
       </DialogContent>
     </Dialog>

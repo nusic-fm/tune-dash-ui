@@ -1,15 +1,8 @@
 import { ref, uploadBytes } from "firebase/storage";
 import { storage } from "../firebase.service";
 
-const uploadVoiceImage = async (
-  coverId: string,
-  voiceId: string,
-  image: File
-) => {
-  const storageRef = ref(
-    storage,
-    `voice_models/avatars/${coverId}/${voiceId}.jpg`
-  );
+const uploadVoiceImage = async (voiceId: string, image: File) => {
+  const storageRef = ref(storage, `voice_models/avatars/${voiceId}`);
   await uploadBytes(storageRef, image);
 };
 
