@@ -4,7 +4,7 @@ import { useState } from "react";
 import SearchVoiceModelsDialog from "./SearchVoiceModelsDialog";
 import { UserDoc } from "../services/db/user.service";
 import { motion } from "framer-motion";
-import { useCollectionDataOnce } from "react-firebase-hooks/firestore";
+import { useCollectionData } from "react-firebase-hooks/firestore";
 import { query, collection, where } from "firebase/firestore";
 import { db } from "../services/firebase.service";
 import { VoiceRequest } from "../services/db/voiceRequests.service";
@@ -26,16 +26,11 @@ export const FIVE_LIGHT_COLORS = [
 
 const CreateMode = ({ coverTitle, userDoc, selectedCoverId }: Props) => {
   const [showAddVoiceDialog, setShowAddVoiceDialog] = useState(false);
-  const [requestedVoicesSnapshot, ssLoading, ssError] = useCollectionDataOnce(
+  const [requestedVoicesSnapshot, ssLoading, ssError] = useCollectionData(
     query(
       collection(db, "tunedash_voice_requests"),
       where("coverId", "==", selectedCoverId)
-    ),
-    {
-      getOptions: {
-        source: "server",
-      },
-    }
+    )
   );
 
   return (
@@ -43,28 +38,33 @@ const CreateMode = ({ coverTitle, userDoc, selectedCoverId }: Props) => {
       gap={2}
       height={"100%"}
       width={"100%"}
-      justifyContent={"center"}
+      //   justifyContent={"center"}
       alignItems={"center"}
       position={"relative"}
     >
-      <img
-        src={"/assets/tunedash/create-mode.png"}
-        alt="create-mode"
-        width={192}
-        style={{ objectFit: "contain", backgroundRepeat: "no-repeat" }}
-      />
+      <Box display={"flex"} justifyContent={"center"} alignItems={"center"}>
+        <img
+          src={"/assets/tunedash/create-mode.png"}
+          alt="create-mode"
+          width={192}
+          style={{ objectFit: "contain", backgroundRepeat: "no-repeat" }}
+        />
+      </Box>
       <Stack gap={1} alignItems={"center"} mt={2}>
-        {requestedVoicesSnapshot?.filter((v) => !v.isCompleted).length && (
+        {(requestedVoicesSnapshot?.filter((v) => !v.isCompleted).length ||
+          0) === 0 && (
           <>
-            <Typography color={"#fff"} fontSize={16}>
+            <Typography color={"#fff"} fontSize={20}>
               Please Wait
             </Typography>
-            <Typography sx={{ color: "#f2ad31", fontSize: 24 }}>
-              {requestedVoicesSnapshot?.filter((v) => !v.isCompleted).length}
-            </Typography>
-            <Typography color={"#fff"} fontSize={16}>
-              Voice Requests are Being Fulfilled
-            </Typography>
+            <Box display={"flex"} alignItems={"center"} gap={1}>
+              <Typography sx={{ color: "#f2ad31", fontSize: 24 }}>
+                {requestedVoicesSnapshot?.filter((v) => !v.isCompleted).length}
+              </Typography>
+              <Typography color={"#fff"} fontSize={16}>
+                Voice Requests are Being Fulfilled
+              </Typography>
+            </Box>
           </>
         )}
         <Typography color={"#fff"} fontSize={16}>

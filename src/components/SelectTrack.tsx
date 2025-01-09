@@ -253,11 +253,11 @@ const SelectTrack = ({
                 //   randomVoice
                 // );
                 //
-                await downloadAndPlayIntro(
-                  `https://voxaudio.nusic.fm/covers/${pendingCover.id}/audio.mp3?alt=media`,
-                  pendingCover.duration - 1,
-                  false
-                );
+                // await downloadAndPlayIntro(
+                //   `https://voxaudio.nusic.fm/covers/${pendingCover.id}/audio.mp3?alt=media`,
+                //   pendingCover.duration - 1,
+                //   false
+                // );
                 onTrackSelected(pendingCover, pendingCover.id, []);
                 onNextPageClick();
               }
