@@ -1,4 +1,10 @@
-import { doc, increment, serverTimestamp, setDoc } from "firebase/firestore";
+import {
+  doc,
+  increment,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../firebase.service";
 import { updateUserObj } from "./user.service";
 
@@ -35,7 +41,11 @@ const updateVoiceRequestDoc = async (
   data: Partial<VoiceRequest>
 ) => {
   const d = doc(db, DB_NAME, id);
-  await setDoc(d, { ...data, updatedAt: serverTimestamp() });
+  await updateDoc(d, {
+    ...data,
+    updatedAt: serverTimestamp(),
+    isCompleted: true,
+  });
 };
 
 export { createVoiceRequest, updateVoiceRequestDoc };
