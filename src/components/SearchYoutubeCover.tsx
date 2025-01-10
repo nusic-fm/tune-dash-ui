@@ -4,7 +4,7 @@ import axios from "axios";
 import { createCoverV1Doc } from "../services/db/coversV1.service";
 import { updateUserObj, UserDoc } from "../services/db/user.service";
 import { getYoutubeVideoId } from "../helpers";
-import { arrayUnion, serverTimestamp } from "firebase/firestore";
+import { arrayUnion, increment, serverTimestamp } from "firebase/firestore";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import WebApp from "@twa-dev/sdk";
 
@@ -46,6 +46,12 @@ const SearchYoutubeCover = ({ userDoc, onAddCover }: Props) => {
         size="small"
         onClick={async () => {
           if (isLoading) return;
+          if (userDoc.coins < 1000) {
+            WebApp.showAlert(
+              "You don't have 1000 eDash to add a cover, play more races and try again!"
+            );
+            return;
+          }
           const videoId = getYoutubeVideoId(youtubeUrl);
           if (!videoId) {
             alert("Invalid Youtube URL");
@@ -101,6 +107,7 @@ const SearchYoutubeCover = ({ userDoc, onAddCover }: Props) => {
             await updateUserObj(userDoc.id, {
               lastAddCoverTimestamp: serverTimestamp(),
               createdCoverIds: arrayUnion(newCoverId),
+              coins: increment(-1000),
             });
             onAddCover();
             try {
