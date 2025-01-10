@@ -51,8 +51,8 @@ const CreateMode = ({ coverTitle, userDoc, selectedCoverId }: Props) => {
         />
       </Box>
       <Stack gap={1} alignItems={"center"} mt={2}>
-        {(requestedVoicesSnapshot?.filter((v) => !v.isCompleted).length ||
-          0) === 0 && (
+        {(requestedVoicesSnapshot?.filter((v) => !v.isCompleted).length || 0) >
+          0 && (
           <>
             <Typography color={"#fff"} fontSize={20}>
               Please Wait

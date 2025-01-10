@@ -4,16 +4,14 @@ import BouncingBallsLoading from "./BouncingBallsLoading";
 import KeyboardDoubleArrowUpRoundedIcon from "@mui/icons-material/KeyboardDoubleArrowUpRounded";
 import { motion } from "framer-motion";
 
-type Props = {};
-
-// This is the component that slides up to show the user the options
-const SlideUp = ({
-  onSlideUp,
-  enableSlideUp,
-}: {
+type Props = {
   onSlideUp: () => void;
   enableSlideUp: boolean;
-}) => {
+  width: number;
+};
+
+// This is the component that slides up to show the user the options
+const SlideUp = ({ onSlideUp, enableSlideUp, width }: Props) => {
   const [position, setPosition] = React.useState(0);
   const [isDragging, setIsDragging] = React.useState(false);
   const startY = React.useRef(0);
@@ -49,14 +47,14 @@ const SlideUp = ({
       sx={{
         position: "fixed",
         top: 0,
-        left: 0,
-        right: 0,
+        left: "50%",
         height: "100vh",
-        transform: `translateY(-${position}px)`,
+        transform: `translate(-50%, -${position}px)`,
         transition: isDragging ? "none" : "transform 0.3s ease-out",
         backgroundImage: "url(/assets/tunedash/bgs/splash.webp)",
         backgroundSize: "cover",
         backgroundPosition: "center",
+        width,
         zIndex: 1000,
       }}
       onTouchStart={handleTouchStart}
@@ -85,11 +83,9 @@ const SlideUp = ({
           onClick={() => {
             // Instantly slide up and call onSlideUp
             const duration = 250;
-            const step = 10;
-            let i = 0;
+            const step = window.innerHeight / duration;
             setInterval(() => {
-              setPosition(window.innerHeight - step * i);
-              i++;
+              setPosition(window.innerHeight - step);
             }, step);
             setTimeout(() => {
               onSlideUp();

@@ -60,14 +60,14 @@ const getGameBgPath = (screenName: string) => {
 };
 
 // const screenNames = ["splash", "start", "menu", "select-track", "choose-primary-voice", "voices-clash", "game"];
-export const COVER_IDS = [
-  "HPF5qmOAAdfU4O9uJM5T",
-  "7GskJxL0ldK9OGbl6e1Y",
-  "fEGU8n7EdEqhtMIfse09",
-  "i9aUmvBYqdlCjqtQLe8u",
-  "lsUBEcaYfOidpvjUxpz1",
-  "hsvQc0nSw4X8BXXCiCEe",
-];
+// export const COVER_IDS = [
+//   "HPF5qmOAAdfU4O9uJM5T",
+//   "7GskJxL0ldK9OGbl6e1Y",
+//   "fEGU8n7EdEqhtMIfse09",
+//   "i9aUmvBYqdlCjqtQLe8u",
+//   "lsUBEcaYfOidpvjUxpz1",
+//   "hsvQc0nSw4X8BXXCiCEe",
+// ];
 function App() {
   //  References to the PhaserGame component (game and scene are exposed)
   const phaserRef = useRef<IRefPhaserGame | null>(null);
@@ -96,6 +96,7 @@ function App() {
   const theme = useTheme();
   const isMobileView = useMediaQuery(theme.breakpoints.down("md"));
   const canvasElemWidth = isMobileView ? window.innerWidth : 414;
+  const screenWidth = isMobileView ? window.innerWidth : 440;
   // isMobileView
   //     ? window.innerWidth > 414
   //         ? 414
@@ -127,7 +128,8 @@ function App() {
   const [coversSnapshot, cssLoading, cssError] = useCollection(
     query(
       collection(db, "tunedash_covers"),
-      where(documentId(), "in", COVER_IDS) // random
+      // where(documentId(), "in", COVER_IDS) // random
+      where("isReady", "==", true)
     )
   );
   const downloadVocalsAndStartGame = async () => {
@@ -287,6 +289,7 @@ function App() {
             toggleMuteAudio();
           }}
           enableSlideUp={isDownloaded}
+          width={screenWidth}
         />
       )}
       <Box width={"100%"} display="flex" justifyContent={"center"}>
@@ -294,10 +297,10 @@ function App() {
           display={"flex"}
           justifyContent="center"
           alignItems={"center"}
-          width={canvasElemWidth}
+          width={screenWidth}
         >
           <Box
-            width={canvasElemWidth}
+            width={screenWidth}
             height={"100vh"}
             sx={{
               background: `url(${getGameBgPath(screenName)})`,
@@ -616,6 +619,19 @@ function App() {
                     coverTitle={coverDoc.title}
                     userDoc={userDoc}
                     noOfVoices={noOfVoices}
+                    onLowerLevelClick={() => {
+                      if (coverDoc.voices.length < 10) {
+                        if (coverDoc.voices.length <= 2) {
+                          setSelectedLevel(1);
+                        } else if (coverDoc.voices.length <= 4) {
+                          setSelectedLevel(2);
+                        } else if (coverDoc.voices.length <= 6) {
+                          setSelectedLevel(3);
+                        } else if (coverDoc.voices.length <= 8) {
+                          setSelectedLevel(4);
+                        }
+                      }
+                    }}
                   />
                 ) : (
                   <CreateMode

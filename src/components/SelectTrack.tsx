@@ -22,12 +22,12 @@ import {
   downloadAudioFiles,
   marbleRaceOnlyInstrument,
   stopAndDestroyPlayers,
-  downloadAndPlayIntro,
+  // downloadAndPlayIntro,
 } from "../hooks/useTonejs";
 import { createRandomNumber } from "../helpers";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
 import HeadsetRoundedIcon from "@mui/icons-material/HeadsetRounded";
-import { COVER_IDS } from "../App";
+// import { COVER_IDS } from "../App";
 import SearchYoutubeCover from "./SearchYoutubeCover";
 import { UserDoc } from "../services/db/user.service";
 
@@ -129,11 +129,11 @@ const SelectTrack = ({
         // px={1}
       >
         {coversSnapshot.docs
-          .sort((a, b) => {
-            const aId = a.id;
-            const bId = b.id;
-            return COVER_IDS.indexOf(aId) - COVER_IDS.indexOf(bId);
-          })
+          // .sort((a, b) => {
+          //   const aId = a.id;
+          //   const bId = b.id;
+          //   return COVER_IDS.indexOf(aId) - COVER_IDS.indexOf(bId);
+          // })
           .map((doc: QueryDocumentSnapshot<DocumentData, DocumentData>) => {
             const coverDoc = doc.data() as CoverV1;
             return (
