@@ -173,10 +173,13 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const newNoOfVoices = (selectedLevel * 2) / 2;
+    const newNoOfVoices = selectedLevel;
     setNoOfVoices(newNoOfVoices);
     if (primaryVoiceInfo) {
       setPrimaryVoiceInfo(primaryVoiceInfo.slice(0, newNoOfVoices));
+      if (secondaryVoiceInfo?.length) {
+        setSecondaryVoiceInfo(secondaryVoiceInfo.slice(0, newNoOfVoices));
+      }
     }
   }, [selectedLevel]);
 
