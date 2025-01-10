@@ -57,7 +57,7 @@ const logFirebaseEvent = (
     | "powerup_purchase_attempt",
   additionalParams: any
 ) => {
-  logEvent(analytics, type as any, additionalParams);
+  // logEvent(analytics, type as any, additionalParams);
 };
 
 export {

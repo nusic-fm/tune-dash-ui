@@ -6,24 +6,31 @@ import {
   Box,
   Paper,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { createVoiceRequest } from "../services/db/voiceRequests.service";
-import { hasTimestampCrossedOneDay, numberToDecimalsK } from "../helpers";
+import { numberToDecimalsK } from "../helpers";
 import { UserDoc } from "../services/db/user.service";
 import SearchIcon from "@mui/icons-material/Search";
 import AddCircleRoundedIcon from "@mui/icons-material/AddCircleRounded";
 import RemoveCircleRoundedIcon from "@mui/icons-material/RemoveCircleRounded";
 import WebApp from "@twa-dev/sdk";
+import { updateCoverV1Doc } from "../services/db/coversV1.service";
+import { arrayUnion } from "firebase/firestore";
 
 type Props = {
   showAddVoiceDialog: boolean;
-  setShowAddVoiceDialog: (show: boolean) => void;
   coverId: string;
   coverTitle: string;
   userDoc: UserDoc;
+  onClose: (voiceInfo?: {
+    name: string;
+    modelId: string;
+    bounty: number;
+  }) => void;
 };
 
 type WeightsModel = {
@@ -36,10 +43,10 @@ type WeightsModel = {
 
 const SearchVoiceModelsDialog = ({
   showAddVoiceDialog,
-  setShowAddVoiceDialog,
   coverId,
   coverTitle,
   userDoc,
+  onClose,
 }: Props) => {
   const [searchText, setSearchText] = useState("");
   const [hideSearchButton, setHideSearchButton] = useState(false);
@@ -49,6 +56,16 @@ const SearchVoiceModelsDialog = ({
   const [isLoading, setIsLoading] = useState(false);
   const [noResult, setNoResult] = useState(false);
   const [bounty, setBounty] = useState(200);
+
+  useEffect(() => {
+    if (!showAddVoiceDialog) {
+      setSearchText("");
+      setSelectedVoiceModel(null);
+      setVoiceModels([]);
+      setNoResult(false);
+      setIsLoading(false);
+    }
+  }, [showAddVoiceDialog]);
 
   const onSearch = useCallback(async () => {
     if (searchText.length < 3) {
@@ -80,10 +97,7 @@ const SearchVoiceModelsDialog = ({
   }, [searchText]);
 
   return (
-    <Modal
-      open={showAddVoiceDialog}
-      onClose={() => setShowAddVoiceDialog(false)}
-    >
+    <Modal open={showAddVoiceDialog} onClose={() => onClose()}>
       <Stack
         position={"absolute"}
         top={"50%"}
@@ -169,7 +183,7 @@ const SearchVoiceModelsDialog = ({
                 padding: "2px",
               }}
             >
-              <SearchIcon />
+              {isLoading ? <CircularProgress size={12} /> : <SearchIcon />}
             </IconButton>
           </Box>
           <Box display={"flex"} gap={2} alignItems={"center"}>
@@ -207,8 +221,8 @@ const SearchVoiceModelsDialog = ({
                 disabled={bounty <= 200}
                 onClick={() => {
                   const newBounty = bounty - 200;
-                  if (newBounty < 0) {
-                    return WebApp.showAlert("Bounty cannot be negative");
+                  if (newBounty <= 200) {
+                    return WebApp.showAlert("Bounty cannot be less than 200");
                   }
                   setBounty(newBounty);
                 }}
@@ -294,13 +308,13 @@ const SearchVoiceModelsDialog = ({
                 }
                 onClick={async () => {
                   // TODO: check if user can create voice request
-                  if (
-                    !hasTimestampCrossedOneDay(
-                      userDoc?.dailyVoiceRequestTimestamp
-                    )
-                  ) {
-                    return alert("You have already requested a voice today");
-                  }
+                  // if (
+                  //   !hasTimestampCrossedOneDay(
+                  //     userDoc?.dailyVoiceRequestTimestamp
+                  //   )
+                  // ) {
+                  //   return alert("You have already requested a voice today");
+                  // }
                   if (selectedVoiceModel && userDoc) {
                     await createVoiceRequest({
                       coverId,
@@ -315,8 +329,21 @@ const SearchVoiceModelsDialog = ({
                       voiceModelName: selectedVoiceModel.title,
                       bounty,
                     });
-                    alert("Voice request created successfully");
-                    setShowAddVoiceDialog(false);
+                    await updateCoverV1Doc(coverId, {
+                      requestedVoices: arrayUnion({
+                        name: selectedVoiceModel.title,
+                        modelId: selectedVoiceModel.id,
+                        bounty,
+                      }) as any,
+                    });
+                    WebApp.showAlert(
+                      "Voice request created successfully, Check back later or Join our TG group to get notified when it's ready."
+                    );
+                    onClose({
+                      name: selectedVoiceModel.title,
+                      modelId: selectedVoiceModel.id,
+                      bounty,
+                    });
                   }
                 }}
                 name={"Submit"}

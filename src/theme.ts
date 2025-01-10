@@ -3,7 +3,7 @@ import WebFont from "webfontloader";
 
 WebFont.load({
   google: {
-    families: ["Audiowide"],
+    families: ["Roboto"],
   },
 });
 declare module "@mui/material/styles/createPalette" {
@@ -17,7 +17,7 @@ declare module "@mui/material/styles/createPalette" {
 }
 const themeSettings = createTheme({
   palette: {
-    mode: "light",
+    mode: "dark",
     primary: {
       main: "#563FC8",
       light: "#000000",
@@ -39,9 +39,9 @@ const themeSettings = createTheme({
   },
   typography: {
     allVariants: {
-      color: "#000",
+      color: "#fff",
     },
-    fontFamily: `Audiowide, sans-serif`,
+    fontFamily: `Roboto, sans-serif`,
   },
 });
 const theme = responsiveFontSizes(themeSettings);

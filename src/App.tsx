@@ -480,7 +480,7 @@ function App() {
                       dash: 0,
                       show: false,
                     });
-                    primaryVoiceInfo?.length &&
+                    !!primaryVoiceInfo &&
                       setPrimaryVoiceInfo([primaryVoiceInfo[0]]);
                     setSecondaryVoiceInfo(null);
                   }}
@@ -591,31 +591,31 @@ function App() {
                       voice_id: primaryVoiceInfo?.[0]?.id,
                     });
                   }}
+                  userDoc={userDoc}
                 />
               )}
-              {coverDoc &&
-                screenName === "choose-primary-voice" &&
-                primaryVoiceInfo?.length && (
-                  <ChoosePrimaryVoice
-                    selectedCoverId={selectedCoverDocId}
-                    voices={coverDoc.voices}
-                    primaryVoiceInfo={primaryVoiceInfo}
-                    onProceedToNextScreen={() => {
-                      // setPrimaryVoiceInfo(voiceInfo);
-                      // setScreenName("voices-clash");
-                      setScreenName("game-ready");
-                      // TODO:
-                      logFirebaseEvent("voice_selection", {
-                        track_id: selectedCoverDocId,
-                        track_title: coverDoc?.title,
-                      });
-                    }}
-                    setPrimaryVoiceInfo={setPrimaryVoiceInfo}
-                    coverTitle={coverDoc.title}
-                    userDoc={userDoc}
-                    noOfVoices={noOfVoices}
-                  />
-                )}
+              {coverDoc && screenName === "choose-primary-voice" && (
+                <ChoosePrimaryVoice
+                  selectedCoverId={selectedCoverDocId}
+                  voices={coverDoc.voices}
+                  primaryVoiceInfo={primaryVoiceInfo || []}
+                  onProceedToNextScreen={() => {
+                    // setPrimaryVoiceInfo(voiceInfo);
+                    // setScreenName("voices-clash");
+                    setScreenName("game-ready");
+                    // TODO:
+                    logFirebaseEvent("voice_selection", {
+                      track_id: selectedCoverDocId,
+                      track_title: coverDoc?.title,
+                    });
+                  }}
+                  setPrimaryVoiceInfo={setPrimaryVoiceInfo}
+                  coverTitle={coverDoc.title}
+                  userDoc={userDoc}
+                  noOfVoices={noOfVoices}
+                  coverDoc={coverDoc}
+                />
+              )}
               {coverDoc &&
                 userDoc &&
                 screenName === "choose-secondary-voice" && (
@@ -639,7 +639,7 @@ function App() {
                     noOfVoices={noOfVoices}
                   />
                 )}
-              {primaryVoiceInfo?.length &&
+              {!!primaryVoiceInfo &&
                 coverDoc &&
                 (screenName === "voices-clash" ||
                   screenName === "game-ready") && (

@@ -1,7 +1,7 @@
 import { db } from "../firebase.service";
 import {
   addDoc,
-  arrayUnion,
+  // arrayUnion,
   collection,
   doc,
   serverTimestamp,
@@ -13,9 +13,14 @@ import {
   runTransaction,
   getDoc,
   Timestamp,
+  query,
+  where,
+  getDocs,
+  limit,
+  arrayUnion,
 } from "firebase/firestore";
 
-const DB_NAME = "covers";
+const DB_NAME = "tunedash_covers";
 
 type ShareInfo = {
   id: string;
@@ -30,34 +35,49 @@ type Comment = {
 };
 export type VoiceV1Cover = {
   url?: string;
-  creatorName: string;
+  creatorName?: string;
   name: string;
   id: string;
-  imageUrl: string;
-  shareInfo: ShareInfo;
+  imageUrl?: string;
+  shareInfo?: ShareInfo;
   avatarPath?: string;
 };
 export type CoverV1 = {
-  audioUrl: string;
-  metadata: {
-    channelId: string;
-    channelTitle: string;
-    channelDescription: string;
-    channelThumbnail: string;
-    videoThumbnail: string;
-    videoName: string;
-    videoDescription: string;
-  };
-  voices: VoiceV1Cover[];
-  //   avatarUrl: string;
-  title: string;
-  vid: string;
-  sections?: { name: string; start: number }[];
   bpm: number;
   duration: number;
-  error?: string;
+  isReady: boolean;
+  voices: {
+    id: string;
+    name: string;
+  }[];
+  title: string;
+  vocalsStartOffset: number;
+  vocalsEndOffset: number;
   shareInfo: ShareInfo;
-  stemsReady: boolean;
+  audioUploaded?: boolean;
+  instrumentalUploaded?: boolean;
+  beatsUploaded?: boolean;
+  requestedVoices?: {
+    name: string;
+    modelId: string;
+    bounty: number;
+  }[];
+
+  audioUrl?: string;
+  metadata?: {
+    channelId: string;
+    channelTitle: string;
+    channelDescription?: string;
+    channelThumbnail?: string;
+    videoThumbnail: string;
+    videoName: string;
+    videoDescription?: string;
+  };
+  //   avatarUrl: string;
+  vid?: string;
+  sections?: { name: string; start: number }[];
+  error?: string;
+  stemsReady?: boolean;
   comments?: Comment[];
   likes?: {
     [id: string]: number;
@@ -68,18 +88,18 @@ export type CoverV1 = {
     [id: string]: number;
     total: number;
   };
-  totalLikesValue: number;
-  playCount: number;
-  rank: number;
-  prevRank: number;
+  totalLikesValue?: number;
+  playCount?: number;
+  rank?: number;
+  prevRank?: number;
   createdAt?: Timestamp;
-  vocalsStartOffset?: number;
-  vocalsEndOffset?: number;
 };
-
-const getCoverDocById = async (docId: string) => {
+export type CoverV1Doc = CoverV1 & {
+  id: string;
+};
+const getCoverDocById = async (docId: string): Promise<CoverV1Doc> => {
   const d = doc(db, DB_NAME, docId);
-  return (await getDoc(d)).data() as CoverV1;
+  return (await getDoc(d)).data() as CoverV1Doc;
 };
 
 const createCoverV1Doc = async (coverObj: CoverV1): Promise<string> => {
@@ -93,6 +113,17 @@ const updateCoverV1Doc = async (
 ): Promise<void> => {
   const d = doc(db, DB_NAME, id);
   await updateDoc(d, { ...coverObj, updatedAt: serverTimestamp() });
+};
+
+const addVoiceToCover = async (
+  id: string,
+  voice: {
+    id: string;
+    name: string;
+  }
+) => {
+  const d = doc(db, DB_NAME, id);
+  await updateDoc(d, { voices: arrayUnion(voice) });
 };
 
 const SUB_COLLECTION = "comments";
@@ -109,11 +140,29 @@ const addCommentToCover = async (id: string, commentInfo: Comment) => {
     transaction.update(d, { commentsCount: increment(1) });
   });
 };
+
+const getPendingCoverFromUserId = async (
+  userId: string
+): Promise<CoverV1Doc | null> => {
+  const q = query(
+    collection(db, DB_NAME),
+    where("shareInfo.id", "==", userId),
+    where("isReady", "==", false),
+    limit(1)
+  );
+  const ref = await getDocs(q);
+  if (ref.docs.length === 0) {
+    return null;
+  }
+  return { ...ref.docs[0].data(), id: ref.docs[0].id } as CoverV1Doc;
+};
 export {
   createCoverV1Doc,
   updateCoverV1Doc,
   addCommentToCover,
   getCoverDocById,
+  getPendingCoverFromUserId,
+  addVoiceToCover,
   // addToDisLikes,
   // addToLikes,
 };
