@@ -31,14 +31,10 @@ export type User = {
   languageCode?: string;
   isBot?: boolean;
   id: string;
-  purchasedVoices: string[] | null;
   xp: number;
   wins?: number;
   playedTimes?: number;
   isVip?: boolean;
-  chatId: number | null;
-  chatTitle: string | null;
-  chatPhotoUrl: string | null;
   level: number;
   coins: number;
 };
@@ -174,6 +170,7 @@ const updateUserDocTimestamps = async (
     | "lastDailyRacePlayedTimestamp"
     | "dailyVoiceRequestTimestamp"
     | "lastShareFriendsTimestamp"
+    | "lastAddCoverTimestamp"
 ) => {
   const d = doc(db, DB_NAME, userId);
   await updateDoc(d, { [props]: serverTimestamp() });
@@ -200,6 +197,11 @@ const updateUserProps = async (
   await updateDoc(d, { [prop]: value });
 };
 
+const updateUserObj = async (userId: string, obj: any) => {
+  const d = doc(db, DB_NAME, userId);
+  await updateDoc(d, obj);
+};
+
 export {
   createUserDoc,
   getUserDocById,
@@ -209,4 +211,5 @@ export {
   updateUserDocTimestamps,
   updateUserLevel,
   updateUserProps,
+  updateUserObj,
 };

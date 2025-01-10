@@ -39,6 +39,7 @@ import { EventBus } from "./game/EventBus";
 import GameOverDialog from "./components/GameOverDialog";
 import ChooseOpponentVoice from "./components/ChooseOpponentVoice";
 import { getBeatsByCoverId } from "./services/db/metadata.service";
+import CreateMode from "./components/CreateMode";
 
 export const tracks = ["01", "03", "06", "07", "16"];
 
@@ -59,14 +60,14 @@ const getGameBgPath = (screenName: string) => {
 };
 
 // const screenNames = ["splash", "start", "menu", "select-track", "choose-primary-voice", "voices-clash", "game"];
-export const COVER_IDS = [
-  "HPF5qmOAAdfU4O9uJM5T",
-  "7GskJxL0ldK9OGbl6e1Y",
-  "fEGU8n7EdEqhtMIfse09",
-  "i9aUmvBYqdlCjqtQLe8u",
-  "lsUBEcaYfOidpvjUxpz1",
-  "hsvQc0nSw4X8BXXCiCEe",
-];
+// export const COVER_IDS = [
+//   "HPF5qmOAAdfU4O9uJM5T",
+//   "7GskJxL0ldK9OGbl6e1Y",
+//   "fEGU8n7EdEqhtMIfse09",
+//   "i9aUmvBYqdlCjqtQLe8u",
+//   "lsUBEcaYfOidpvjUxpz1",
+//   "hsvQc0nSw4X8BXXCiCEe",
+// ];
 function App() {
   //  References to the PhaserGame component (game and scene are exposed)
   const phaserRef = useRef<IRefPhaserGame | null>(null);
@@ -95,6 +96,7 @@ function App() {
   const theme = useTheme();
   const isMobileView = useMediaQuery(theme.breakpoints.down("md"));
   const canvasElemWidth = isMobileView ? window.innerWidth : 414;
+  const screenWidth = isMobileView ? window.innerWidth : 440;
   // isMobileView
   //     ? window.innerWidth > 414
   //         ? 414
@@ -126,7 +128,8 @@ function App() {
   const [coversSnapshot, cssLoading, cssError] = useCollection(
     query(
       collection(db, "tunedash_covers"),
-      where(documentId(), "in", COVER_IDS) // random
+      // where(documentId(), "in", COVER_IDS) // random
+      where("isReady", "==", true)
     )
   );
   const downloadVocalsAndStartGame = async () => {
@@ -170,10 +173,13 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const newNoOfVoices = (selectedLevel * 2) / 2;
+    const newNoOfVoices = selectedLevel;
     setNoOfVoices(newNoOfVoices);
     if (primaryVoiceInfo) {
       setPrimaryVoiceInfo(primaryVoiceInfo.slice(0, newNoOfVoices));
+      if (secondaryVoiceInfo?.length) {
+        setSecondaryVoiceInfo(secondaryVoiceInfo.slice(0, newNoOfVoices));
+      }
     }
   }, [selectedLevel]);
 
@@ -193,10 +199,6 @@ function App() {
                 photoUrl: WebApp.initDataUnsafe.user.photo_url || "",
                 languageCode: WebApp.initDataUnsafe.user.language_code || "",
                 isBot: WebApp.initDataUnsafe.user.is_bot || false,
-                purchasedVoices: null,
-                chatId: WebApp.initDataUnsafe.chat?.id || null,
-                chatTitle: WebApp.initDataUnsafe.chat?.title || null,
-                chatPhotoUrl: WebApp.initDataUnsafe.chat?.photo_url || null,
                 xp: 0,
                 level: 1,
                 coins: 0,
@@ -209,7 +211,12 @@ function App() {
                 if (!newUser.level) newUser.level = 1;
                 setUserDoc(newUser);
                 setUserIdForAnalytics(user.id);
-                setSelectedLevel(newUser.level);
+                if (
+                  !coverDoc ||
+                  (coverDoc && coverDoc.voices.length >= newUser.level * 2)
+                ) {
+                  setSelectedLevel(newUser.level);
+                }
               }
             );
           } catch (e) {
@@ -286,6 +293,7 @@ function App() {
             toggleMuteAudio();
           }}
           enableSlideUp={isDownloaded}
+          width={screenWidth}
         />
       )}
       <Box width={"100%"} display="flex" justifyContent={"center"}>
@@ -293,10 +301,10 @@ function App() {
           display={"flex"}
           justifyContent="center"
           alignItems={"center"}
-          width={canvasElemWidth}
+          width={screenWidth}
         >
           <Box
-            width={canvasElemWidth}
+            width={screenWidth}
             height={"100vh"}
             sx={{
               background: `url(${getGameBgPath(screenName)})`,
@@ -480,7 +488,7 @@ function App() {
                       dash: 0,
                       show: false,
                     });
-                    primaryVoiceInfo?.length &&
+                    !!primaryVoiceInfo &&
                       setPrimaryVoiceInfo([primaryVoiceInfo[0]]);
                     setSecondaryVoiceInfo(null);
                   }}
@@ -494,7 +502,15 @@ function App() {
                 <Header
                   showLevelsBar={screenName === "choose-primary-voice"}
                   selectedLevel={selectedLevel}
-                  setSelectedLevel={setSelectedLevel}
+                  setSelectedLevel={(newLevel: number) => {
+                    if (coverDoc && coverDoc.voices.length / 2 >= newLevel) {
+                      setSelectedLevel(newLevel);
+                    } else {
+                      WebApp.showAlert(
+                        "This Song doesn't have enough voices to play at this level!"
+                      );
+                    }
+                  }}
                   showBackButton={screenName !== "start"}
                   showCoverTitle={
                     !!selectedCoverDocId && screenName !== "select-track"
@@ -591,15 +607,16 @@ function App() {
                       voice_id: primaryVoiceInfo?.[0]?.id,
                     });
                   }}
+                  userDoc={userDoc}
                 />
               )}
               {coverDoc &&
                 screenName === "choose-primary-voice" &&
-                primaryVoiceInfo?.length && (
+                (coverDoc.isReady ? (
                   <ChoosePrimaryVoice
                     selectedCoverId={selectedCoverDocId}
                     voices={coverDoc.voices}
-                    primaryVoiceInfo={primaryVoiceInfo}
+                    primaryVoiceInfo={primaryVoiceInfo || []}
                     onProceedToNextScreen={() => {
                       // setPrimaryVoiceInfo(voiceInfo);
                       // setScreenName("voices-clash");
@@ -614,8 +631,25 @@ function App() {
                     coverTitle={coverDoc.title}
                     userDoc={userDoc}
                     noOfVoices={noOfVoices}
+                    onLowerLevelClick={() => {
+                      if (coverDoc.voices.length >= 8) {
+                        setSelectedLevel(4);
+                      } else if (coverDoc.voices.length >= 6) {
+                        setSelectedLevel(3);
+                      } else if (coverDoc.voices.length >= 4) {
+                        setSelectedLevel(2);
+                      } else if (coverDoc.voices.length >= 2) {
+                        setSelectedLevel(1);
+                      }
+                    }}
                   />
-                )}
+                ) : (
+                  <CreateMode
+                    selectedCoverId={selectedCoverDocId}
+                    coverTitle={coverDoc.title}
+                    userDoc={userDoc}
+                  />
+                ))}
               {coverDoc &&
                 userDoc &&
                 screenName === "choose-secondary-voice" && (
@@ -639,7 +673,7 @@ function App() {
                     noOfVoices={noOfVoices}
                   />
                 )}
-              {primaryVoiceInfo?.length &&
+              {!!primaryVoiceInfo &&
                 coverDoc &&
                 (screenName === "voices-clash" ||
                   screenName === "game-ready") && (
@@ -691,7 +725,7 @@ function App() {
                     noOfRaceTracks={
                       userDoc?.firstName === "Freedom" ? 12 : noOfRaceTracks
                     }
-                    gravityY={4}
+                    gravityY={3}
                     width={canvasElemWidth}
                     trailPath={getTrailPath(selectedTrailPath)}
                     dpr={window.devicePixelRatio || 2}

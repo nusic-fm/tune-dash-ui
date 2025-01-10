@@ -1,20 +1,35 @@
-import { Box, Chip, CircularProgress, Stack, Typography } from "@mui/material";
+import {
+  Badge,
+  Box,
+  Chip,
+  CircularProgress,
+  Stack,
+  Typography,
+} from "@mui/material";
 import {
   QuerySnapshot,
   DocumentData,
   QueryDocumentSnapshot,
 } from "firebase/firestore";
-import { CoverV1, VoiceV1Cover } from "../services/db/coversV1.service";
-import { useState } from "react";
+import {
+  CoverV1,
+  CoverV1Doc,
+  getPendingCoverFromUserId,
+  VoiceV1Cover,
+} from "../services/db/coversV1.service";
+import { useEffect, useState } from "react";
 import {
   downloadAudioFiles,
   marbleRaceOnlyInstrument,
   stopAndDestroyPlayers,
+  // downloadAndPlayIntro,
 } from "../hooks/useTonejs";
 import { createRandomNumber } from "../helpers";
 import LongImageMotionButton from "./Buttons/LongImageMotionButton";
 import HeadsetRoundedIcon from "@mui/icons-material/HeadsetRounded";
-import { COVER_IDS } from "../App";
+// import { COVER_IDS } from "../App";
+import SearchYoutubeCover from "./SearchYoutubeCover";
+import { UserDoc } from "../services/db/user.service";
 
 type Props = {
   coversSnapshot: QuerySnapshot<DocumentData>;
@@ -25,6 +40,7 @@ type Props = {
   ) => void;
   selectedCoverDocId: string;
   onNextPageClick: () => void;
+  userDoc: UserDoc | null;
 };
 
 const SelectTrack = ({
@@ -32,8 +48,24 @@ const SelectTrack = ({
   onTrackSelected,
   onNextPageClick,
   selectedCoverDocId,
+  userDoc,
 }: Props) => {
   const [downloadingCoverId, setDownloadingCoverId] = useState<string>("");
+  const [pendingCover, setPendingCover] = useState<CoverV1Doc | null>(null);
+
+  const fetchPendingCover = async () => {
+    if (userDoc) {
+      const _pendingCover = await getPendingCoverFromUserId(userDoc.id);
+      if (_pendingCover) {
+        setPendingCover(_pendingCover);
+      }
+    }
+  };
+  useEffect(() => {
+    if (userDoc) {
+      fetchPendingCover();
+    }
+  }, [userDoc]);
 
   const downloadInstrumental = async (
     _coverId: string,
@@ -97,11 +129,11 @@ const SelectTrack = ({
         // px={1}
       >
         {coversSnapshot.docs
-          .sort((a, b) => {
-            const aId = a.id;
-            const bId = b.id;
-            return COVER_IDS.indexOf(aId) - COVER_IDS.indexOf(bId);
-          })
+          // .sort((a, b) => {
+          //   const aId = a.id;
+          //   const bId = b.id;
+          //   return COVER_IDS.indexOf(aId) - COVER_IDS.indexOf(bId);
+          // })
           .map((doc: QueryDocumentSnapshot<DocumentData, DocumentData>) => {
             const coverDoc = doc.data() as CoverV1;
             return (
@@ -186,6 +218,112 @@ const SelectTrack = ({
               </Box>
             );
           })}
+        {userDoc && !pendingCover && (
+          <SearchYoutubeCover
+            userDoc={userDoc}
+            onAddCover={fetchPendingCover}
+          />
+        )}
+        {pendingCover && (
+          <Box
+            sx={{
+              background: `url(/assets/tunedash/track-rect.png)`,
+              width: 312,
+              height: 67,
+              backgroundRepeat: "no-repeat",
+            }}
+            position={"relative"}
+            flexShrink={0}
+            display={"flex"}
+            alignItems={"center"}
+            justifyContent={"center"}
+            gap={1}
+            zIndex={9}
+            onClick={async () => {
+              if (downloadingCoverId) return;
+              if (pendingCover.id !== selectedCoverDocId) {
+                // const randomIdx = createRandomNumber(
+                //   0,
+                //   coverDoc.voices.length - 1
+                // );
+                // const randomVoice = pendingCover.voices[0];
+                // await downloadInstrumental(
+                //   pendingCover.id,
+                //   pendingCover,
+                //   randomVoice
+                // );
+                //
+                if (
+                  pendingCover.voices.length &&
+                  pendingCover.instrumentalUploaded
+                ) {
+                  const randomIdx = createRandomNumber(
+                    0,
+                    pendingCover.voices.length - 1
+                  );
+                  const randomVoice = pendingCover.voices[randomIdx];
+                  await downloadInstrumental(
+                    pendingCover.id,
+                    pendingCover,
+                    randomVoice
+                  );
+                }
+                onTrackSelected(pendingCover, pendingCover.id, []);
+                onNextPageClick();
+              }
+            }}
+          >
+            <Box
+              position={"absolute"}
+              top={0}
+              right={"50%"}
+              sx={{ transform: "translate(50%, -50%)" }}
+            >
+              <Badge badgeContent="Pending" color="error"></Badge>
+            </Box>
+            <Box
+              width={
+                selectedCoverDocId === pendingCover.id ||
+                downloadingCoverId === pendingCover.id
+                  ? "75%"
+                  : "70%"
+              }
+              sx={{ overflow: "hidden" }}
+            >
+              <Typography
+                sx={{
+                  // ellipsis
+                  whiteSpace: "nowrap",
+                  // overflow: "hidden",
+                  // textOverflow: "ellipsis",
+                }}
+                alignSelf={"center"}
+                // width={"70%"}
+                fontSize={14}
+                id={selectedCoverDocId === pendingCover.id ? "scroll-text" : ""}
+              >
+                {pendingCover.title}
+              </Typography>
+            </Box>
+            {downloadingCoverId === pendingCover.id ? (
+              <CircularProgress
+                variant="indeterminate"
+                size={20}
+                sx={{ color: "#000" }}
+              />
+            ) : selectedCoverDocId === pendingCover.id ? (
+              <HeadsetRoundedIcon />
+            ) : (
+              <Chip
+                label={pendingCover.audioUploaded ? "Select" : "Pending"}
+                size="small"
+                clickable={!downloadingCoverId}
+                sx={{ backgroundColor: "#000", color: "#FFA500" }}
+                disabled={!pendingCover.audioUploaded}
+              />
+            )}
+          </Box>
+        )}
       </Stack>
       <LongImageMotionButton
         onClick={
@@ -196,7 +334,9 @@ const SelectTrack = ({
           //   currentlyPlayingVoiceInfo || null
           // )
         }
-        name="Choose Voice"
+        name={
+          selectedCoverDocId === pendingCover?.id ? "Add Voice" : "Choose Voice"
+        }
         width={230}
         height={75}
       />

@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import DisplayMultiVoiceSelection, {
   FOCUS_COLORS,
 } from "./DisplayMultiVoiceSelection";
+import WebApp from "@twa-dev/sdk";
 
 type Props = {
   onProceedToNextScreen: () => void;
@@ -20,6 +21,7 @@ type Props = {
   userDoc: UserDoc | null;
   noOfVoices: number;
   setPrimaryVoiceInfo: (voiceInfo: VoiceV1Cover[]) => void;
+  onLowerLevelClick: () => void;
 };
 
 // Five Different Light Colors for Background
@@ -40,6 +42,7 @@ const ChoosePrimaryVoice = ({
   userDoc,
   noOfVoices,
   setPrimaryVoiceInfo,
+  onLowerLevelClick,
 }: Props) => {
   const [selectedVoiceInfo, setSelectedVoiceInfo] = useState<VoiceV1Cover>(
     primaryVoiceInfo[0] || voices[0]
@@ -304,7 +307,10 @@ const ChoosePrimaryVoice = ({
       <Box pt={2} position={"sticky"} bottom={0} zIndex={10}>
         <LongImageMotionButton
           onClick={() => {
-            if (primaryVoiceInfo.length < noOfVoices) {
+            if (
+              primaryVoiceInfo.length < noOfVoices &&
+              voices.length >= noOfVoices * 2
+            ) {
               const newPrimaryVoiceInfo = [...primaryVoiceInfo];
               // Generate random voices
               const neededNoOfVoices = noOfVoices - primaryVoiceInfo.length;
@@ -322,6 +328,20 @@ const ChoosePrimaryVoice = ({
                 usedIndexes.push(randomIdx);
               }
               setPrimaryVoiceInfo(newPrimaryVoiceInfo);
+              onProceedToNextScreen();
+            } else if (voices.length < noOfVoices * 2) {
+              WebApp.showConfirm(
+                "This Song doesn't have enough voices to play at this level, would you like to switch to a lower level?",
+                (confirmed) => {
+                  if (confirmed) {
+                    onLowerLevelClick();
+                  } else {
+                    setShowAddVoiceDialog(true);
+                  }
+                }
+              );
+            } else {
+              onProceedToNextScreen();
             }
             // const selectedVoices = [selectedVoiceInfo];
             // const currentIdx = voices.findIndex(
@@ -338,7 +358,6 @@ const ChoosePrimaryVoice = ({
             //   selectedVoices.push(randomNextVoice);
             //   usedIndexes.push(randomIdx);
             // }
-            onProceedToNextScreen();
           }}
           name="Proceed"
           width={230}
@@ -365,7 +384,7 @@ const ChoosePrimaryVoice = ({
       {userDoc && (
         <SearchVoiceModelsDialog
           showAddVoiceDialog={showAddVoiceDialog}
-          setShowAddVoiceDialog={setShowAddVoiceDialog}
+          onClose={() => setShowAddVoiceDialog(false)}
           coverId={selectedCoverId}
           coverTitle={coverTitle}
           userDoc={userDoc}

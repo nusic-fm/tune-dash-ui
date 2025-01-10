@@ -33,7 +33,6 @@ const VoicesClash = ({
   setSecondaryVoiceInfo,
   onStartRaceClick,
   downloadProgress,
-  userDoc,
   selectedCoverDocId,
   noOfVoices,
 }: Props) => {
