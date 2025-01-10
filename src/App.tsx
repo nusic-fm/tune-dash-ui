@@ -212,8 +212,9 @@ function App() {
                 setUserDoc(newUser);
                 setUserIdForAnalytics(user.id);
                 if (
-                  !coverDoc ||
-                  (coverDoc && coverDoc.voices.length >= newUser.level * 2)
+                  screenName != "voices-clash" &&
+                  screenName != "game-ready" &&
+                  screenName != "game"
                 ) {
                   setSelectedLevel(newUser.level);
                 }
