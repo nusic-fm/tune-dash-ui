@@ -335,7 +335,6 @@ const AddVoiceDialog = ({
                 await createVoiceModel(voiceModelId, voiceModelName);
                 await updateVoiceRequestDoc(showVoiceRequestDoc.id, {
                   isCompleted: true,
-                  selectedVoiceId: voiceModelId,
                   voiceId: voiceModelId,
                 });
                 await addVoiceToCover(showVoiceRequestDoc.coverId, {

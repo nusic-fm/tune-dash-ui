@@ -17,7 +17,6 @@ export type VoiceRequest = {
   name: string;
   bounty: number;
   isCompleted: boolean;
-  selectedVoiceId?: string;
   voiceId?: string;
 };
 export type VoiceRequestDoc = VoiceRequest & { id: string };
