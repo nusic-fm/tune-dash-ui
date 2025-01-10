@@ -199,10 +199,6 @@ function App() {
                 photoUrl: WebApp.initDataUnsafe.user.photo_url || "",
                 languageCode: WebApp.initDataUnsafe.user.language_code || "",
                 isBot: WebApp.initDataUnsafe.user.is_bot || false,
-                purchasedVoices: null,
-                chatId: WebApp.initDataUnsafe.chat?.id || null,
-                chatTitle: WebApp.initDataUnsafe.chat?.title || null,
-                chatPhotoUrl: WebApp.initDataUnsafe.chat?.photo_url || null,
                 xp: 0,
                 level: 1,
                 coins: 0,
@@ -215,7 +211,12 @@ function App() {
                 if (!newUser.level) newUser.level = 1;
                 setUserDoc(newUser);
                 setUserIdForAnalytics(user.id);
-                setSelectedLevel(newUser.level);
+                if (
+                  !coverDoc ||
+                  (coverDoc && coverDoc.voices.length >= newUser.level * 2)
+                ) {
+                  setSelectedLevel(newUser.level);
+                }
               }
             );
           } catch (e) {
@@ -501,7 +502,15 @@ function App() {
                 <Header
                   showLevelsBar={screenName === "choose-primary-voice"}
                   selectedLevel={selectedLevel}
-                  setSelectedLevel={setSelectedLevel}
+                  setSelectedLevel={(newLevel: number) => {
+                    if (coverDoc && coverDoc.voices.length / 2 >= newLevel) {
+                      setSelectedLevel(newLevel);
+                    } else {
+                      WebApp.showAlert(
+                        "This Song doesn't have enough voices to play at this level!"
+                      );
+                    }
+                  }}
                   showBackButton={screenName !== "start"}
                   showCoverTitle={
                     !!selectedCoverDocId && screenName !== "select-track"
@@ -623,16 +632,14 @@ function App() {
                     userDoc={userDoc}
                     noOfVoices={noOfVoices}
                     onLowerLevelClick={() => {
-                      if (coverDoc.voices.length < 10) {
-                        if (coverDoc.voices.length <= 2) {
-                          setSelectedLevel(1);
-                        } else if (coverDoc.voices.length <= 4) {
-                          setSelectedLevel(2);
-                        } else if (coverDoc.voices.length <= 6) {
-                          setSelectedLevel(3);
-                        } else if (coverDoc.voices.length <= 8) {
-                          setSelectedLevel(4);
-                        }
+                      if (coverDoc.voices.length >= 8) {
+                        setSelectedLevel(4);
+                      } else if (coverDoc.voices.length >= 6) {
+                        setSelectedLevel(3);
+                      } else if (coverDoc.voices.length >= 4) {
+                        setSelectedLevel(2);
+                      } else if (coverDoc.voices.length >= 2) {
+                        setSelectedLevel(1);
                       }
                     }}
                   />
@@ -718,7 +725,7 @@ function App() {
                     noOfRaceTracks={
                       userDoc?.firstName === "Freedom" ? 12 : noOfRaceTracks
                     }
-                    gravityY={4}
+                    gravityY={3}
                     width={canvasElemWidth}
                     trailPath={getTrailPath(selectedTrailPath)}
                     dpr={window.devicePixelRatio || 2}

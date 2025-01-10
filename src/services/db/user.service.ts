@@ -31,14 +31,10 @@ export type User = {
   languageCode?: string;
   isBot?: boolean;
   id: string;
-  purchasedVoices: string[] | null;
   xp: number;
   wins?: number;
   playedTimes?: number;
   isVip?: boolean;
-  chatId: number | null;
-  chatTitle: string | null;
-  chatPhotoUrl: string | null;
   level: number;
   coins: number;
 };
