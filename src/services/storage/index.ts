@@ -1,4 +1,4 @@
-import { ref, uploadBytes } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase.service";
 
 const uploadVoiceImage = async (voiceId: string, image: File) => {
@@ -15,4 +15,10 @@ const uploadVoiceAudio = async (
   await uploadBytes(storageRef, audio);
 };
 
-export { uploadVoiceAudio, uploadVoiceImage };
+const checkIfPathExists = async (path: string) => {
+  const storageRef = ref(storage, path);
+  const exists = await getDownloadURL(storageRef);
+  return exists;
+};
+
+export { uploadVoiceAudio, uploadVoiceImage, checkIfPathExists };

@@ -32,12 +32,14 @@ import {
 import { useState } from "react";
 import axios from "axios";
 import { LoadingButton } from "@mui/lab";
-import {
-  createVoiceModel,
-  VoiceModel,
-} from "../services/db/voiceModels.service";
+import { createVoiceModel } from "../services/db/voiceModels.service";
 import { getVoiceAvatarPath, nameToSlug } from "../helpers";
-import { uploadVoiceAudio, uploadVoiceImage } from "../services/storage";
+import {
+  checkIfPathExists,
+  uploadVoiceAudio,
+  uploadVoiceImage,
+} from "../services/storage";
+import { checkIfCoverIsReady } from "../services/db/metadata.service";
 
 type Props = {};
 
@@ -139,18 +141,34 @@ const Admin = ({}: Props) => {
                               }
                             );
                           } else if (!cover.beatsUploaded) {
+                            const formData = new FormData();
+                            formData.append("cover_id", doc.id);
+                            formData.append("title", cover.title);
                             await axios.post(
                               `${
                                 import.meta.env.VITE_MARBLE_RACE_SERVER
                               }/upload-beats-info`,
-                              {
-                                cover_id: doc.id,
-                              }
+                              formData
                             );
                           } else if (cover.voices.length < 2) {
                             //   setShowVoiceUploadId(doc.id);
                           } else {
-                            await updateCoverV1Doc(doc.id, { isReady: true });
+                            const audioExists = await checkIfPathExists(
+                              `covers/${doc.id}/audio.mp3`
+                            );
+                            const instrumentalExists = await checkIfPathExists(
+                              `covers/${doc.id}/instrumental.mp3`
+                            );
+                            const beatsExists = await checkIfCoverIsReady(
+                              doc.id
+                            );
+                            if (
+                              audioExists &&
+                              instrumentalExists &&
+                              beatsExists
+                            ) {
+                              await updateCoverV1Doc(doc.id, { isReady: true });
+                            }
                           }
                         } catch (error) {
                           setLoadingAndErrors({
