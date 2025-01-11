@@ -724,7 +724,7 @@ function App() {
                       noOfRaceTracks
                     )}
                     noOfRaceTracks={
-                      userDoc?.firstName === "Freedom" ? 12 : noOfRaceTracks
+                      userDoc?.firstName === "Freedom" ? 14 : noOfRaceTracks
                     }
                     gravityY={3}
                     width={canvasElemWidth}
