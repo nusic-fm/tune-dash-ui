@@ -36,6 +36,8 @@ import { createVoiceModel } from "../services/db/voiceModels.service";
 import { getVoiceAvatarPath, nameToSlug } from "../helpers";
 import {
   checkIfPathExists,
+  uploadAudioMp3,
+  uploadInstrumentalMp3,
   uploadVoiceAudio,
   uploadVoiceImage,
 } from "../services/storage";
@@ -81,6 +83,7 @@ const Admin = ({}: Props) => {
           <TableHead>
             <TableRow>
               <TableCell>Title</TableCell>
+              <TableCell>Cover Id</TableCell>
               <TableCell>Metadata</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -99,6 +102,7 @@ const Admin = ({}: Props) => {
                       {cover.title}
                     </Typography>
                   </TableCell>
+                  <TableCell>{doc.id}</TableCell>
                   <TableCell>
                     <Stack>
                       <Typography>
@@ -118,79 +122,137 @@ const Admin = ({}: Props) => {
                     </Stack>
                   </TableCell>
                   <TableCell>
-                    <LoadingButton
-                      variant="contained"
-                      color="primary"
-                      loading={loadingAndErrors[doc.id]?.loading}
-                      onClick={async () => {
-                        setLoadingAndErrors({
-                          ...loadingAndErrors,
-                          [doc.id]: { loading: true, error: "" },
-                        });
-                        try {
-                          if (
-                            !cover.audioUploaded ||
-                            !cover.instrumentalUploaded
-                          ) {
-                            await axios.post(
-                              `${
-                                import.meta.env.VITE_VOX_COVER_SERVER
-                              }/update-cover-pipeline`,
-                              {
-                                coverId: doc.id,
+                    <Stack gap={1}>
+                      {!cover.audioUploaded && (
+                        <>
+                          <Typography>audio.mp3</Typography>
+                          <TextField
+                            type="file"
+                            onChange={async (e) => {
+                              const file = (e.target as HTMLInputElement)
+                                .files?.[0];
+                              if (file) {
+                                setLoadingAndErrors({
+                                  ...loadingAndErrors,
+                                  [doc.id]: { loading: true, error: "" },
+                                });
+                                await uploadAudioMp3(doc.id, file);
+                                await updateCoverV1Doc(doc.id, {
+                                  audioUploaded: true,
+                                });
+                                setLoadingAndErrors({
+                                  ...loadingAndErrors,
+                                  [doc.id]: { loading: false, error: "" },
+                                });
                               }
-                            );
-                          } else if (!cover.beatsUploaded) {
-                            const formData = new FormData();
-                            formData.append("cover_id", doc.id);
-                            formData.append("title", cover.title);
-                            await axios.post(
-                              `${
-                                import.meta.env.VITE_MARBLE_RACE_SERVER
-                              }/upload-beats-info`,
-                              formData
-                            );
-                          } else if (cover.voices.length < 2) {
-                            //   setShowVoiceUploadId(doc.id);
-                          } else {
-                            const audioExists = await checkIfPathExists(
-                              `covers/${doc.id}/audio.mp3`
-                            );
-                            const instrumentalExists = await checkIfPathExists(
-                              `covers/${doc.id}/instrumental.mp3`
-                            );
-                            const beatsExists = await checkIfCoverIsReady(
-                              doc.id
-                            );
+                            }}
+                          />
+                        </>
+                      )}
+                      {!cover.instrumentalUploaded && (
+                        <>
+                          <Typography>instrumental.mp3</Typography>
+                          <TextField
+                            type="file"
+                            onChange={async (e) => {
+                              const file = (e.target as HTMLInputElement)
+                                .files?.[0];
+                              if (file) {
+                                setLoadingAndErrors({
+                                  ...loadingAndErrors,
+                                  [doc.id]: { loading: true, error: "" },
+                                });
+                                await uploadInstrumentalMp3(doc.id, file);
+                                await updateCoverV1Doc(doc.id, {
+                                  instrumentalUploaded: true,
+                                });
+                                setLoadingAndErrors({
+                                  ...loadingAndErrors,
+                                  [doc.id]: { loading: false, error: "" },
+                                });
+                              }
+                            }}
+                          />
+                          <Typography align="center">Or</Typography>
+                        </>
+                      )}
+                      <LoadingButton
+                        variant="contained"
+                        color="primary"
+                        loading={loadingAndErrors[doc.id]?.loading}
+                        onClick={async () => {
+                          setLoadingAndErrors({
+                            ...loadingAndErrors,
+                            [doc.id]: { loading: true, error: "" },
+                          });
+                          try {
                             if (
-                              audioExists &&
-                              instrumentalExists &&
-                              beatsExists
+                              !cover.audioUploaded ||
+                              !cover.instrumentalUploaded
                             ) {
-                              await updateCoverV1Doc(doc.id, { isReady: true });
+                              await axios.post(
+                                `${
+                                  import.meta.env.VITE_VOX_COVER_SERVER
+                                }/update-cover-pipeline`,
+                                {
+                                  coverId: doc.id,
+                                }
+                              );
+                            } else if (!cover.beatsUploaded) {
+                              const formData = new FormData();
+                              formData.append("cover_id", doc.id);
+                              formData.append("title", cover.title);
+                              await axios.post(
+                                `${
+                                  import.meta.env.VITE_MARBLE_RACE_SERVER
+                                }/upload-beats-info`,
+                                formData
+                              );
+                            } else if (cover.voices.length < 2) {
+                              //   setShowVoiceUploadId(doc.id);
+                            } else {
+                              const audioExists = await checkIfPathExists(
+                                `covers/${doc.id}/audio.mp3`
+                              );
+                              const instrumentalExists =
+                                await checkIfPathExists(
+                                  `covers/${doc.id}/instrumental.mp3`
+                                );
+                              const beatsExists = await checkIfCoverIsReady(
+                                doc.id
+                              );
+                              if (
+                                audioExists &&
+                                instrumentalExists &&
+                                beatsExists
+                              ) {
+                                await updateCoverV1Doc(doc.id, {
+                                  isReady: true,
+                                });
+                              }
                             }
+                          } catch (error) {
+                            setLoadingAndErrors({
+                              ...loadingAndErrors,
+                              [doc.id]: { loading: false, error: "error" },
+                            });
+                          } finally {
+                            setLoadingAndErrors({
+                              ...loadingAndErrors,
+                              [doc.id]: { loading: false, error: "" },
+                            });
                           }
-                        } catch (error) {
-                          setLoadingAndErrors({
-                            ...loadingAndErrors,
-                            [doc.id]: { loading: false, error: "error" },
-                          });
-                        } finally {
-                          setLoadingAndErrors({
-                            ...loadingAndErrors,
-                            [doc.id]: { loading: false, error: "" },
-                          });
-                        }
-                      }}
-                    >
-                      {!cover.audioUploaded || !cover.instrumentalUploaded
-                        ? "Retry Pipeline"
-                        : !cover.beatsUploaded
-                        ? "Retry Beats"
-                        : cover.voices.length < 2
-                        ? "Upload Voices"
-                        : "Mark as Ready"}
-                    </LoadingButton>
+                        }}
+                      >
+                        {!cover.audioUploaded || !cover.instrumentalUploaded
+                          ? "Retry Pipeline"
+                          : !cover.beatsUploaded
+                          ? "Retry Beats"
+                          : cover.voices.length < 2
+                          ? "Upload Voices"
+                          : "Mark as Ready"}
+                      </LoadingButton>
+                    </Stack>
                   </TableCell>
                 </TableRow>
               );
@@ -211,6 +273,7 @@ const Admin = ({}: Props) => {
           <TableHead>
             <TableRow>
               <TableCell>Cover Title</TableCell>
+              <TableCell>Cover - Voice ids</TableCell>
               <TableCell>Voice Model Name</TableCell>
               <TableCell>Bounty</TableCell>
               <TableCell>Actions</TableCell>
@@ -222,6 +285,9 @@ const Admin = ({}: Props) => {
               return (
                 <TableRow key={doc.id}>
                   <TableCell>{voiceRequest.coverTitle}</TableCell>
+                  <TableCell>
+                    {voiceRequest.coverId} - {doc.id}
+                  </TableCell>
                   <TableCell>
                     <Typography
                       component="a"
