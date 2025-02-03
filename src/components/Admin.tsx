@@ -83,6 +83,7 @@ const Admin = ({}: Props) => {
           <TableHead>
             <TableRow>
               <TableCell>Title</TableCell>
+              <TableCell>User</TableCell>
               <TableCell>Cover Id</TableCell>
               <TableCell>Metadata</TableCell>
               <TableCell>Actions</TableCell>
@@ -101,6 +102,9 @@ const Admin = ({}: Props) => {
                     >
                       {cover.title}
                     </Typography>
+                  </TableCell>
+                  <TableCell>
+                    {cover.shareInfo.name} - {cover.shareInfo.id}
                   </TableCell>
                   <TableCell>{doc.id}</TableCell>
                   <TableCell>
@@ -273,6 +277,7 @@ const Admin = ({}: Props) => {
           <TableHead>
             <TableRow>
               <TableCell>Cover Title</TableCell>
+              <TableCell>User</TableCell>
               <TableCell>Cover - Voice ids</TableCell>
               <TableCell>Voice Model Name</TableCell>
               <TableCell>Bounty</TableCell>
@@ -285,6 +290,9 @@ const Admin = ({}: Props) => {
               return (
                 <TableRow key={doc.id}>
                   <TableCell>{voiceRequest.coverTitle}</TableCell>
+                  <TableCell>
+                    {voiceRequest.name} - {voiceRequest.userId}
+                  </TableCell>
                   <TableCell>
                     {voiceRequest.coverId} - {doc.id}
                   </TableCell>
